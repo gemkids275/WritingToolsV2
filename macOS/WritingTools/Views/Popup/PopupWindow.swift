@@ -2,10 +2,10 @@ import SwiftUI
 
 class PopupWindow: NSWindow {
   private var initialLocation: NSPoint?
-  private var retainedHostingView: NSHostingView<PopupWindowContentView>?
+  private var retainedHostingView: FirstResponderHostingView<PopupWindowContentView>?
   private var trackingArea: NSTrackingArea?
   private let appState: AppState
-  private let windowWidth: CGFloat = 305
+  private let windowWidth: CGFloat = 380
 
   private let viewModel = PopupViewModel()
   private var hasCompletedInitialLayout = false
@@ -41,17 +41,23 @@ class PopupWindow: NSWindow {
       self?.appState.previousApplication?.activate(from: .current)
     }
     
-    // Use a wrapper view that observes changes and triggers window size updates
-    let contentView = PopupWindowContentView(
+    let swiftUIContent = PopupWindowContentView(
       appState: appState,
       viewModel: viewModel,
-      closeAction: closeAction,
-      onSizeChange: { [weak self] in
-        self?.updateWindowSize()
-      }
+      closeAction: closeAction
     )
 
-    let hostingView = FirstResponderHostingView(rootView: contentView)
+    let hostingView = FirstResponderHostingView(rootView: swiftUIContent)
+    // sizingOptions = .intrinsicContentSize makes the hosting view call
+    // invalidateIntrinsicContentSize() when SwiftUI content changes.
+    // Auto Layout then resizes the view to the new intrinsicContentSize,
+    // triggering setFrameSize — which we override to resize the window.
+    hostingView.sizingOptions = .intrinsicContentSize
+    hostingView.translatesAutoresizingMaskIntoConstraints = false
+    hostingView.onHeightChange = { [weak self] height in
+      self?.applyWindowHeight(height)
+    }
+
     hostingView.wantsLayer = true
     hostingView.layer?.cornerRadius = 20
     hostingView.layer?.maskedCorners = [
@@ -62,60 +68,43 @@ class PopupWindow: NSWindow {
     ]
     hostingView.layer?.masksToBounds = true
 
-    self.contentView = hostingView
+    // Use a plain container so we can pin the hosting view with Auto Layout.
+    let container = NSView(frame: NSRect(x: 0, y: 0, width: windowWidth, height: 100))
+    container.wantsLayer = true
+    container.addSubview(hostingView)
+    // No bottom constraint — hosting view sizes freely to intrinsicContentSize.
+    // The window is resized separately via onHeightChange.
+    NSLayoutConstraint.activate([
+      hostingView.leadingAnchor.constraint(equalTo: container.leadingAnchor),
+      hostingView.trailingAnchor.constraint(equalTo: container.trailingAnchor),
+      hostingView.topAnchor.constraint(equalTo: container.topAnchor),
+      hostingView.widthAnchor.constraint(equalToConstant: windowWidth),
+    ])
+
+    self.contentView = container
     retainedHostingView = hostingView
 
     initialFirstResponder = hostingView
     makeFirstResponder(hostingView)
     makeKey()
 
-    updateWindowSize()
-
-    // Register with WindowManager for lifecycle management/cleanup
     WindowManager.shared.registerPopupWindow(self)
   }
 
-  @objc private func updateWindowSize() {
+  func applyWindowHeight(_ height: CGFloat) {
     guard !didCleanup else { return }
-
-    let baseHeight: CGFloat = 100
-    let buttonHeight: CGFloat = 55
-    let spacing: CGFloat = 10
-    let editButtonHeight: CGFloat = 60
-
-    // Snapshot values at the start to avoid reading changing state mid-calculation
-    let commands = appState.commandManager.commands
-    let totalCommands = commands.count
-    let hasContent =
-      !appState.selectedText.isEmpty
-      || !appState.selectedImages.isEmpty
-    let isEditMode = viewModel.isEditMode
-
-    let numRows = hasContent ? ceil(Double(totalCommands) / 2.0) : 0
-
-    var contentHeight: CGFloat = baseHeight
-
-    if hasContent {
-      contentHeight += (buttonHeight * CGFloat(numRows)) + spacing
-      if isEditMode {
-        contentHeight += editButtonHeight
-      }
-    }
-
-    guard contentView != nil else { return }
+    let contentHeight = max(100, height)
+    guard abs(contentHeight - frame.height) > 1 else { return }
 
     let animate = hasCompletedInitialLayout
     hasCompletedInitialLayout = true
 
     if animate {
       NSAnimationContext.runAnimationGroup({ context in
-        context.duration = 0.25
+        context.duration = 0.2
         context.timingFunction = CAMediaTimingFunction(name: .easeInEaseOut)
 
-        self.animator()
-          .setContentSize(
-            NSSize(width: self.windowWidth, height: contentHeight)
-          )
+        self.animator().setContentSize(NSSize(width: self.windowWidth, height: contentHeight))
 
         if let screen = self.screen {
           var frame = self.frame
@@ -124,7 +113,6 @@ class PopupWindow: NSWindow {
           if frame.maxY > screen.visibleFrame.maxY {
             frame.origin.y = screen.visibleFrame.maxY - frame.height
           }
-
           self.animator().setFrame(frame, display: true)
         }
       }, completionHandler: { [weak self] in
@@ -132,15 +120,12 @@ class PopupWindow: NSWindow {
       })
     } else {
       setContentSize(NSSize(width: windowWidth, height: contentHeight))
-
       if let screen = self.screen {
         var frame = self.frame
         frame.size.height = contentHeight
-
         if frame.maxY > screen.visibleFrame.maxY {
           frame.origin.y = screen.visibleFrame.maxY - frame.height
         }
-
         setFrame(frame, display: true)
       }
       setupTrackingArea()
@@ -287,36 +272,35 @@ class PopupWindow: NSWindow {
 // PopupWindow level is set to .popUpMenu when it becomes key (handled in WindowManager.windowDidBecomeKey).
 
 class FirstResponderHostingView<Content: View>: NSHostingView<Content> {
-  override var acceptsFirstResponder: Bool { true }
+  var onHeightChange: ((CGFloat) -> Void)?
 
-  override func acceptsFirstMouse(for event: NSEvent?) -> Bool {
-    true
+  override var acceptsFirstResponder: Bool { true }
+  override func acceptsFirstMouse(for event: NSEvent?) -> Bool { true }
+
+  // When sizingOptions = .intrinsicContentSize and SwiftUI content changes,
+  // Auto Layout resizes this view to the new intrinsicContentSize and calls
+  // setFrameSize. We intercept here to drive the window resize.
+  override func setFrameSize(_ newSize: NSSize) {
+    super.setFrameSize(newSize)
+    guard newSize.height > 0 else { return }
+    DispatchQueue.main.async { [weak self] in
+      self?.onHeightChange?(newSize.height)
+    }
   }
 }
 
-// MARK: - SwiftUI Wrapper for Observation
+// MARK: - SwiftUI Wrapper
 
-/// A wrapper view that observes state changes using SwiftUI's native observation
-/// and triggers window size updates via a callback. This replaces manual
-/// observation loops with cleaner SwiftUI patterns.
 struct PopupWindowContentView: View {
   @Bindable var appState: AppState
   @Bindable var viewModel: PopupViewModel
   let closeAction: () -> Void
-  let onSizeChange: () -> Void
-  
+
   var body: some View {
     PopupView(
       appState: appState,
       viewModel: viewModel,
       closeAction: closeAction
     )
-    // Use SwiftUI's native onChange to observe state changes
-    .onChange(of: appState.commandManager.commands.count) { _, _ in
-      onSizeChange()
-    }
-    .onChange(of: viewModel.isEditMode) { _, _ in
-      onSizeChange()
-    }
   }
 }

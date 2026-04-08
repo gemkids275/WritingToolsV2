@@ -36,7 +36,7 @@ struct AppearanceSettingsPane<SaveButton: View>: View {
                 .pickerStyle(.segmented)
                 .padding(.vertical, 4)
                 .accessibilityLabel("Theme")
-                .accessibilityHint("Choose how Writing Tools windows are styled.")
+                .accessibilityHint("Choose how AI Shortcuts windows are styled.")
                 .onChange(of: settings.themeStyle) { _, _ in
                     needsSaving = true
                 }

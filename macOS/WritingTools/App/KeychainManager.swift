@@ -251,10 +251,7 @@ actor KeychainManager {
             kSecAttrSynchronizable as String: kSecAttrSynchronizableAny
         ]
         let deleteStatus = SecItemDelete(deleteQuery as CFDictionary)
-        guard deleteStatus == errSecSuccess || deleteStatus == errSecItemNotFound else {
-            return false
-        }
-
+        
         guard !value.isEmpty else { return true }
         guard let data = value.data(using: .utf8) else { return false }
 
@@ -267,7 +264,9 @@ actor KeychainManager {
         ]
         addQuery[kSecAttrSynchronizable as String] =
             synchronizable ? (kCFBooleanTrue as Any) : (kCFBooleanFalse as Any)
+            
         let addStatus = SecItemAdd(addQuery as CFDictionary, nil)
+        
         return addStatus == errSecSuccess
     }
 
@@ -298,7 +297,8 @@ actor KeychainManager {
         if trimmed.isEmpty {
             _ = bootstrapDelete(forKey: key, scope: .any)
         } else {
-            _ = bootstrapSave(trimmed, forKey: key, synchronizable: true)
+            // Using synchronizable=false for command-specific keys to ensure local reliability
+            _ = bootstrapSave(trimmed, forKey: key, synchronizable: false)
         }
     }
 

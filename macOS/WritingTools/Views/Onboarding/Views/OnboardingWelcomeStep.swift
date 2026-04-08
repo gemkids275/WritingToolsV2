@@ -45,7 +45,7 @@ struct OnboardingWelcomeStep: View {
             .font(.headline)
           Text(
             """
-            WritingTools briefly copies your selection, sends it to your \
+            AI Shortcuts briefly copies your selection, sends it to your \
             chosen AI provider (or a local model), and then pastes the \
             result back—preserving formatting when supported.
             """

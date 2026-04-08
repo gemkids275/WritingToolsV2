@@ -50,6 +50,8 @@ final class AppState {
     var isProcessing: Bool = false
     var previousApplication: NSRunningApplication?
     var selectedImages: [Data] = []
+    var customAttachments: [Attachment] = []
+    var customText: String = ""
 
     // Command management
     var commandManager = CommandManager()
@@ -59,6 +61,61 @@ final class AppState {
     private(set) var currentProvider: String
 
     var selectedAttributedText: NSAttributedString? = nil
+
+    /// Returns `true` if the file was accepted, `false` if unsupported.
+    @discardableResult
+    func addAttachment(from url: URL) -> Bool {
+        let accessing = url.startAccessingSecurityScopedResource()
+        defer { if accessing { url.stopAccessingSecurityScopedResource() } }
+
+        let values = try? url.resourceValues(forKeys: [.contentTypeKey])
+        let contentType = values?.contentType
+
+        let imageExtensions: Set<String> = ["png", "jpg", "jpeg", "gif", "webp", "heic", "heif", "tiff", "bmp"]
+        let isImage = (contentType?.conforms(to: .image) ?? false) || imageExtensions.contains(url.pathExtension.lowercased())
+
+        if isImage, let data = try? Data(contentsOf: url) {
+            customAttachments.append(.image(data))
+            return true
+        }
+
+        if let data = try? Data(contentsOf: url),
+           let _ = String(data: data, encoding: .utf8) {
+            customAttachments.append(.file(url, data: data))
+            return true
+        }
+
+        return false
+    }
+
+    func removeAttachment(id: String) {
+        customAttachments.removeAll { $0.id == id }
+    }
+
+    func handlePaste() {
+        let pb = NSPasteboard.general
+        
+        // Handle images
+        if let imageData = pb.data(forType: .tiff) ?? pb.data(forType: .png) {
+            customAttachments.append(.image(imageData))
+        }
+        
+        // Handle file URLs
+        if let urls = pb.readObjects(forClasses: [NSURL.self], options: nil) as? [URL] {
+            for url in urls where url.isFileURL {
+                addAttachment(from: url)
+            }
+        }
+        
+        // Handle plain text/links if not already handled as URLs
+        if let text = pb.string(forType: .string) {
+            if let url = URL(string: text), url.scheme != nil {
+                customAttachments.append(.text(text, label: "Link"))
+            } else if text.count > 0 && text.count < 1000 { // Only add as attachment if reasonably short context
+                customAttachments.append(.text(text, label: "Text Context"))
+            }
+        }
+    }
 
     var activeProvider: any AIProvider {
         switch currentProvider {
@@ -113,9 +170,18 @@ final class AppState {
             return CustomProvider(config: config)
         }
 
-        // If there's a model override, create a temporary provider instance with that model
-        if let modelOverride = command.modelOverride {
-            return createProviderWithModel(providerName: providerName, model: modelOverride)
+        // Check if there is a per-command API key override even for built-in providers
+        let commandApiKey = KeychainManager.shared.retrieveCustomProviderApiKeySync(for: command.id)?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let hasCustomKey = commandApiKey != nil && !commandApiKey!.isEmpty
+
+        // If there's a model override OR a custom key, create a specialized instance
+        if command.modelOverride != nil || hasCustomKey {
+            return createProviderWithModel(
+                providerName: providerName,
+                model: command.modelOverride,
+                apiKeyOverride: commandApiKey
+            )
         }
 
         // Otherwise use the default provider instance
@@ -139,13 +205,42 @@ final class AppState {
         }
     }
 
-    /// Create or retrieve a cached provider instance with a specific model override
-    private func createProviderWithModel(providerName: String, model: String) -> any AIProvider {
-        let apiKey = Self.currentAPIKey(for: providerName)
+    /// Create or retrieve a cached provider instance with a specific model or API key override
+    private func createProviderWithModel(providerName: String, model: String?, apiKeyOverride: String? = nil) -> any AIProvider {
+        let asettings = AppSettings.shared
+        
+        // Resolve model: use override if provided, otherwise global setting
+        var resolvedModel: String
+        if let model = model, !model.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            resolvedModel = model
+        } else {
+            switch providerName {
+            case "openai": resolvedModel = asettings.openAIModel
+            case "gemini": resolvedModel = (asettings.geminiModel == .custom) ? asettings.geminiCustomModel : asettings.geminiModel.rawValue
+            case "anthropic": resolvedModel = asettings.anthropicModel
+            case "mistral": resolvedModel = asettings.mistralModel
+            case "ollama": resolvedModel = asettings.ollamaModel
+            case "openrouter": resolvedModel = (OpenRouterModel(rawValue: asettings.openRouterModel) == .custom) ? asettings.openRouterCustomModel : asettings.openRouterModel
+            default: resolvedModel = ""
+            }
+        }
+        
+        if resolvedModel.isEmpty && providerName != "local" {
+            logger.warning("AppState.createProviderWithModel: resolvedModel is empty for \(providerName). Using fallback defaults.")
+            switch providerName {
+            case "openai": resolvedModel = "gpt-4o"
+            case "gemini": resolvedModel = "gemini-1.5-flash"
+            case "anthropic": resolvedModel = "claude-3-5-sonnet-latest"
+            default: break
+            }
+        }
+        
+        let apiKey = apiKeyOverride ?? Self.currentAPIKey(for: providerName)
         let baseURL = Self.currentBaseURL(for: providerName)
+        
         let keyHash = apiKey.isEmpty ? "" : String(SHA256.hash(data: Data(apiKey.utf8)).description.prefix(8))
         let urlHash = baseURL.isEmpty ? "" : String(SHA256.hash(data: Data(baseURL.utf8)).description.prefix(8))
-        let cacheKey = "\(providerName):\(model):\(keyHash):\(urlHash)"
+        let cacheKey = "\(providerName):\(resolvedModel):\(keyHash):\(urlHash)"
 
         // Return cached provider if available and mark it as recently used.
         if let cached = modelOverrideProviderCache[cacheKey] {
@@ -153,52 +248,51 @@ final class AppState {
             return cached
         }
 
-        let asettings = AppSettings.shared
         let provider: any AIProvider
 
         switch providerName {
         case "openai":
             let config = OpenAIConfig(
-                apiKey: asettings.openAIApiKey,
-                baseURL: asettings.openAIBaseURL,
-                model: model
+                apiKey: apiKey,
+                baseURL: baseURL,
+                model: resolvedModel
             )
             provider = OpenAIProvider(config: config)
 
         case "gemini":
             let config = GeminiConfig(
-                apiKey: asettings.geminiApiKey,
-                modelName: model
+                apiKey: apiKey,
+                modelName: resolvedModel
             )
             provider = GeminiProvider(config: config)
 
         case "anthropic":
             let config = AnthropicConfig(
-                apiKey: asettings.anthropicApiKey,
-                model: model
+                apiKey: apiKey,
+                model: resolvedModel
             )
             provider = AnthropicProvider(config: config)
 
         case "ollama":
             let config = OllamaConfig(
-                baseURL: asettings.ollamaBaseURL,
-                model: model,
+                baseURL: baseURL,
+                model: resolvedModel,
                 keepAlive: asettings.ollamaKeepAlive
             )
             provider = OllamaProvider(config: config)
 
         case "mistral":
             let config = MistralConfig(
-                apiKey: asettings.mistralApiKey,
-                baseURL: asettings.mistralBaseURL,
-                model: model
+                apiKey: apiKey,
+                baseURL: baseURL,
+                model: resolvedModel
             )
             provider = MistralProvider(config: config)
 
         case "openrouter":
             let config = OpenRouterConfig(
-                apiKey: asettings.openRouterApiKey,
-                model: model
+                apiKey: apiKey,
+                model: resolvedModel
             )
             provider = OpenRouterProvider(config: config)
 
@@ -765,7 +859,7 @@ final class AppState {
         alert.messageText = "Paste Could Not Complete"
         let appName = targetApp.localizedName ?? targetApp.bundleIdentifier ?? "the target app"
         alert.informativeText =
-            "Writing Tools couldn't paste into \(appName) because it didn't become active in time. The processed text is still on your clipboard — you can paste it manually with ⌘V."
+            "AI Shortcuts couldn't paste into \(appName) because it didn't become active in time. The processed text is still on your clipboard — you can paste it manually with ⌘V."
         alert.alertStyle = .informational
         alert.addButton(withTitle: "OK")
 
@@ -782,7 +876,7 @@ final class AppState {
         alert.messageText = "Clipboard Restore Failed"
         let bundleId = targetApp.bundleIdentifier ?? "unknown app"
         alert.informativeText =
-            "Writing Tools couldn't restore your clipboard after pasting into \(bundleId). You may need to re-copy your previous clipboard contents."
+            "AI Shortcuts couldn't restore your clipboard after pasting into \(bundleId). You may need to re-copy your previous clipboard contents."
         alert.alertStyle = .warning
         alert.addButton(withTitle: "OK")
 
@@ -805,7 +899,7 @@ final class AppState {
         logger.info("Clipboard restore skipped: expected change count \(expectedChangeCount), actual \(actualChangeCount)")
         alert.informativeText =
             """
-            Writing Tools pasted into \(appName), but your clipboard changed before restoration.
+            AI Shortcuts pasted into \(appName), but your clipboard changed before restoration.
             Your clipboard was intentionally left unchanged to avoid overwriting newer content.
             """
         alert.alertStyle = .informational

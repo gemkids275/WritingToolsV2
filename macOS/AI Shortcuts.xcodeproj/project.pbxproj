@@ -30,18 +30,18 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		4293055F2E2FD66E00685531 /* WritingTools.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = WritingTools.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		4293055F2E2FD66E00685531 /* AI Shortcuts.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "AI Shortcuts.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		43D591604FB841ACB71D3854 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = System/Library/Frameworks/XCTest.framework; sourceTree = SDKROOT; };
-		5737CDBCC2144BFB9D8A884C /* WritingToolsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WritingToolsTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		5737CDBCC2144BFB9D8A884C /* AI ShortcutsTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "AI ShortcutsTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		420B81B12E2D8211008D014D /* Exceptions for "WritingTools" folder in "WritingTools" target */ = {
+		420B81B12E2D8211008D014D /* Exceptions for "WritingTools" folder in "AI Shortcuts" target */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
 			);
-			target = 2ABCBC1D2CDEB606001E4B5E /* WritingTools */;
+			target = 2ABCBC1D2CDEB606001E4B5E /* AI Shortcuts */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -49,7 +49,7 @@
 		2ABCBC202CDEB606001E4B5E /* WritingTools */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			exceptions = (
-				420B81B12E2D8211008D014D /* Exceptions for "WritingTools" folder in "WritingTools" target */,
+				420B81B12E2D8211008D014D /* Exceptions for "WritingTools" folder in "AI Shortcuts" target */,
 			);
 			path = WritingTools;
 			sourceTree = "<group>";
@@ -94,8 +94,8 @@
 			children = (
 				2ABCBC202CDEB606001E4B5E /* WritingTools */,
 				E1594CBD03A8412A863CFF90 /* WritingToolsTests */,
-				4293055F2E2FD66E00685531 /* WritingTools.app */,
-				5737CDBCC2144BFB9D8A884C /* WritingToolsTests.xctest */,
+				4293055F2E2FD66E00685531 /* AI Shortcuts.app */,
+				5737CDBCC2144BFB9D8A884C /* AI ShortcutsTests.xctest */,
 				425CFAD52F5066D2007A8704 /* Frameworks */,
 			);
 			sourceTree = "<group>";
@@ -111,9 +111,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		2ABCBC1D2CDEB606001E4B5E /* WritingTools */ = {
+		2ABCBC1D2CDEB606001E4B5E /* AI Shortcuts */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 2ABCBC432CDEB607001E4B5E /* Build configuration list for PBXNativeTarget "WritingTools" */;
+			buildConfigurationList = 2ABCBC432CDEB607001E4B5E /* Build configuration list for PBXNativeTarget "AI Shortcuts" */;
 			buildPhases = (
 				2ABCBC1A2CDEB606001E4B5E /* Sources */,
 				2ABCBC1B2CDEB606001E4B5E /* Frameworks */,
@@ -126,7 +126,7 @@
 			fileSystemSynchronizedGroups = (
 				2ABCBC202CDEB606001E4B5E /* WritingTools */,
 			);
-			name = WritingTools;
+			name = "AI Shortcuts";
 			packageProductDependencies = (
 				420ADBB82E2D2FB400D4A564 /* MarkdownUI */,
 				420ADBBB2E2D2FCB00D4A564 /* KeyboardShortcuts */,
@@ -139,12 +139,12 @@
 				42D3D33B2EE0E51300105C2F /* MarkdownView */,
 			);
 			productName = "swift-writing-tools";
-			productReference = 4293055F2E2FD66E00685531 /* WritingTools.app */;
+			productReference = 4293055F2E2FD66E00685531 /* AI Shortcuts.app */;
 			productType = "com.apple.product-type.application";
 		};
-		B33FA25618284DFABC2B7B04 /* WritingToolsTests */ = {
+		B33FA25618284DFABC2B7B04 /* AI ShortcutsTests */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = B3939A68EFDD434F89C2B978 /* Build configuration list for PBXNativeTarget "WritingToolsTests" */;
+			buildConfigurationList = B3939A68EFDD434F89C2B978 /* Build configuration list for PBXNativeTarget "AI ShortcutsTests" */;
 			buildPhases = (
 				A43D00BC18F142B29475DE18 /* Sources */,
 				A6992DA4D0B84CDC9AB213BF /* Frameworks */,
@@ -158,11 +158,11 @@
 			fileSystemSynchronizedGroups = (
 				E1594CBD03A8412A863CFF90 /* WritingToolsTests */,
 			);
-			name = WritingToolsTests;
+			name = "AI ShortcutsTests";
 			packageProductDependencies = (
 			);
 			productName = WritingToolsTests;
-			productReference = 5737CDBCC2144BFB9D8A884C /* WritingToolsTests.xctest */;
+			productReference = 5737CDBCC2144BFB9D8A884C /* AI ShortcutsTests.xctest */;
 			productType = "com.apple.product-type.bundle.unit-test";
 		};
 /* End PBXNativeTarget section */
@@ -184,7 +184,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 2ABCBC192CDEB606001E4B5E /* Build configuration list for PBXProject "WritingTools" */;
+			buildConfigurationList = 2ABCBC192CDEB606001E4B5E /* Build configuration list for PBXProject "AI Shortcuts" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -209,8 +209,8 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				2ABCBC1D2CDEB606001E4B5E /* WritingTools */,
-				B33FA25618284DFABC2B7B04 /* WritingToolsTests */,
+				2ABCBC1D2CDEB606001E4B5E /* AI Shortcuts */,
+				B33FA25618284DFABC2B7B04 /* AI ShortcutsTests */,
 			);
 		};
 /* End PBXProject section */
@@ -252,7 +252,7 @@
 /* Begin PBXTargetDependency section */
 		AA08EC76E31E484EA842E437 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 2ABCBC1D2CDEB606001E4B5E /* WritingTools */;
+			target = 2ABCBC1D2CDEB606001E4B5E /* AI Shortcuts */;
 			targetProxy = 5168C0A4A5AF43C0B371CCE3 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -264,7 +264,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 66;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = MK2V998W66;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -276,7 +276,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.aryamirsepasi.writing-tools.tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/WritingTools.app/Contents/MacOS/WritingTools";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/AI Shortcuts.app/Contents/MacOS/AI Shortcuts";
 				TEST_TARGET_NAME = WritingTools;
 			};
 			name = Debug;
@@ -418,14 +418,12 @@
 				AUTOMATION_APPLE_EVENTS = YES;
 				CODE_SIGN_ENTITLEMENTS = WritingTools/writing_tools.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Developer ID Application";
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 73;
+				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"WritingTools/Preview Content\"";
-				DEVELOPMENT_TEAM = "";
-				"DEVELOPMENT_TEAM[sdk=macosx*]" = MK2V998W66;
+				DEVELOPMENT_TEAM = XLZM59Q2CR;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
@@ -451,11 +449,10 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 6.1;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.aryamirsepasi.writing-tools";
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.gemkids.writing-tools";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = writingtoolsID;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 			};
@@ -470,14 +467,12 @@
 				AUTOMATION_APPLE_EVENTS = YES;
 				CODE_SIGN_ENTITLEMENTS = WritingTools/writing_tools.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
-				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Developer ID Application";
-				CODE_SIGN_STYLE = Manual;
+				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 73;
+				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_ASSET_PATHS = "\"WritingTools/Preview Content\"";
-				DEVELOPMENT_TEAM = "";
-				"DEVELOPMENT_TEAM[sdk=macosx*]" = MK2V998W66;
+				DEVELOPMENT_TEAM = XLZM59Q2CR;
 				ENABLE_APP_SANDBOX = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_INCOMING_NETWORK_CONNECTIONS = NO;
@@ -503,11 +498,10 @@
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 14.0;
-				MARKETING_VERSION = 6.1;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.aryamirsepasi.writing-tools";
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.gemkids.writing-tools";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				"PROVISIONING_PROFILE_SPECIFIER[sdk=macosx*]" = writingtoolsID;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
 			};
@@ -519,7 +513,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 66;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = MK2V998W66;
 				GENERATE_INFOPLIST_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -531,7 +525,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "com.aryamirsepasi.writing-tools.tests";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SWIFT_VERSION = 5.0;
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/WritingTools.app/Contents/MacOS/WritingTools";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/AI Shortcuts.app/Contents/MacOS/AI Shortcuts";
 				TEST_TARGET_NAME = WritingTools;
 			};
 			name = Release;
@@ -539,7 +533,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		2ABCBC192CDEB606001E4B5E /* Build configuration list for PBXProject "WritingTools" */ = {
+		2ABCBC192CDEB606001E4B5E /* Build configuration list for PBXProject "AI Shortcuts" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				2ABCBC412CDEB607001E4B5E /* Debug */,
@@ -548,7 +542,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		2ABCBC432CDEB607001E4B5E /* Build configuration list for PBXNativeTarget "WritingTools" */ = {
+		2ABCBC432CDEB607001E4B5E /* Build configuration list for PBXNativeTarget "AI Shortcuts" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				2ABCBC442CDEB607001E4B5E /* Debug */,
@@ -557,7 +551,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		B3939A68EFDD434F89C2B978 /* Build configuration list for PBXNativeTarget "WritingToolsTests" */ = {
+		B3939A68EFDD434F89C2B978 /* Build configuration list for PBXNativeTarget "AI ShortcutsTests" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				101D1B0A506949C0AB726763 /* Debug */,

@@ -72,12 +72,22 @@ struct CommandsView: View {
                     .padding()
                     .help("Reset all built-in commands to their original state, including restoring any that were deleted")
                 } else {
-                    Button(action: { isAddingNew = true }) {
-                        Label("Add Custom Command", systemImage: "plus.circle.fill")
-                            .font(.body)
+                    HStack(spacing: 12) {
+                        Button(action: { isAddingNew = true }) {
+                            Label("Add Custom Command", systemImage: "plus.circle.fill")
+                                .font(.body)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .controlSize(.large)
+
+                        Button(action: importSingleCommand) {
+                            Label("Import Command", systemImage: "square.and.arrow.down")
+                                .font(.body)
+                        }
+                        .buttonStyle(.bordered)
+                        .controlSize(.large)
+                        .help("Import a command from a .json file")
                     }
-                    .buttonStyle(.borderedProminent)
-                    .controlSize(.large)
                     .padding()
                 }
                 
@@ -127,7 +137,8 @@ struct CommandsView: View {
                 CommandRow(
                     command: command,
                     onEdit: { command in editingCommand = command },
-                    onDelete: { command in commandManager.deleteCommand(command) }
+                    onDelete: { command in commandManager.deleteCommand(command) },
+                    onExport: exportSingleCommand
                 )
             }
         }
@@ -153,7 +164,8 @@ struct CommandsView: View {
                 CommandRow(
                     command: command,
                     onEdit: { command in editingCommand = command },
-                    onDelete: { command in commandManager.deleteCommand(command) }
+                    onDelete: { command in commandManager.deleteCommand(command) },
+                    onExport: exportSingleCommand
                 )
             }
             .onMove { source, destination in
@@ -189,12 +201,108 @@ struct CommandsView: View {
             }
         )
     }
+
+    // MARK: - Single Command Import/Export
+
+    private func exportSingleCommand(_ command: CommandModel) {
+        let savePanel = NSSavePanel()
+        savePanel.allowedContentTypes = [.json]
+        savePanel.canCreateDirectories = true
+        savePanel.isExtensionHidden = false
+        savePanel.title = "Export Command"
+        savePanel.message = "Save this command configuration to a file."
+        savePanel.nameFieldStringValue = "\(command.name.replacingOccurrences(of: " ", with: "_")).json"
+
+        if savePanel.runModal() == .OK {
+            if let url = savePanel.url {
+                if let data = commandManager.createSingleCommandExport(command) {
+                    do {
+                        try data.write(to: url)
+                        let alert = NSAlert()
+                        alert.messageText = "Command Exported"
+                        alert.informativeText = "Command \"\(command.name)\" has been saved to \(url.lastPathComponent)."
+                        alert.alertStyle = .informational
+                        alert.addButton(withTitle: "OK")
+                        alert.runModal()
+                    } catch {
+                        AppLogger.logger("Export").error("Failed to write command to \(url): \(error.localizedDescription)")
+                        let alert = NSAlert()
+                        alert.messageText = "Export Failed"
+                        alert.informativeText = error.localizedDescription
+                        alert.alertStyle = .critical
+                        alert.addButton(withTitle: "OK")
+                        alert.runModal()
+                    }
+                }
+            }
+        }
+    }
+
+    private func importSingleCommand() {
+        let openPanel = NSOpenPanel()
+        openPanel.allowedContentTypes = [.json]
+        openPanel.allowsMultipleSelection = false
+        openPanel.canChooseFiles = true
+        openPanel.title = "Import Command"
+        openPanel.message = "Select a command configuration file to import."
+
+        if openPanel.runModal() == .OK {
+            if let url = openPanel.url {
+                do {
+                    let data = try Data(contentsOf: url)
+                    let bundle = try commandManager.decodeExportBundle(data)
+                    
+                    if let firstCommand = bundle.commands.first {
+                        // Check if command with same ID exists
+                        if commandManager.commands.contains(where: { $0.id == firstCommand.id }) {
+                            var imported = firstCommand
+                            if !imported.isBuiltIn {
+                                imported = CommandModel(
+                                    id: UUID(), // New ID to avoid conflicts when importing shared commands
+                                    name: imported.name + " (Imported)",
+                                    prompt: imported.prompt,
+                                    icon: imported.icon,
+                                    useResponseWindow: imported.useResponseWindow,
+                                    isBuiltIn: false,
+                                    hasShortcut: false,
+                                    preserveFormatting: imported.preserveFormatting,
+                                    providerOverride: imported.providerOverride,
+                                    modelOverride: imported.modelOverride,
+                                    customProviderBaseURL: imported.customProviderBaseURL,
+                                    customProviderModel: imported.customProviderModel
+                                )
+                            }
+                            commandManager.addCommand(imported)
+                        } else {
+                            commandManager.addCommand(firstCommand)
+                        }
+                        
+                        let alert = NSAlert()
+                        alert.messageText = "Command Imported"
+                        alert.informativeText = "Command \"\(firstCommand.name)\" has been successfully added."
+                        alert.alertStyle = .informational
+                        alert.addButton(withTitle: "OK")
+                        alert.runModal()
+                    }
+                } catch {
+                    AppLogger.logger("Import").error("Failed to import command: \(error.localizedDescription)")
+                    let alert = NSAlert()
+                    alert.messageText = "Import Failed"
+                    alert.informativeText = "Could not import command: \(error.localizedDescription)"
+                    alert.alertStyle = .critical
+                    alert.addButton(withTitle: "OK")
+                    alert.runModal()
+                }
+            }
+        }
+    }
 }
 
 struct CommandRow: View {
     let command: CommandModel
     let onEdit: (CommandModel) -> Void
     let onDelete: (CommandModel) -> Void
+    let onExport: (CommandModel) -> Void
     
     @Environment(\.colorScheme) var colorScheme
     @State private var showDeleteConfirmation = false
@@ -243,6 +351,17 @@ struct CommandRow: View {
                 .help("Edit command")
                 .accessibilityLabel("Edit \(command.name)")
                 .accessibilityHint("Open editor for this command")
+
+                Button(action: { onExport(command) }) {
+                    Image(systemName: "square.and.arrow.up")
+                        .font(.body)
+                        .foregroundStyle(.green)
+                        .frame(width: 28, height: 28)
+                        .background(Color.green.opacity(0.1))
+                        .clipShape(.circle)
+                }
+                .buttonStyle(.plain)
+                .help("Export command to JSON")
                 
                 Button(action: { showDeleteConfirmation = true }) {
                     Image(systemName: "trash")

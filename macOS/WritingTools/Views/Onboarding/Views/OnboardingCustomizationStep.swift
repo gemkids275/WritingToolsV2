@@ -17,7 +17,7 @@ struct OnboardingCustomizationStep: View {
       GroupBox("Global Shortcut") {
         VStack(alignment: .leading, spacing: 8) {
           Text(
-            "Set the keyboard shortcut to activate WritingTools from anywhere."
+            "Set the keyboard shortcut to activate AI Shortcuts from anywhere."
           )
           .font(.caption)
           .foregroundStyle(.secondary)

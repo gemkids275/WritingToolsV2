@@ -159,6 +159,14 @@ final class AppSettings {
         didSet { defaults.set(openCustomCommandsInResponseWindow, forKey: "open_custom_commands_in_response_window") }
     }
 
+    var customInstructionCommand: CommandModel {
+        didSet {
+            if let encoded = try? JSONEncoder().encode(customInstructionCommand) {
+                defaults.set(encoded, forKey: "custom_instruction_command")
+            }
+        }
+    }
+
     var enableICloudCommandSync: Bool {
         didSet {
             defaults.set(enableICloudCommandSync, forKey: "enable_icloud_command_sync")
@@ -237,6 +245,32 @@ final class AppSettings {
 
         // Cloud command sync setting defaults to false until explicitly enabled.
         self.enableICloudCommandSync = defaults.object(forKey: "enable_icloud_command_sync") as? Bool ?? false
+
+        // Initialize Custom Instruction Command
+        if let data = defaults.data(forKey: "custom_instruction_command"),
+           let decoded = try? JSONDecoder().decode(CommandModel.self, from: data) {
+            self.customInstructionCommand = decoded
+        } else {
+            // Default configuration for custom instructions
+            self.customInstructionCommand = CommandModel(
+                id: CommandModel.BuiltInID.customInstruction,
+                name: "AI Response",
+                prompt: """
+                You are a writing and coding assistant. Your sole task is to respond \
+                to the user's instruction thoughtfully and comprehensively.
+                If the instruction is a question, provide a detailed answer. But \
+                always return the best and most accurate answer and not different \
+                options.
+                If it's a request for help, provide clear guidance and examples where \
+                appropriate. Make sure to use the language used or specified by the \
+                user instruction.
+                Use Markdown formatting to make your response more readable.
+                """,
+                icon: "pencil.and.outline",
+                useResponseWindow: true,
+                isBuiltIn: true
+            )
+        }
 
         isBootstrapping = false
     }

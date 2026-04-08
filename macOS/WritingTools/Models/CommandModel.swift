@@ -46,6 +46,7 @@ struct CommandModel: Codable, Identifiable, Equatable {
         case modelOverride
         case customProviderBaseURL
         case customProviderModel
+        case customProviderApiKey // Added for export transparency
     }
 
     private enum LegacyCodingKeys: String, CodingKey {
@@ -85,15 +86,23 @@ struct CommandModel: Codable, Identifiable, Equatable {
         try c.encode(name, forKey: .name)
         try c.encode(prompt, forKey: .prompt)
         try c.encode(icon, forKey: .icon)
-        if useResponseWindow { try c.encode(useResponseWindow, forKey: .useResponseWindow) }
-        if isBuiltIn { try c.encode(isBuiltIn, forKey: .isBuiltIn) }
-        if hasShortcut { try c.encode(hasShortcut, forKey: .hasShortcut) }
-        if preserveFormatting {
-            try c.encode(preserveFormatting, forKey: .preserveFormatting)
-        }
+        
+        // Always encode Booleans for export transparency and user clarity
+        try c.encode(useResponseWindow, forKey: .useResponseWindow)
+        try c.encode(isBuiltIn, forKey: .isBuiltIn)
+        try c.encode(hasShortcut, forKey: .hasShortcut)
+        try c.encode(preserveFormatting, forKey: .preserveFormatting)
+        
         if let providerOverride = providerOverride {
             try c.encode(providerOverride, forKey: .providerOverride)
+            
+            // If it's a custom provider, encode a placeholder key for export transparency
+            // so the user sees the field and understands they need to re-enter it.
+            if providerOverride == "custom" {
+                try c.encode("YOUR_API_KEY_HERE", forKey: .customProviderApiKey)
+            }
         }
+        
         if let modelOverride = modelOverride {
             try c.encode(modelOverride, forKey: .modelOverride)
         }
@@ -117,6 +126,7 @@ struct CommandModel: Codable, Identifiable, Equatable {
         static let summary     = UUID(uuidString: "00000000-0001-0000-0000-000000000006")!
         static let keyPoints   = UUID(uuidString: "00000000-0001-0000-0000-000000000007")!
         static let table       = UUID(uuidString: "00000000-0001-0000-0000-000000000008")!
+        static let customInstruction = UUID(uuidString: "00000000-0001-0000-0000-0000000000FF")!
     }
 
     // MARK: – Convenience initialiser (unchanged)

@@ -8,8 +8,8 @@ private let logger = AppLogger.logger("UpdateChecker")
 @MainActor
 final class UpdateChecker {
     static let shared = UpdateChecker()
-    private let updateCheckURL = "https://raw.githubusercontent.com/theJayTea/WritingTools/main/macOS/Latest_Version_for_Update_Check.txt"
-    private let updateDownloadURL = "https://github.com/theJayTea/WritingTools/releases"
+    private let updateCheckURL = "https://raw.githubusercontent.com/gemkids275/WritingToolsV2/main/macOS/Latest_Version_for_Update_Check.txt"
+    private let updateDownloadURL = "https://github.com/gemkids275/WritingToolsV2/releases"
     
     var isCheckingForUpdates = false
     var updateAvailable = false

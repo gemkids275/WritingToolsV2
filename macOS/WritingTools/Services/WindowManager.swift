@@ -89,6 +89,7 @@ class WindowManager: NSObject, NSWindowDelegate {
 
         if clearImages {
             AppState.shared.selectedImages = []
+            AppState.shared.customAttachments = []
         }
     }
 
@@ -162,7 +163,7 @@ class WindowManager: NSObject, NSWindowDelegate {
         }
     }
 
-    func showOnboarding(appState: AppState, title: String = "Welcome to Writing Tools") {
+    func showOnboarding(appState: AppState, title: String = "Welcome to AI Shortcuts") {
         let window = NSWindow(
             contentRect: NSRect(x: 0, y: 0, width: 640, height: 720),
             styleMask: [.titled, .closable, .miniaturizable, .resizable],
@@ -201,13 +202,7 @@ class WindowManager: NSObject, NSWindowDelegate {
     }
 
     func windowDidResignKey(_ notification: Notification) {
-        guard let window = notification.object as? PopupWindow else { return }
-        // Auto-dismiss popup when it loses focus (e.g., user clicks elsewhere).
-        // Skip if a sheet is attached OR if dismissal is temporarily suppressed
-        // (e.g., a sheet is about to present but hasn't attached yet).
-        if window.attachedSheet == nil && !isPopupDismissSuppressed {
-            dismissPopup()
-        }
+        // Popup is dismissed explicitly via the X button or command execution.
     }
 
     func windowWillClose(_ notification: Notification) {

@@ -8,7 +8,7 @@ struct writing_toolsApp: App {
     
     var body: some Scene {
         // Menu bar extra provides the status item and dropdown menu
-        MenuBarExtra("Writing Tools", systemImage: "pencil.circle") {
+        MenuBarExtra("AI Shortcuts", systemImage: "pencil.circle") {
             MenuBarMenu(appState: appState, settings: settings)
         }
         .menuBarExtraStyle(.menu)
@@ -48,7 +48,7 @@ struct MenuBarMenu: View {
         }
         .keyboardShortcut(",", modifiers: .command)
         
-        Button("About Writing Tools") {
+        Button("About AI Shortcuts") {
             showAboutWindow()
         }
         
@@ -63,7 +63,7 @@ struct MenuBarMenu: View {
         }
         .dialogSeverity(.critical)
         .confirmationDialog(
-            "Reset Writing Tools?",
+            "Reset AI Shortcuts?",
             isPresented: $showResetConfirmation
         ) {
             Button("Reset", role: .destructive) {
@@ -112,7 +112,7 @@ struct MenuBarMenu: View {
         window.identifier = NSUserInterfaceItemIdentifier("AboutWindow")
         window.isReleasedWhenClosed = false
         window.contentView = hostingView
-        window.title = "About Writing Tools"
+        window.title = "About AI Shortcuts"
         window.center()
 
         WindowManager.shared.bringWindowToFront(window)

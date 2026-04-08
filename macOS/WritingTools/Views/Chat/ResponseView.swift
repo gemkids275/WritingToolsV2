@@ -65,6 +65,8 @@ struct ResponseView: View {
     @State private var isRegenerating: Bool = false
     @State private var errorMessage: String?
     @State private var showError: Bool = false
+    @State private var followUpAttachments: [Attachment] = []
+    @State private var isImporting = false
     
     init(
         content: String,
@@ -219,22 +221,35 @@ struct ResponseView: View {
             // Input area
             VStack(spacing: 8) {
                 Divider()
-                
+
                 HStack(spacing: 8) {
-                    TextField("Ask a follow-up question...", text: $inputText)
-                        .textFieldStyle(.plain)
-                        .appleStyleTextField(
-                            text: inputText,
-                            isLoading: isRegenerating,
-                            onSubmit: sendMessage
-                        )
-                        .disabled(viewModel.isProcessing)
-                        .accessibilityLabel("Follow-up question")
+                    CustomTextEditor(
+                        text: $inputText,
+                        placeholder: "Ask a follow-up question...",
+                        onSubmit: sendMessage
+                    )
+                    .frame(minHeight: 36, maxHeight: 300)
+                    .appleStyleTextField(
+                        text: inputText,
+                        isLoading: isRegenerating,
+                        topContent: followUpAttachments.isEmpty ? nil : AnyView(followUpAttachmentsRow),
+                        onAttach: { isImporting = true },
+                        onSubmit: sendMessage
+                    )
+                    .disabled(viewModel.isProcessing)
+                    .accessibilityLabel("Follow-up question")
                 }
                 .padding(.horizontal)
                 .padding(.vertical, 8)
             }
             .background(Color(.windowBackgroundColor))
+            .fileImporter(
+                isPresented: $isImporting,
+                allowedContentTypes: [.item],
+                allowsMultipleSelection: true
+            ) { result in
+                handleFileImport(result: result)
+            }
         }
         .windowBackground(useGradient: settings.useGradientTheme)
         .alert("Error", isPresented: $showError, presenting: errorMessage) { _ in
@@ -247,14 +262,60 @@ struct ResponseView: View {
         }
     }
     
+    private var followUpAttachmentsRow: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                ForEach(followUpAttachments) { attachment in
+                    PopupView.AttachmentThumbnail(attachment: attachment) {
+                        followUpAttachments.removeAll { $0.id == attachment.id }
+                    }
+                }
+            }
+            .padding(.horizontal)
+        }
+        .frame(height: 50)
+    }
+
+    private func handleFileImport(result: Result<[URL], Error>) {
+        switch result {
+        case .success(let urls):
+            var rejected: [String] = []
+            for url in urls {
+                let accessing = url.startAccessingSecurityScopedResource()
+                defer { if accessing { url.stopAccessingSecurityScopedResource() } }
+                let values = try? url.resourceValues(forKeys: [.contentTypeKey])
+                let contentType = values?.contentType
+                let imageExtensions: Set<String> = ["png", "jpg", "jpeg", "gif", "webp", "heic", "heif", "tiff", "bmp"]
+                let isImage = (contentType?.conforms(to: .image) ?? false) || imageExtensions.contains(url.pathExtension.lowercased())
+                if isImage, let data = try? Data(contentsOf: url) {
+                    followUpAttachments.append(.image(data))
+                } else if let data = try? Data(contentsOf: url), let _ = String(data: data, encoding: .utf8) {
+                    followUpAttachments.append(.file(url, data: data))
+                } else {
+                    rejected.append(url.lastPathComponent)
+                }
+            }
+            if !rejected.isEmpty {
+                errorMessage = "Unsupported file(s): \(rejected.joined(separator: ", "))\nOnly images and plain text files are supported."
+                showError = true
+            }
+        case .failure(let error):
+            errorMessage = error.localizedDescription
+            showError = true
+        }
+    }
+
     private func sendMessage() {
         guard !inputText.isEmpty, !viewModel.isProcessing else { return }
         let question = inputText
+        let attachments = followUpAttachments
         inputText = ""
+        followUpAttachments = []
         isRegenerating = true
 
         viewModel.startFollowUpQuestion(
             question,
+            attachments: attachments,
             onCompletion: {
                 isRegenerating = false
             },
@@ -488,6 +549,7 @@ final class ResponseViewModel {
 
     func startFollowUpQuestion(
         _ question: String,
+        attachments: [Attachment] = [],
         onCompletion: @escaping @MainActor () -> Void,
         onFailure: @escaping @MainActor (String) -> Void
     ) {
@@ -504,7 +566,7 @@ final class ResponseViewModel {
             }
 
             do {
-                try await self.processFollowUpQuestion(question)
+                try await self.processFollowUpQuestion(question, attachments: attachments)
             } catch is CancellationError {
                 return
             } catch {
@@ -585,7 +647,7 @@ final class ResponseViewModel {
         }
     }
     
-    func processFollowUpQuestion(_ question: String) async throws {
+    func processFollowUpQuestion(_ question: String, attachments: [Attachment] = []) async throws {
         // Add user message to UI
         messages.append(ChatMessage(role: "user", content: question))
         
@@ -610,11 +672,25 @@ final class ResponseViewModel {
             var lastUIFlushTime = ContinuousClock.now
             let minUIFlushInterval: Duration = .milliseconds(80)
             
-            // Use streaming API
+            // Build images from attachments
+            var images: [Data] = []
+            var attachmentContext = ""
+            for attachment in attachments {
+                switch attachment {
+                case .image(let data): images.append(data)
+                case .text(let text, let label): attachmentContext += "\n[\(label ?? "Context")]:\n\(text)\n"
+                case .file(let url, let data):
+                    if let data, let text = String(data: data, encoding: .utf8) {
+                        attachmentContext += "\n[File: \(url.lastPathComponent)]:\n\(text)\n"
+                    }
+                }
+            }
+            let finalPrompt = attachmentContext.isEmpty ? userPrompt : userPrompt + "\n\nAdditional Context:\(attachmentContext)"
+
             try await provider.processTextStreaming(
                 systemPrompt: systemPrompt,
-                userPrompt: userPrompt,
-                images: [] // Follow-up questions don't include images
+                userPrompt: finalPrompt,
+                images: images
             ) { [weak self] chunk in
                 guard let self else { return }
                 accumulatedContent += chunk

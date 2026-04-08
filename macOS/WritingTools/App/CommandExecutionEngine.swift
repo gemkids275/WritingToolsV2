@@ -137,6 +137,7 @@ final class CommandExecutionEngine {
     openInResponseWindow: Bool,
     closePopupOnInlineCompletion: (() -> Void)? = nil
   ) async throws -> ExecutionOutcome {
+    let customCommand = AppSettings.shared.customInstructionCommand
     let trimmedInstruction = instruction.trimmingCharacters(in: .whitespacesAndNewlines)
     guard !trimmedInstruction.isEmpty else {
       throw CommandExecutionEngineError.emptyInstruction
@@ -156,9 +157,29 @@ final class CommandExecutionEngine {
       throw error
     }
 
-    let systemPrompt = Self.customInstructionSystemPrompt
+    // Process attachments from appState
+    var combinedImages = appState.selectedImages
+    var attachmentContext = ""
+    
+    for attachment in appState.customAttachments {
+        switch attachment {
+        case .image(let data):
+            combinedImages.append(data)
+        case .text(let text, let label):
+            attachmentContext += "\n[\(label ?? "Context")]:\n\(text)\n"
+        case .file(let url, let data):
+            if let data, let text = String(data: data, encoding: .utf8) {
+                attachmentContext += "\n[File: \(url.lastPathComponent)]:\n\(text)\n"
+            }
+        }
+    }
+
+    let systemPrompt = customCommand.prompt
+    let openInResponseWindow = customCommand.useResponseWindow
+    let provider = appState.getProvider(for: customCommand)
     let selectedText = appState.selectedText
-    let userPrompt = selectedText.isEmpty
+    
+    var userPrompt = selectedText.isEmpty
       ? trimmedInstruction
       : """
         User's instruction: \(trimmedInstruction)
@@ -166,18 +187,22 @@ final class CommandExecutionEngine {
         Text:
         \(selectedText)
         """
+    
+    if !attachmentContext.isEmpty {
+        userPrompt += "\n\nAdditional Context:\n\(attachmentContext)"
+    }
 
     if openInResponseWindow {
       // Response windows manage their own processing lifecycle independently.
       appState.isProcessing = false
 
       openStreamingResponseWindow(
-        title: "AI Response",
+        title: customCommand.name,
         selectedText: selectedText.isEmpty ? trimmedInstruction : selectedText,
-        provider: appState.activeProvider,
+        provider: provider,
         systemPrompt: systemPrompt,
         userPrompt: userPrompt,
-        images: appState.selectedImages,
+        images: combinedImages,
         continuationSystemPrompt: systemPrompt,
         source: source
       )
@@ -186,10 +211,10 @@ final class CommandExecutionEngine {
 
     defer { appState.isProcessing = false }
 
-    var result = try await appState.activeProvider.processText(
+    var result = try await provider.processText(
       systemPrompt: systemPrompt,
       userPrompt: userPrompt,
-      images: appState.selectedImages,
+      images: combinedImages,
       streaming: false
     )
 
@@ -337,16 +362,4 @@ final class CommandExecutionEngine {
 
     WindowManager.shared.addResponseWindow(window)
   }
-
-  private static let customInstructionSystemPrompt = """
-    You are a writing and coding assistant. Your sole task is to respond \
-    to the user's instruction thoughtfully and comprehensively.
-    If the instruction is a question, provide a detailed answer. But \
-    always return the best and most accurate answer and not different \
-    options.
-    If it's a request for help, provide clear guidance and examples where \
-    appropriate. Make sure to use the language used or specified by the \
-    user instruction.
-    Use Markdown formatting to make your response more readable.
-    """
 }

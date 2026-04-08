@@ -66,7 +66,7 @@ struct OnboardingFinishStep: View {
 
         Spacer()
 
-        Button("Finish and Start Using WritingTools") {
+        Button("Finish and Start Using AI Shortcuts") {
           onFinish()
         }
         .buttonStyle(.borderedProminent)

@@ -220,6 +220,8 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             }
 
             self.closePopupWindow()
+            self.appState.customText = ""
+            self.appState.customAttachments = []
 
             guard let capture = await ClipboardCoordinator.shared.captureSelection() else {
                 logger.debug("Clipboard capture skipped because another operation is in progress")
@@ -300,13 +302,13 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             if let payloadBytes {
                 alert.informativeText =
                     """
-                    Writing Tools couldn't sync commands because the command payload is too large (\(payloadBytes) bytes).
+                    AI Shortcuts couldn't sync commands because the command payload is too large (\(payloadBytes) bytes).
                     Try deleting some commands or shortening large prompts, then sync again.
                     """
             } else {
                 alert.informativeText =
                     """
-                    Writing Tools couldn't sync commands because the command payload is too large.
+                    AI Shortcuts couldn't sync commands because the command payload is too large.
                     Try deleting some commands or shortening large prompts, then sync again.
                     """
             }
@@ -314,20 +316,20 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             if let totalBytes {
                 alert.informativeText =
                     """
-                    Writing Tools couldn't sync commands because estimated iCloud key-value storage usage reached \(totalBytes) bytes.
+                    AI Shortcuts couldn't sync commands because estimated iCloud key-value storage usage reached \(totalBytes) bytes.
                     Try deleting some commands, shortening large prompts, or clearing old deleted-command history.
                     """
             } else {
                 alert.informativeText =
                     """
-                    Writing Tools couldn't sync commands because iCloud key-value storage quota was exceeded.
+                    AI Shortcuts couldn't sync commands because iCloud key-value storage quota was exceeded.
                     Try deleting some commands, shortening large prompts, or clearing old deleted-command history.
                     """
             }
         default:
             alert.informativeText =
                 """
-                Writing Tools couldn't sync commands because iCloud key-value storage quota was exceeded.
+                AI Shortcuts couldn't sync commands because iCloud key-value storage quota was exceeded.
                 Try deleting some commands or shortening large prompts, then sync again.
                 """
         }
@@ -350,7 +352,7 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         alert.messageText = "Clipboard Was Updated by Another App"
         alert.informativeText =
             """
-            Writing Tools captured your selection, but your clipboard changed before it could be restored.
+            AI Shortcuts captured your selection, but your clipboard changed before it could be restored.
             Your latest clipboard content was preserved.
             (Expected change count: \(expectedChangeCount), actual: \(actualChangeCount))
             """

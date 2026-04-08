@@ -219,4 +219,31 @@ final class CommandManager {
             object: nil
         )
     }
+    
+    // MARK: - Import/Export
+    
+    func createExportBundle(customInstruction: CommandModel) -> Data? {
+        let bundle = CommandExportData(commands: self.commands, customInstruction: customInstruction)
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+        return try? encoder.encode(bundle)
+    }
+    
+    func createSingleCommandExport(_ command: CommandModel) -> Data? {
+        let bundle = CommandExportData(commands: [command], customInstruction: nil)
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = .prettyPrinted
+        return try? encoder.encode(bundle)
+    }
+    
+    func decodeExportBundle(_ data: Data) throws -> CommandExportData {
+        let decoder = JSONDecoder()
+        let bundle = try decoder.decode(CommandExportData.self, from: data)
+        
+        guard bundle.appIdentifier == "VynWritingTools" else {
+            throw NSError(domain: "CommandManager", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid file format."])
+        }
+        
+        return bundle
+    }
 }

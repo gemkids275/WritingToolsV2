@@ -1,4 +1,4 @@
-# Writing Tools for macOS (Native Swift Port)
+# AI Shortcuts for macOS (Native Swift Port)
 
 > System-wide AI writing superpowers for Mac — **native Swift**, **privacy-first**, and **insanely fast** on Apple Silicon.
 
@@ -10,7 +10,7 @@
 - [Highlights](#highlights)
 - [Quick Start (Download & Install)](#quick-start-download--install)
 - [First Launch: Permissions](#first-launch-permissions)
-- [Using Writing Tools](#using-writing-tools)
+- [Using AI Shortcuts](#using-writing-tools)
 - [Providers & Models](#providers--models)
 - [Power Features](#power-features)
 - [System Requirements](#system-requirements)
@@ -36,10 +36,10 @@
 ## Quick Start (Download & Install)
 
 1) **Download** the latest `.dmg` from **Releases**:  
-   https://github.com/theJayTea/WritingTools/releases
+   https://github.com/theJayTea/AI Shortcuts/releases
 
 2) **Install**  
-   - Open the `.dmg`, drag **Writing Tools.app** into **Applications**.
+   - Open the `.dmg`, drag **AI Shortcuts.app** into **Applications**.
    - On first open, if Gatekeeper warns, right-click the app → **Open**.
 
 3) **Run**  
@@ -51,7 +51,7 @@
 
 ## First Launch: Permissions
 
-Writing Tools uses macOS accessibility to read and replace selected text.  
+AI Shortcuts uses macOS accessibility to read and replace selected text.  
 On first run, grant:
 
 - **Accessibility** (required)  
@@ -64,7 +64,7 @@ You can manage these anytime under:
 
 ---
 
-## Using Writing Tools
+## Using AI Shortcuts
 
 - **Invoke anywhere**: Select text in any app → press your shortcut → choose an action:
   - **Proofread** (keeps RTF formatting)
@@ -111,15 +111,15 @@ Bring your own API keys, switch providers anytime, and mix local + cloud based o
 You can build the macOS app either by opening the project or the package:
 
 **Option A — Open project (if present)**  
-1. `git clone https://github.com/theJayTea/WritingTools.git`  
-2. Open **WritingTools/macOS/** and double-click the **.xcodeproj**.  
-3. Select target **Writing Tools** → **Signing & Capabilities** → choose your Development Team.  
+1. `git clone https://github.com/theJayTea/AI Shortcuts.git`  
+2. Open **AI Shortcuts/macOS/** and double-click the **.xcodeproj**.  
+3. Select target **AI Shortcuts** → **Signing & Capabilities** → choose your Development Team.  
 4. Set **Deployment Target** to **macOS 14.0** (or higher).  
 5. Run on **My Mac** (⌘R).
 
 **Option B — Open the folder / Package.swift**  
-1. `git clone https://github.com/theJayTea/WritingTools.git`  
-2. In Xcode: **File → Open…** → choose **WritingTools/macOS** (or the repo root).  
+1. `git clone https://github.com/theJayTea/AI Shortcuts.git`  
+2. In Xcode: **File → Open…** → choose **AI Shortcuts/macOS** (or the repo root).  
 3. Let Xcode resolve Swift Packages, then configure **Signing** and **Deployment Target** as above.  
 4. Run on **My Mac** (⌘R).
 

@@ -227,8 +227,8 @@ struct CommandEditor: View {
                             Spacer()
                         }
 
-                        if selectedProvider == "custom" {
-                            VStack(alignment: .leading, spacing: 12) {
+                        VStack(alignment: .leading, spacing: 12) {
+                            if selectedProvider == "custom" {
                                 HStack(spacing: 12) {
                                     Text("Base URL:")
                                         .frame(width: 80, alignment: .leading)
@@ -245,7 +245,9 @@ struct CommandEditor: View {
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                                     .padding(.leading, 92)
+                            }
 
+                            if selectedProvider != "local" {
                                 HStack(spacing: 12) {
                                     Text("API Key:")
                                         .frame(width: 80, alignment: .leading)
@@ -258,11 +260,13 @@ struct CommandEditor: View {
                                         .foregroundStyle(.red)
                                         .padding(.leading, 92)
                                 }
-                                Text("Your API authentication key")
+                                Text(selectedProvider == "custom" ? "Your API authentication key" : "Optional: Override the global API key for this command. Leave empty to use default.")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                                     .padding(.leading, 92)
+                            }
 
+                            if selectedProvider == "custom" {
                                 HStack(spacing: 12) {
                                     Text("Model:")
                                         .frame(width: 80, alignment: .leading)
@@ -279,20 +283,20 @@ struct CommandEditor: View {
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                                     .padding(.leading, 92)
+                            } else {
+                                HStack(spacing: 12) {
+                                    Text("Model:")
+                                        .frame(width: 80, alignment: .leading)
+                                    TextField("e.g., gpt-4o-mini, claude-3-5-sonnet", text: $customModel)
+                                        .textFieldStyle(.roundedBorder)
+                                }
+                                Text("Leave empty to use the default model for the selected provider. Examples: gpt-5-mini (OpenAI), claude-sonnet-4-5 (Anthropic), gemini-flash-latest (Gemini)")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .padding(.leading, 92)
                             }
-                            .padding(.top, 8)
-                        } else {
-                            HStack(spacing: 12) {
-                                Text("Model:")
-                                    .frame(width: 80, alignment: .leading)
-                                TextField("e.g., gpt-4o-mini, claude-3-5-sonnet", text: $customModel)
-                                    .textFieldStyle(.roundedBorder)
-                            }
-                            Text("Leave empty to use the default model for the selected provider. Examples: gpt-5-mini (OpenAI), claude-sonnet-4-5 (Anthropic), gemini-flash-latest (Gemini)")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                                .padding(.leading, 92)
                         }
+                        .padding(.top, 8)
                     }
                 }
 
@@ -372,7 +376,14 @@ struct CommandEditor: View {
                 updatedCommand.modelOverride = customModel.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : customModel.trimmingCharacters(in: .whitespacesAndNewlines)
                 updatedCommand.customProviderBaseURL = nil
                 updatedCommand.customProviderModel = nil
-                KeychainManager.shared.deleteCustomProviderApiKeySync(for: updatedCommand.id)
+                
+                // Save API Key override for standard providers if provided
+                let trimmedApiKey = customProviderApiKey.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !trimmedApiKey.isEmpty {
+                    KeychainManager.shared.saveCustomProviderApiKeySync(trimmedApiKey, for: updatedCommand.id)
+                } else {
+                    KeychainManager.shared.deleteCustomProviderApiKeySync(for: updatedCommand.id)
+                }
             }
         } else {
             updatedCommand.providerOverride = nil

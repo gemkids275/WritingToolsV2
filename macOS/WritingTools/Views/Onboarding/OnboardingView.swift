@@ -14,14 +14,14 @@ import ApplicationServices
 
   private let steps = [
     OnboardingStep(
-      title: "Welcome to WritingTools",
+      title: "Welcome to AI Shortcuts",
       description: "Let's personalize your setup in a few quick steps.",
       isPermissionStep: false
     ),
     OnboardingStep(
       title: "Permissions",
       description:
-        "Grant the required permission(s) so WritingTools can copy selections and paste results.",
+        "Grant the required permission(s) so AI Shortcuts can copy selections and paste results.",
       isPermissionStep: true
     ),
     OnboardingStep(
@@ -161,7 +161,7 @@ import ApplicationServices
   private func openPrivacyPane(anchor: String) {
     if let url = URL(
       string:
-        "x-apple.systemsettings:com.apple.settings.PrivacySecurity.extension?\(anchor)"
+        "x-apple.systempreferences:com.apple.preference.security?\(anchor)"
     ) {
       NSWorkspace.shared.open(url)
     }

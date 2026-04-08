@@ -1,11 +1,13 @@
 import SwiftUI
 
 private enum AboutURLs {
+    static let emailNam = URL(string: "mailto:gemkids275@gmail.com")
+    static let repoNam = URL(string: "https://github.com/gemkids275/WritingToolsV2")
     static let emailJesai = URL(string: "mailto:jesaitarun@gmail.com")
     static let blissAI = URL(string: "https://play.google.com/store/apps/details?id=com.jesai.blissai")
     static let emailArya = URL(string: "mailto:developer@aryamirsepasi.com")
     static let proseKey = URL(string: "https://apps.apple.com/us/app/prosekey-ai/id6741180175")
-    static let releases = URL(string: "https://github.com/theJayTea/WritingTools/releases")
+    static let releases = URL(string: "https://github.com/gemkids275/WritingToolsV2/releases")
 }
 
 struct AboutView: View {
@@ -39,13 +41,13 @@ struct AboutView: View {
         VStack(spacing: 12) {
             // Header
             VStack(spacing: 6) {
-                Text("About Writing Tools")
+                Text("About AI Shortcuts")
                     .font(.largeTitle)
                     .bold()
                     .multilineTextAlignment(.center)
                     .accessibilityAddTraits(.isHeader)
 
-                Text("Writing Tools is a free, lightweight utility that enhances your writing with AI.")
+                Text("AI Shortcuts is a free, lightweight utility that enhances your writing with AI.")
                     .multilineTextAlignment(.center)
                     .foregroundStyle(.secondary)
                     .font(.title3)
@@ -57,28 +59,52 @@ struct AboutView: View {
 
             // Authors
             GroupBox("Creators") {
-                VStack(spacing: 8) {
+                VStack(spacing: 12) {
+                    // Customizer
                     VStack(spacing: 2) {
-                        Text("Created with care by Jesai, a high school student.")
+                        Text("Customized version & Forked by Nam Trần")
                             .bold()
+                            .foregroundStyle(.primary)
+                        Text("A technology enthusiast")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
                         HStack(spacing: 12) {
-                            safeLink("Email Jesai", destination: AboutURLs.emailJesai)
-                            safeLink("Bliss AI on Google Play", destination: AboutURLs.blissAI)
+                            safeLink("Email Nam", destination: AboutURLs.emailNam)
+                            safeLink("GitHub Repo", destination: AboutURLs.repoNam)
                         }
                     }
-
+                    
                     Divider()
+                    
+                    Text("Original Developers")
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                        .padding(.top, 4)
 
-                    VStack(spacing: 2) {
-                        Text("macOS version by Arya Mirsepasi")
-                            .bold()
-                        HStack(spacing: 12) {
-                            safeLink("Email Arya", destination: AboutURLs.emailArya)
-                            safeLink("ProseKey AI (iOS port)", destination: AboutURLs.proseKey)
+                    VStack(spacing: 8) {
+                        VStack(spacing: 2) {
+                            Text("Jesai")
+                                .bold()
+                                .font(.subheadline)
+                            HStack(spacing: 12) {
+                                safeLink("Email", destination: AboutURLs.emailJesai)
+                                safeLink("Bliss AI", destination: AboutURLs.blissAI)
+                            }
+                        }
+
+                        VStack(spacing: 2) {
+                            Text("Arya Mirsepasi")
+                                .bold()
+                                .font(.subheadline)
+                            HStack(spacing: 12) {
+                                safeLink("Email", destination: AboutURLs.emailArya)
+                                safeLink("ProseKey AI", destination: AboutURLs.proseKey)
+                            }
                         }
                     }
                 }
                 .frame(maxWidth: .infinity)
+                .padding(.vertical, 4)
             }
 
             // Version and updates
@@ -134,8 +160,8 @@ struct AboutView: View {
             Spacer()
         }
         .padding()
-        .frame(width: 420, height: 420)
-        .frame(minWidth: 400, minHeight: 380)
+        .frame(width: 420)
+        .frame(minHeight: 480)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .windowBackground(useGradient: settings.useGradientTheme)
     }

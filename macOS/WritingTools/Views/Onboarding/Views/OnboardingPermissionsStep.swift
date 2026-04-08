@@ -29,7 +29,7 @@ struct OnboardingPermissionsStep: View {
         status: isAccessibilityGranted ? .granted : .missing,
         explanation: """
           Required to simulate ⌘C/⌘V for copying your selection and \
-          pasting results back into the original app. WritingTools does \
+          pasting results back into the original app. AI Shortcuts does \
           not monitor your keystrokes.
           """,
         primaryActionTitle: isAccessibilityGranted ? "Granted" : "Request Access",
@@ -70,7 +70,7 @@ struct OnboardingPermissionsStep: View {
           explanation: """
             Required only if you use Screenshot OCR. macOS will show a \
             system prompt. You may need to restart the app for changes to \
-            take effect. WritingTools does not record or store your \
+            take effect. AI Shortcuts does not record or store your \
             screen; it only uses this to capture the area you explicitly \
             select.
             """,
@@ -98,7 +98,7 @@ struct OnboardingPermissionsStep: View {
               systemImage: "info.circle"
             )
             Label(
-              "Input Monitoring is NOT required. WritingTools only posts copy/paste commands.",
+              "Input Monitoring is NOT required. AI Shortcuts only posts copy/paste commands.",
               systemImage: "checkmark.circle"
             )
           }
@@ -120,7 +120,7 @@ struct OnboardingPermissionsStep: View {
         Button("Open Privacy & Security") {
           if let url = URL(
             string:
-              "x-apple.systemsettings:com.apple.settings.PrivacySecurity.extension"
+              "x-apple.systempreferences:com.apple.preference.security"
           ) {
             NSWorkspace.shared.open(url)
           }
@@ -146,7 +146,7 @@ struct OnboardingPermissionsHelper {
       try? await Task.sleep(for: .milliseconds(200))
       if let url = URL(
         string:
-          "x-apple.systemsettings:com.apple.settings.PrivacySecurity.extension?Privacy_Accessibility"
+          "x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility"
       ) {
         NSWorkspace.shared.open(url)
       }
