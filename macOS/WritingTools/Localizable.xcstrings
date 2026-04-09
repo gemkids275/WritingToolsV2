@@ -4483,6 +4483,7 @@
       }
     },
     "Keep your command list in sync across your signed-in Apple devices." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -7840,6 +7841,7 @@
       }
     },
     "Sync commands with iCloud" : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {
@@ -8479,6 +8481,7 @@
       }
     },
     "Uses iCloud key-value storage to sync command edits across devices." : {
+      "extractionState" : "stale",
       "localizations" : {
         "de" : {
           "stringUnit" : {

@@ -6,7 +6,7 @@ struct CommandExportData: Codable {
     let commands: [CommandModel]
     let customInstruction: CommandModel?
     
-    // Add a signature to verify this is a valid Vyn export
+    // Add a signature to verify this is a valid export
     let appIdentifier: String
     
     init(commands: [CommandModel], customInstruction: CommandModel? = nil) {
@@ -14,6 +14,6 @@ struct CommandExportData: Codable {
         self.exportDate = Date()
         self.commands = commands
         self.customInstruction = customInstruction
-        self.appIdentifier = "VynWritingTools"
+        self.appIdentifier = "AIShortcuts"
     }
 }

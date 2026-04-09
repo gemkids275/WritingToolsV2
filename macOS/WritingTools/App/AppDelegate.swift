@@ -8,8 +8,6 @@ private let logger = AppLogger.logger("AppDelegate")
 /// Menu bar UI is handled by SwiftUI's MenuBarExtra in writing_toolsApp.swift.
 @MainActor
 class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
-    private var iCloudSyncObserver: NSObjectProtocol?
-    private var iCloudQuotaObserver: NSObjectProtocol?
     private var clipboardRestoreObserver: NSObjectProtocol?
     private var commandsChangedObserver: NSObjectProtocol?
     private var commandShortcutNamesById: [UUID: KeyboardShortcuts.Name] = [:]
@@ -53,35 +51,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         ) { [weak self] _ in
             MainActor.assumeIsolated {
                 self?.setupCommandShortcuts()
-            }
-        }
-
-        configureCloudCommandSync(enabled: AppSettings.shared.enableICloudCommandSync)
-        iCloudSyncObserver = NotificationCenter.default.addObserver(
-            forName: .iCloudCommandSyncPreferenceDidChange,
-            object: nil,
-            queue: .main
-        ) { [weak self] _ in
-            Task { @MainActor in
-                self?.configureCloudCommandSync(enabled: AppSettings.shared.enableICloudCommandSync)
-            }
-        }
-
-        iCloudQuotaObserver = NotificationCenter.default.addObserver(
-            forName: .iCloudCommandSyncQuotaExceeded,
-            object: nil,
-            queue: .main
-        ) { [weak self] note in
-            Task { @MainActor in
-                guard let self else { return }
-                let payloadBytes = note.userInfo?[CloudCommandsSyncUserInfoKey.payloadBytes] as? Int
-                let totalBytes = note.userInfo?[CloudCommandsSyncUserInfoKey.totalBytes] as? Int
-                let reason = note.userInfo?[CloudCommandsSyncUserInfoKey.reason] as? String
-                self.showICloudQuotaWarningAlert(
-                    payloadBytes: payloadBytes,
-                    totalBytes: totalBytes,
-                    reason: reason
-                )
             }
         }
 
@@ -159,22 +128,11 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         // Flush any debounced keychain writes before exit
         AppSettings.shared.flushPendingKeychainWrites()
 
-        // Flush cloud sync: cancel debounce, push immediately, and synchronize
-        CloudCommandsSync.shared.flushAndSynchronize()
-
         NotificationCenter.default.removeObserver(
             self,
             name: NSNotification.Name("CommandsChanged"),
             object: nil
         )
-        if let iCloudSyncObserver {
-            NotificationCenter.default.removeObserver(iCloudSyncObserver)
-            self.iCloudSyncObserver = nil
-        }
-        if let iCloudQuotaObserver {
-            NotificationCenter.default.removeObserver(iCloudQuotaObserver)
-            self.iCloudQuotaObserver = nil
-        }
         if let clipboardRestoreObserver {
             NotificationCenter.default.removeObserver(clipboardRestoreObserver)
             self.clipboardRestoreObserver = nil
@@ -183,7 +141,6 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
             KeyboardShortcuts.removeHandler(for: shortcutName)
         }
         commandShortcutNamesById.removeAll()
-        CloudCommandsSync.shared.stop()
         WindowManager.shared.cleanupWindows()
     }
 
@@ -215,21 +172,28 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     @MainActor
     private func showPopup() {
         Task { @MainActor in
-            if let frontApp = NSWorkspace.shared.frontmostApplication {
+            let frontApp = NSWorkspace.shared.frontmostApplication
+            if let frontApp {
                 self.appState.previousApplication = frontApp
             }
+            // Capture PID before closing popup — closing may shift focus away from the target app
+            let targetPid = frontApp?.processIdentifier
 
             self.closePopupWindow()
             self.appState.customText = ""
             self.appState.customAttachments = []
 
-            guard let capture = await ClipboardCoordinator.shared.captureSelection() else {
+            guard let capture = await ClipboardCoordinator.shared.captureSelection(targetPid: targetPid) else {
                 logger.debug("Clipboard capture skipped because another operation is in progress")
                 return
             }
 
             if !capture.didChange {
                 logger.warning("Pasteboard did not change after copy; clearing selection to avoid stale context")
+                if !AXIsProcessTrusted() {
+                    self.showAccessibilityPermissionAlert()
+                    return
+                }
             }
 
             self.appState.selectedAttributedText = capture.attributedText
@@ -289,58 +253,24 @@ class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
         WindowManager.shared.dismissPopup()
     }
 
-    private func configureCloudCommandSync(enabled: Bool) {
-        CloudCommandsSync.shared.setEnabled(enabled)
-        logger.info("iCloud command sync \(enabled ? "enabled" : "disabled")")
-    }
-
-    private func showICloudQuotaWarningAlert(payloadBytes: Int?, totalBytes: Int?, reason: String?) {
+    private func showAccessibilityPermissionAlert() {
         let alert = NSAlert()
-        alert.messageText = "iCloud Sync Storage Limit Reached"
-        switch reason {
-        case "preflight_payload_too_large":
-            if let payloadBytes {
-                alert.informativeText =
-                    """
-                    AI Shortcuts couldn't sync commands because the command payload is too large (\(payloadBytes) bytes).
-                    Try deleting some commands or shortening large prompts, then sync again.
-                    """
-            } else {
-                alert.informativeText =
-                    """
-                    AI Shortcuts couldn't sync commands because the command payload is too large.
-                    Try deleting some commands or shortening large prompts, then sync again.
-                    """
-            }
-        case "preflight_total_store_too_large":
-            if let totalBytes {
-                alert.informativeText =
-                    """
-                    AI Shortcuts couldn't sync commands because estimated iCloud key-value storage usage reached \(totalBytes) bytes.
-                    Try deleting some commands, shortening large prompts, or clearing old deleted-command history.
-                    """
-            } else {
-                alert.informativeText =
-                    """
-                    AI Shortcuts couldn't sync commands because iCloud key-value storage quota was exceeded.
-                    Try deleting some commands, shortening large prompts, or clearing old deleted-command history.
-                    """
-            }
-        default:
-            alert.informativeText =
-                """
-                AI Shortcuts couldn't sync commands because iCloud key-value storage quota was exceeded.
-                Try deleting some commands or shortening large prompts, then sync again.
-                """
-        }
+        alert.messageText = "Accessibility Permission Required"
+        alert.informativeText =
+            """
+            AI Shortcuts needs Accessibility permission to read your selected text.
+
+            Click "Request Permission" to allow it, then re-enable the toggle if needed.
+            """
         alert.alertStyle = .warning
-        alert.addButton(withTitle: "OK")
+        alert.addButton(withTitle: "Request Permission")
+        alert.addButton(withTitle: "Cancel")
 
         NSApp.activate()
-        if let keyWindow = NSApp.keyWindow {
-            alert.beginSheetModal(for: keyWindow)
-        } else {
-            alert.runModal()
+        let response = alert.runModal()
+        if response == .alertFirstButtonReturn {
+            let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue(): true] as CFDictionary
+            AXIsProcessTrustedWithOptions(options)
         }
     }
 

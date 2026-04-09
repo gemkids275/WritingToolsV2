@@ -240,7 +240,7 @@ final class CommandManager {
         let decoder = JSONDecoder()
         let bundle = try decoder.decode(CommandExportData.self, from: data)
         
-        guard bundle.appIdentifier == "VynWritingTools" else {
+        guard bundle.appIdentifier == "AIShortcuts" else {
             throw NSError(domain: "CommandManager", code: 1, userInfo: [NSLocalizedDescriptionKey: "Invalid file format."])
         }
         

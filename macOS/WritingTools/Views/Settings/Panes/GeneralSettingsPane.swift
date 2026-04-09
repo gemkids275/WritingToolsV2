@@ -111,19 +111,6 @@ struct GeneralSettingsPane<SaveButton: View>: View {
                     }
                     .help("Choose whether custom prompts open in a separate response window or replace text inline.")
 
-                    Toggle(isOn: $settings.enableICloudCommandSync) {
-                        VStack(alignment: .leading, spacing: 1) {
-                            Text("Sync commands with iCloud")
-                            Text("Keep your command list in sync across your signed-in Apple devices.")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-                    .toggleStyle(.checkbox)
-                    .onChange(of: settings.enableICloudCommandSync) { _, _ in
-                        needsSaving = true
-                    }
-                    .help("Uses iCloud key-value storage to sync command edits across devices.")
                 }
             }
 
@@ -233,8 +220,8 @@ struct GeneralSettingsPane<SaveButton: View>: View {
         savePanel.canCreateDirectories = true
         savePanel.isExtensionHidden = false
         savePanel.title = "Export Full Configuration"
-        savePanel.message = "Choose where to save your Vyn configuration backup."
-        savePanel.nameFieldStringValue = "Vyn_Full_Backup.json"
+        savePanel.message = "Choose where to save your AI Shortcuts configuration backup."
+        savePanel.nameFieldStringValue = "AIShortcuts_Full_Backup.json"
 
         if savePanel.runModal() == .OK {
             if let url = savePanel.url {
@@ -268,7 +255,7 @@ struct GeneralSettingsPane<SaveButton: View>: View {
         openPanel.canChooseDirectories = false
         openPanel.canChooseFiles = true
         openPanel.title = "Import Full Configuration"
-        openPanel.message = "Select a Vyn configuration backup file to restore."
+        openPanel.message = "Select a AI Shortcuts configuration backup file to restore."
 
         if openPanel.runModal() == .OK {
             if let url = openPanel.url {

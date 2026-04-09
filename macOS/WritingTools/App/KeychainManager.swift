@@ -250,7 +250,7 @@ actor KeychainManager {
             kSecAttrService as String: Self.serviceName,
             kSecAttrSynchronizable as String: kSecAttrSynchronizableAny
         ]
-        let deleteStatus = SecItemDelete(deleteQuery as CFDictionary)
+        _ = SecItemDelete(deleteQuery as CFDictionary)
         
         guard !value.isEmpty else { return true }
         guard let data = value.data(using: .utf8) else { return false }

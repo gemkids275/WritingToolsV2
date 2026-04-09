@@ -2,7 +2,6 @@ import Foundation
 import Observation
 
 extension Notification.Name {
-    static let iCloudCommandSyncPreferenceDidChange = Notification.Name("iCloudCommandSyncPreferenceDidChange")
     static let apiKeyDidChange = Notification.Name("apiKeyDidChange")
 }
 
@@ -167,13 +166,6 @@ final class AppSettings {
         }
     }
 
-    var enableICloudCommandSync: Bool {
-        didSet {
-            defaults.set(enableICloudCommandSync, forKey: "enable_icloud_command_sync")
-            NotificationCenter.default.post(name: .iCloudCommandSyncPreferenceDidChange, object: nil)
-        }
-    }
-    
     // MARK: - Init
     private init() {
         let defaults = UserDefaults.standard
@@ -242,9 +234,6 @@ final class AppSettings {
         
         // Custom commands setting - default to true (open in response window)
         self.openCustomCommandsInResponseWindow = defaults.object(forKey: "open_custom_commands_in_response_window") as? Bool ?? true
-
-        // Cloud command sync setting defaults to false until explicitly enabled.
-        self.enableICloudCommandSync = defaults.object(forKey: "enable_icloud_command_sync") as? Bool ?? false
 
         // Initialize Custom Instruction Command
         if let data = defaults.data(forKey: "custom_instruction_command"),

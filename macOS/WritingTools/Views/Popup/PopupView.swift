@@ -18,6 +18,7 @@ struct PopupView: View {
 
   @State private var isCustomLoading: Bool = false
   @State private var processingCommandId: UUID? = nil
+  @State private var draggingCommandId: UUID? = nil
 
   @State private var showingCommandsView = false
   @State private var editingCommand: CommandModel? = nil
@@ -328,6 +329,23 @@ struct PopupView: View {
             appState.commandManager.deleteCommand(command)
           }
         )
+        .opacity(draggingCommandId == command.id ? 0.4 : 1)
+        .onDrag {
+          guard viewModel.isEditMode else { return NSItemProvider() }
+          draggingCommandId = command.id
+          return NSItemProvider(object: command.id.uuidString as NSString)
+        }
+        .onDrop(
+          of: [.text],
+          delegate: CommandDropDelegate(
+            targetCommand: command,
+            commands: appState.commandManager.commands,
+            draggingId: $draggingCommandId,
+            onMove: { from, to in
+              appState.commandManager.moveCommand(fromOffsets: from, toOffset: to)
+            }
+          )
+        )
       }
     }
 
@@ -386,6 +404,42 @@ struct PopupView: View {
       errorMessage = error.localizedDescription
       showingErrorAlert = true
     }
+  }
+}
+
+// MARK: - CommandDropDelegate
+
+private struct CommandDropDelegate: DropDelegate {
+  let targetCommand: CommandModel
+  let commands: [CommandModel]
+  @Binding var draggingId: UUID?
+  let onMove: (IndexSet, Int) -> Void
+
+  func performDrop(info: DropInfo) -> Bool {
+    draggingId = nil
+    return true
+  }
+
+  func dropEntered(info: DropInfo) {
+    guard
+      let draggingId,
+      draggingId != targetCommand.id,
+      let fromIndex = commands.firstIndex(where: { $0.id == draggingId }),
+      let toIndex = commands.firstIndex(where: { $0.id == targetCommand.id })
+    else { return }
+
+    let destination = toIndex > fromIndex ? toIndex + 1 : toIndex
+    withAnimation(.easeInOut(duration: 0.15)) {
+      onMove(IndexSet(integer: fromIndex), destination)
+    }
+  }
+
+  func dropUpdated(info: DropInfo) -> DropProposal? {
+    DropProposal(operation: .move)
+  }
+
+  func validateDrop(info: DropInfo) -> Bool {
+    draggingId != nil && draggingId != targetCommand.id
   }
 }
 

@@ -29,7 +29,7 @@ final class ClipboardCoordinator {
     private let pollInterval: Duration = .milliseconds(5)
     private let copyTimeout: TimeInterval = 2.0
 
-    func captureSelection() async -> CaptureResult? {
+    func captureSelection(targetPid: pid_t? = nil) async -> CaptureResult? {
         guard !isBusy else {
             logger.warning("Capture ignored because clipboard operation is already in progress")
             return nil
@@ -38,11 +38,18 @@ final class ClipboardCoordinator {
         isBusy = true
         defer { isBusy = false }
 
+        // Try Accessibility API first — works in apps that block simulated ⌘C (e.g. VS Code, Electron apps)
+        logger.debug("AXIsProcessTrusted: \(AXIsProcessTrusted())")
+        if let axText = readSelectedTextViaAccessibility(pid: targetPid), !axText.isEmpty {
+            logger.debug("Selected text captured via Accessibility API (\(axText.count) chars)")
+            return CaptureResult(text: axText, attributedText: nil, images: [], didChange: true)
+        }
+
         let pb = NSPasteboard.general
         let oldChangeCount = pb.changeCount
         let snapshot = pb.createSnapshot()
 
-        triggerCopy()
+        triggerCopy(targetPid: targetPid)
         try? await Task.sleep(for: minCopyDelay)
 
         let didChange = await waitForPasteboardUpdate(
@@ -92,14 +99,45 @@ final class ClipboardCoordinator {
         return CaptureResult(text: text, attributedText: attributed, images: images, didChange: true)
     }
 
-    private func triggerCopy() {
+    private func readSelectedTextViaAccessibility(pid: pid_t? = nil) -> String? {
+        let element: AXUIElement
+        if let pid {
+            // Read directly from the target app's focused element (more reliable)
+            let appElement = AXUIElementCreateApplication(pid)
+            var focusedRef: CFTypeRef?
+            guard AXUIElementCopyAttributeValue(appElement, kAXFocusedUIElementAttribute as CFString, &focusedRef) == .success,
+                  let ref = focusedRef
+            else { return nil }
+            element = ref as! AXUIElement
+        } else {
+            let systemWide = AXUIElementCreateSystemWide()
+            var focusedRef: CFTypeRef?
+            guard AXUIElementCopyAttributeValue(systemWide, kAXFocusedUIElementAttribute as CFString, &focusedRef) == .success,
+                  let ref = focusedRef
+            else { return nil }
+            element = ref as! AXUIElement
+        }
+
+        var selectedText: CFTypeRef?
+        let result = AXUIElementCopyAttributeValue(element, kAXSelectedTextAttribute as CFString, &selectedText)
+        guard result == .success, let text = selectedText as? String, !text.isEmpty else { return nil }
+        return text
+    }
+
+    private func triggerCopy(targetPid: pid_t? = nil) {
         let src = CGEventSource(stateID: .hidSystemState)
         let keyDown = CGEvent(keyboardEventSource: src, virtualKey: 0x08, keyDown: true)
         let keyUp = CGEvent(keyboardEventSource: src, virtualKey: 0x08, keyDown: false)
         keyDown?.flags = .maskCommand
         keyUp?.flags = .maskCommand
-        keyDown?.post(tap: .cgSessionEventTap)
-        keyUp?.post(tap: .cgSessionEventTap)
+        if let pid = targetPid {
+            // Post directly to the target process — more reliable than session tap for Electron apps
+            keyDown?.postToPid(pid)
+            keyUp?.postToPid(pid)
+        } else {
+            keyDown?.post(tap: .cgSessionEventTap)
+            keyUp?.post(tap: .cgSessionEventTap)
+        }
     }
 
     private func readImages(from pb: NSPasteboard) async -> [Data] {

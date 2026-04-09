@@ -27,7 +27,6 @@ struct CustomCommand: Codable, Identifiable, Equatable {
 
 /// Legacy manager retained only for reading existing local custom commands
 /// during migration to the unified CommandManager system.
-/// iCloud sync has been fully removed — CloudCommandsSync handles all syncing.
 @MainActor
 @Observable
 final class CustomCommandsManager {

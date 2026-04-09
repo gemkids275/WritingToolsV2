@@ -185,11 +185,7 @@ class PopupWindow: NSWindow {
   }
 
   override func mouseDragged(with event: NSEvent) {
-    guard
-      contentView != nil,
-      let initialLocation = initialLocation,
-      let screen = screen
-    else { return }
+    guard contentView != nil, let initialLocation = initialLocation else { return }
 
     let currentLocation = event.locationInWindow
     let deltaX = currentLocation.x - initialLocation.x
@@ -199,16 +195,23 @@ class PopupWindow: NSWindow {
     newOrigin.x += deltaX
     newOrigin.y += deltaY
 
-    let padding: CGFloat = 20
-    let screenFrame = screen.visibleFrame
-    newOrigin.x = max(
-      screenFrame.minX + padding,
-      min(newOrigin.x, screenFrame.maxX - frame.width - padding)
-    )
-    newOrigin.y = max(
-      screenFrame.minY + padding,
-      min(newOrigin.y, screenFrame.maxY - frame.height - padding)
-    )
+    // Use the screen the mouse is currently on to support dragging across screens
+    let mouseLocation = NSEvent.mouseLocation
+    let targetScreen = NSScreen.screens.first(where: { $0.frame.contains(mouseLocation) })
+      ?? screen ?? NSScreen.main
+
+    if let targetScreen {
+      let padding: CGFloat = 20
+      let screenFrame = targetScreen.visibleFrame
+      newOrigin.x = max(
+        screenFrame.minX + padding,
+        min(newOrigin.x, screenFrame.maxX - frame.width - padding)
+      )
+      newOrigin.y = max(
+        screenFrame.minY + padding,
+        min(newOrigin.y, screenFrame.maxY - frame.height - padding)
+      )
+    }
 
     setFrameOrigin(newOrigin)
   }
