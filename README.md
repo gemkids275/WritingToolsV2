@@ -153,6 +153,27 @@ On top of everything the original macOS port offers, this fork adds:
 
 ---
 
+## 🛠 Common Issues
+
+### Commands not showing after selecting text
+
+When you select text and open the popup, but only see the text input box with no command buttons — this is almost always an **Accessibility permission issue**.
+
+AI Shortcuts needs Accessibility access to read your selected text. Without it, the app cannot detect what you've highlighted and won't display the command list.
+
+**How to fix:**
+
+1. Open **System Settings → Privacy & Security → Accessibility**
+2. Find **AI Shortcuts** in the list — if the toggle is OFF, turn it ON
+3. If AI Shortcuts is not in the list, or the issue persists after enabling:
+   - Select **AI Shortcuts** and click the **`−`** button to remove it
+   - Relaunch the app — it will prompt you to grant Accessibility permission again
+   - Click **Open System Settings**, then enable the toggle
+
+> **Note:** On macOS, the app must be added under its current name. If you previously had an older version listed (e.g. "WritingTools"), remove that entry and add the current version instead.
+
+---
+
 ## 🔮 What's Coming
 
 - **Windows & Linux parity** — Gradually bring the macOS-exclusive features (attachments, richer command management, more providers) to the Windows & Linux version
