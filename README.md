@@ -43,6 +43,11 @@ This fork builds on top of the original idea with significant macOS enhancements
 3. Choose a command — **Proofread**, **Rewrite**, **Friendly**, **Professional**, **Concise**, etc.
 4. The text is replaced instantly. Press `⌘Z` to undo.
 
+
+
+https://github.com/user-attachments/assets/21d1f770-2ec5-46de-857f-fb6fd0762906
+
+
 <!-- VIDEO: basic usage demo -->
 
 ---
@@ -53,6 +58,10 @@ This fork builds on top of the original idea with significant macOS enhancements
 2. Press your hotkey
 3. Type your instruction in the input box — e.g. _"translate to French"_, _"add code comments"_, _"make it a bullet list"_
 4. Press **Enter** to send. Use **Shift+Enter** or **Alt+Enter** for a new line.
+
+
+https://github.com/user-attachments/assets/610dfbc3-0814-4349-9429-f9040466f558
+
 
 <!-- VIDEO: custom instruction demo -->
 
@@ -69,6 +78,10 @@ This fork builds on top of the original idea with significant macOS enhancements
 > Supported: PNG, JPG, HEIC, and other image formats; plain text files.  
 > The AI will see both your instruction and the attached content.
 
+
+https://github.com/user-attachments/assets/30e22e1a-361d-4767-b6da-6639ef5ca66e
+
+
 <!-- VIDEO: attachment demo -->
 
 ---
@@ -79,6 +92,7 @@ This fork builds on top of the original idea with significant macOS enhancements
 2. Press your hotkey
 3. Choose **Summary**, **Key Points**, or **Table**
 4. A response window opens with the result — you can continue chatting from there
+
 
 <!-- VIDEO: summarize demo -->
 
@@ -113,6 +127,7 @@ This fork builds on top of the original idea with significant macOS enhancements
 3. **Drag** any button to reorder it
 4. Click the **edit** or **trash** icon on a button to modify or delete it
 5. Click **Manage Commands** to add new ones or import/export
+<img width="372" height="335" alt="image" src="https://github.com/user-attachments/assets/8951870e-70cb-4038-b948-f8f1d8e04f3a" />
 
 <!-- VIDEO: command management demo -->
 
