@@ -43,32 +43,48 @@ actor KeychainManager {
     
     // MARK: - Save
     
-    func save(_ value: String, forKey key: String, synchronizable: Bool = true) throws {
+    func save(_ value: String, forKey key: String, synchronizable: Bool = false) throws {
         guard !value.isEmpty else {
             try delete(forKey: key, scope: .any)
             return
         }
-        
+
         guard let data = value.data(using: .utf8) else {
             throw KeychainError.failedToSave(-1)
         }
 
-        var addQuery: [String: Any] = [
+        let syncValue: Any = synchronizable ? (kCFBooleanTrue as Any) : (kCFBooleanFalse as Any)
+
+        // Try updating existing item first (avoids delete-then-add data loss if add fails)
+        let updateSearch: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrAccount as String: key,
             kSecAttrService as String: Self.serviceName,
+            kSecAttrSynchronizable as String: kSecAttrSynchronizableAny
+        ]
+        let updateAttributes: [String: Any] = [
             kSecValueData as String: data,
+            kSecAttrSynchronizable as String: syncValue,
             kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlocked
         ]
-        addQuery[kSecAttrSynchronizable as String] =
-            synchronizable ? (kCFBooleanTrue as Any) : (kCFBooleanFalse as Any)
+        let updateStatus = SecItemUpdate(updateSearch as CFDictionary, updateAttributes as CFDictionary)
 
-        // Delete existing synchronizable and non-synchronizable values before saving.
-        try delete(forKey: key, scope: .any)
-
-        let status = SecItemAdd(addQuery as CFDictionary, nil)
-        guard status == errSecSuccess else {
-            throw KeychainError.failedToSave(status)
+        if updateStatus == errSecItemNotFound {
+            // Item doesn't exist yet — add it
+            let addQuery: [String: Any] = [
+                kSecClass as String: kSecClassGenericPassword,
+                kSecAttrAccount as String: key,
+                kSecAttrService as String: Self.serviceName,
+                kSecValueData as String: data,
+                kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlocked,
+                kSecAttrSynchronizable as String: syncValue
+            ]
+            let addStatus = SecItemAdd(addQuery as CFDictionary, nil)
+            guard addStatus == errSecSuccess else {
+                throw KeychainError.failedToSave(addStatus)
+            }
+        } else if updateStatus != errSecSuccess {
+            throw KeychainError.failedToSave(updateStatus)
         }
     }
     
@@ -243,31 +259,37 @@ actor KeychainManager {
     /// Synchronous save for use from non-async contexts (e.g. Decodable init, SwiftUI init).
     /// Uses direct SecItem calls to bypass actor isolation.
     @discardableResult
-    nonisolated func bootstrapSave(_ value: String, forKey key: String, synchronizable: Bool = true) -> Bool {
-        let deleteQuery: [String: Any] = [
+    nonisolated func bootstrapSave(_ value: String, forKey key: String, synchronizable: Bool = false) -> Bool {
+        guard !value.isEmpty else { return true }
+        guard let data = value.data(using: .utf8) else { return false }
+
+        let syncValue: Any = synchronizable ? (kCFBooleanTrue as Any) : (kCFBooleanFalse as Any)
+
+        // Try update first to avoid delete-then-add data loss
+        let updateSearch: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrAccount as String: key,
             kSecAttrService as String: Self.serviceName,
             kSecAttrSynchronizable as String: kSecAttrSynchronizableAny
         ]
-        _ = SecItemDelete(deleteQuery as CFDictionary)
-        
-        guard !value.isEmpty else { return true }
-        guard let data = value.data(using: .utf8) else { return false }
+        let updateAttributes: [String: Any] = [
+            kSecValueData as String: data,
+            kSecAttrSynchronizable as String: syncValue,
+            kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlocked
+        ]
+        let updateStatus = SecItemUpdate(updateSearch as CFDictionary, updateAttributes as CFDictionary)
+        if updateStatus == errSecSuccess { return true }
 
-        var addQuery: [String: Any] = [
+        // Item not found — add it
+        let addQuery: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrAccount as String: key,
             kSecAttrService as String: Self.serviceName,
             kSecValueData as String: data,
-            kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlocked
+            kSecAttrAccessible as String: kSecAttrAccessibleWhenUnlocked,
+            kSecAttrSynchronizable as String: syncValue
         ]
-        addQuery[kSecAttrSynchronizable as String] =
-            synchronizable ? (kCFBooleanTrue as Any) : (kCFBooleanFalse as Any)
-            
-        let addStatus = SecItemAdd(addQuery as CFDictionary, nil)
-        
-        return addStatus == errSecSuccess
+        return SecItemAdd(addQuery as CFDictionary, nil) == errSecSuccess
     }
 
     /// Synchronous delete for use from non-async contexts.

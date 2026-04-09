@@ -278,7 +278,7 @@ final class AppSettings {
         pendingKeychainWrites[key] = Task { @MainActor in
             try? await Task.sleep(for: Self.keychainWriteDebounce)
             guard !Task.isCancelled else { return }
-            try? await keychain.save(capturedValue, forKey: key, synchronizable: true)
+            try? await keychain.save(capturedValue, forKey: key, synchronizable: false)
         }
     }
 
@@ -299,7 +299,7 @@ final class AppSettings {
             if value.isEmpty {
                 _ = keychain.bootstrapDelete(forKey: key, scope: .any)
             } else {
-                let saveSucceeded = keychain.bootstrapSave(value, forKey: key, synchronizable: true)
+                let saveSucceeded = keychain.bootstrapSave(value, forKey: key, synchronizable: false)
                 if !saveSucceeded {
                     Self.logger.error("Failed to flush API key '\(key)' to keychain during termination")
                 }

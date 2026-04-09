@@ -76,13 +76,19 @@ final class UpdateChecker {
         do {
             var request = URLRequest(url: url)
             request.timeoutInterval = 15
-            let (data, _) = try await URLSession.shared.data(for: request)
-            
+            let (data, response) = try await URLSession.shared.data(for: request)
+
+            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
+                checkError = "Update check failed (HTTP \(httpResponse.statusCode))"
+                logger.warning("Update check returned HTTP \(httpResponse.statusCode)")
+                return
+            }
+
             // Print raw data for debugging
             if let rawString = String(data: data, encoding: .utf8) {
                 logger.debug("Raw version data: '\(rawString)'")
             }
-            
+
             let cleanedString = String(data: data, encoding: .utf8)?
                 .components(separatedBy: .newlines)
                 .first?
