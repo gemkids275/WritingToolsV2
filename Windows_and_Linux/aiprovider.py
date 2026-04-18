@@ -38,6 +38,8 @@ from abc import ABC, abstractmethod
 from typing import List
 
 # External libraries
+import anthropic
+from mistralai import Mistral
 import google.generativeai as genai
 from google.generativeai.types import HarmBlockThreshold, HarmCategory
 from ollama import Client as OllamaClient
@@ -267,9 +269,16 @@ class AIProvider(ABC):
         self.button_action = button_action
 
     @abstractmethod
-    def get_response(self, system_instruction: str, prompt: str) -> str:
+    def get_response(self, system_instruction: str, prompt: str, images: list = None, return_response: bool = False) -> str:
         """
         Send the given system instruction and prompt to the AI provider and return the full response text.
+        """
+        pass
+
+    @abstractmethod
+    def get_response_stream(self, system_instruction: str, prompt: str, images: list = None):
+        """
+        Generator that yields chunks of response text from the AI provider.
         """
         pass
 
@@ -317,6 +326,266 @@ class AIProvider(ABC):
         pass
 
 
+class AnthropicProvider(AIProvider):
+    """
+    Provider for Anthropic's Claude API.
+    """
+    def __init__(self, app):
+        self.close_requested = False
+        self.client = None
+        settings = [
+            TextSetting(name="api_key", display_name="API Key", description="Paste your Anthropic API key here"),
+            DropdownSetting(
+                name="model_name",
+                display_name="Model",
+                default_value="claude-3-5-sonnet-latest",
+                description="Select Claude model to use",
+                options=[
+                    ("Claude 3.5 Sonnet", "claude-3-5-sonnet-latest"),
+                    ("Claude 3.5 Haiku", "claude-3-5-haiku-latest"),
+                    ("Claude 3 Opus", "claude-3-opus-latest"),
+                ],
+                allow_custom=True,
+                custom_placeholder="e.g., claude-3-sonnet-20240229"
+            )
+        ]
+        super().__init__(app, "Anthropic", settings,
+            "• Anthropic's Claude is known for being highly steerable and safer.\n"
+            "• Optimized for high-quality writing and complex reasoning.",
+            "anthropic",
+            "Get API Key",
+            lambda: webbrowser.open("https://console.anthropic.com/settings/keys"))
+
+    def after_load(self):
+        self.client = anthropic.Anthropic(api_key=self.api_key)
+
+    def get_response(self, system_instruction: str, prompt: str, images: list = None, return_response: bool = False) -> str:
+        self.close_requested = False
+        content = []
+        if images:
+            for img_data in images:
+                content.append({
+                    "type": "image",
+                    "source": {
+                        "type": "base64",
+                        "media_type": "image/jpeg",
+                        "data": img_data
+                    }
+                })
+        content.append({"type": "text", "text": prompt})
+
+        response = self.client.messages.create(
+            model=self.model_name,
+            max_tokens=4096,
+            system=system_instruction,
+            messages=[{"role": "user", "content": content}]
+        )
+        response_text = response.content[0].text
+        if not return_response and not hasattr(self.app, 'current_response_window'):
+            self.app.output_ready_signal.emit(response_text)
+            return ""
+        return response_text
+
+    def get_response_stream(self, system_instruction: str, prompt: str, images: list = None):
+        self.close_requested = False
+        content = []
+        if images:
+            for img_data in images:
+                content.append({
+                    "type": "image",
+                    "source": {
+                        "type": "base64",
+                        "media_type": "image/jpeg",
+                        "data": img_data
+                    }
+                })
+        content.append({"type": "text", "text": prompt})
+
+        with self.client.messages.stream(
+            model=self.model_name,
+            max_tokens=4096,
+            system=system_instruction,
+            messages=[{"role": "user", "content": content}]
+        ) as stream:
+            for text in stream.text_stream:
+                if self.close_requested:
+                    break
+                yield text
+
+    def cancel(self):
+        self.close_requested = True
+
+
+class MistralProvider(AIProvider):
+    """
+    Provider for Mistral AI API.
+    """
+    def __init__(self, app):
+        self.close_requested = False
+        self.client = None
+        settings = [
+            TextSetting(name="api_key", display_name="API Key", description="Paste your Mistral API key here"),
+            DropdownSetting(
+                name="model_name",
+                display_name="Model",
+                default_value="mistral-large-latest",
+                options=[
+                    ("Mistral Large", "mistral-large-latest"),
+                    ("Mistral Small", "mistral-small-latest"),
+                    ("Pixtral 12B (Vision)", "pixtral-12b-2409"),
+                ],
+                allow_custom=True,
+                custom_placeholder="e.g., mistral-medium-latest"
+            )
+        ]
+        super().__init__(app, "Mistral", settings,
+            "• Mistral AI provides efficient and open-weight models.",
+            "mistral",
+            "Get API Key",
+            lambda: webbrowser.open("https://console.mistral.ai/api-keys/"))
+
+    def after_load(self):
+        self.client = Mistral(api_key=self.api_key)
+
+    def get_response(self, system_instruction: str, prompt: str, images: list = None, return_response: bool = False) -> str:
+        self.close_requested = False
+        messages = [{"role": "system", "content": system_instruction}]
+        
+        content = [{"type": "text", "text": prompt}]
+        if images:
+            for img_data in images:
+                content.append({
+                    "type": "image_url",
+                    "image_url": f"data:image/jpeg;base64,{img_data}"
+                })
+        messages.append({"role": "user", "content": content})
+
+        response = self.client.chat.complete(
+            model=self.model_name,
+            messages=messages
+        )
+        response_text = response.choices[0].message.content
+        if not return_response and not hasattr(self.app, 'current_response_window'):
+            self.app.output_ready_signal.emit(response_text)
+            return ""
+        return response_text
+
+    def get_response_stream(self, system_instruction: str, prompt: str, images: list = None):
+        self.close_requested = False
+        messages = [{"role": "system", "content": system_instruction}]
+        content = [{"type": "text", "text": prompt}]
+        if images:
+            for img_data in images:
+                content.append({
+                    "type": "image_url",
+                    "image_url": f"data:image/jpeg;base64,{img_data}"
+                })
+        messages.append({"role": "user", "content": content})
+
+        stream = self.client.chat.stream(
+            model=self.model_name,
+            messages=messages
+        )
+        for chunk in stream:
+            if self.close_requested:
+                break
+            if chunk.data.choices[0].delta.content:
+                yield chunk.data.choices[0].delta.content
+
+    def cancel(self):
+        self.close_requested = True
+
+
+class OpenRouterProvider(AIProvider):
+    """
+    Provider for OpenRouter (OpenAI-compatible but with specific headers).
+    """
+    def __init__(self, app):
+        self.close_requested = False
+        self.client = None
+        settings = [
+            TextSetting(name="api_key", display_name="API Key", description="Paste your OpenRouter API key here"),
+            DropdownSetting(
+                name="model_name",
+                display_name="Model",
+                default_value="anthropic/claude-3.5-sonnet",
+                options=[
+                    ("Claude 3.5 Sonnet", "anthropic/claude-3.5-sonnet"),
+                    ("GPT-4o", "openai/gpt-4o"),
+                    ("DeepSeek V3", "deepseek/deepseek-chat"),
+                ],
+                allow_custom=True,
+                custom_placeholder="e.g., google/gemini-pro-1.5"
+            )
+        ]
+        super().__init__(app, "OpenRouter", settings,
+            "• OpenRouter provides access to dozens of models via a single API.\n"
+            "• Unified interface for Claude, GPT, Llama, and more.",
+            "openrouter",
+            "Get API Key",
+            lambda: webbrowser.open("https://openrouter.ai/keys"))
+
+    def after_load(self):
+        self.client = OpenAI(
+            base_url="https://openrouter.ai/api/v1",
+            api_key=self.api_key,
+            default_headers={
+                "HTTP-Referer": "https://github.com/gemkids275/WritingToolsV2",
+                "X-Title": "Writing Tools V2",
+            }
+        )
+
+    def get_response(self, system_instruction: str, prompt: str, images: list = None, return_response: bool = False) -> str:
+        self.close_requested = False
+        content = [{"type": "text", "text": prompt}]
+        if images:
+            for img_data in images:
+                content.append({
+                    "type": "image_url",
+                    "image_url": {"url": f"data:image/jpeg;base64,{img_data}"}
+                })
+        
+        response = self.client.chat.completions.create(
+            model=self.model_name,
+            messages=[
+                {"role": "system", "content": system_instruction},
+                {"role": "user", "content": content}
+            ]
+        )
+        response_text = response.choices[0].message.content
+        if not return_response and not hasattr(self.app, 'current_response_window'):
+            self.app.output_ready_signal.emit(response_text)
+            return ""
+        return response_text
+
+    def get_response_stream(self, system_instruction: str, prompt: str, images: list = None):
+        self.close_requested = False
+        content = [{"type": "text", "text": prompt}]
+        if images:
+            for img_data in images:
+                content.append({
+                    "type": "image_url",
+                    "image_url": {"url": f"data:image/jpeg;base64,{img_data}"}
+                })
+
+        stream = self.client.chat.completions.create(
+            model=self.model_name,
+            messages=[
+                {"role": "system", "content": system_instruction},
+                {"role": "user", "content": content}
+            ],
+            stream=True
+        )
+        for chunk in stream:
+            if self.close_requested:
+                break
+            if chunk.choices[0].delta.content:
+                yield chunk.choices[0].delta.content
+
+    def cancel(self):
+        self.close_requested = True
+
+
 class GeminiProvider(AIProvider):
     """
     Provider for Google's Gemini API.
@@ -353,19 +622,23 @@ class GeminiProvider(AIProvider):
             "Get API Key",
             lambda: webbrowser.open("https://aistudio.google.com/app/apikey"))
 
-    def get_response(self, system_instruction: str, prompt: str, return_response: bool = False) -> str:
+    def get_response(self, system_instruction: str, prompt: str, images: list = None, return_response: bool = False) -> str:
         """
         Generate content using Gemini.
-        
-        Always performs a single-shot request with streaming disabled.
-        Returns the full response text if return_response is True,
-        otherwise emits the text via the output_ready_signal.
         """
         self.close_requested = False
 
-        # Single-shot call with streaming disabled
+        contents = [system_instruction]
+        if images:
+            for img_data in images:
+                contents.append({
+                    "mime_type": "image/jpeg",
+                    "data": img_data
+                })
+        contents.append(prompt)
+
         response = self.model.generate_content(
-            contents=[system_instruction, prompt],
+            contents=contents,
             stream=False
         )
 
@@ -373,16 +646,43 @@ class GeminiProvider(AIProvider):
             response_text = response.text.rstrip('\n')
             if not return_response and not hasattr(self.app, 'current_response_window'):
                 self.app.output_ready_signal.emit(response_text)
-                self.app.replace_text(True)
                 return ""
             return response_text
         except Exception as e:
             logging.error(f"Error processing Gemini response: {e}")
-            self.app.output_ready_signal.emit("An error occurred while processing the response.")
+            if not return_response:
+                self.app.output_ready_signal.emit("An error occurred while processing the response.")
         finally:
             self.close_requested = False
 
         return ""
+
+    def get_response_stream(self, system_instruction: str, prompt: str, images: list = None):
+        """
+        Generate content using Gemini with streaming.
+        """
+        self.close_requested = False
+        contents = [system_instruction]
+        if images:
+            for img_data in images:
+                contents.append({
+                    "mime_type": "image/jpeg",
+                    "data": img_data
+                })
+        contents.append(prompt)
+
+        response = self.model.generate_content(
+            contents=contents,
+            stream=True
+        )
+
+        for chunk in response:
+            if self.close_requested:
+                break
+            yield chunk.text
+
+    def cancel(self):
+        self.close_requested = True
 
     def load_config(self, config: dict):
         """
@@ -458,24 +758,24 @@ class OpenAICompatibleProvider(AIProvider):
             "• You must abide by the service's Terms of Service.",
             "openai", "Get OpenAI API Key", lambda: webbrowser.open("https://platform.openai.com/account/api-keys"))
 
-    def get_response(self, system_instruction: str, prompt: str | list, return_response: bool = False) -> str:
+    def get_response(self, system_instruction: str, prompt: str, images: list = None, return_response: bool = False) -> str:
         """
         Send a chat request to the OpenAI-compatible API.
-        
-        Always performs a non-streaming request.
-        If prompt is not a list, builds a simple two-message conversation.
-        Returns the response text if return_response is True,
-        otherwise emits it via output_ready_signal.
         """
         self.close_requested = False
 
-        if isinstance(prompt, list):
-            messages = prompt
-        else:
-            messages = [
-                {"role": "system", "content": system_instruction},
-                {"role": "user", "content": prompt}
-            ]
+        content = [{"type": "text", "text": prompt}]
+        if images:
+            for img_data in images:
+                content.append({
+                    "type": "image_url",
+                    "image_url": {"url": f"data:image/jpeg;base64,{img_data}"}
+                })
+
+        messages = [
+            {"role": "system", "content": system_instruction},
+            {"role": "user", "content": content}
+        ]
 
         try:
             response = self.client.chat.completions.create(
@@ -493,14 +793,45 @@ class OpenAICompatibleProvider(AIProvider):
         except Exception as e:
             error_str = str(e)
             logging.error(f"Error while generating content: {error_str}")
-            if "exceeded" in error_str or "rate limit" in error_str:
-                self.app.show_message_signal.emit(
-                    "Rate Limit Hit",
-                    "It appears you have hit an API rate/usage limit. Please try again later or adjust your settings."
-                )
-            else:
-                self.app.show_message_signal.emit("Error", f"An error occurred: {error_str}")
+            if not return_response:
+                if "exceeded" in error_str or "rate limit" in error_str:
+                    self.app.show_message_signal.emit(
+                        "Rate Limit Hit",
+                        "It appears you have hit an API rate/usage limit. Please try again later or adjust your settings."
+                    )
+                else:
+                    self.app.show_message_signal.emit("Error", f"An error occurred: {error_str}")
             return ""
+
+    def get_response_stream(self, system_instruction: str, prompt: str, images: list = None):
+        """
+        Send a streaming chat request to the OpenAI-compatible API.
+        """
+        self.close_requested = False
+        content = [{"type": "text", "text": prompt}]
+        if images:
+            for img_data in images:
+                content.append({
+                    "type": "image_url",
+                    "image_url": {"url": f"data:image/jpeg;base64,{img_data}"}
+                })
+
+        messages = [
+            {"role": "system", "content": system_instruction},
+            {"role": "user", "content": content}
+        ]
+
+        stream = self.client.chat.completions.create(
+            model=self.api_model,
+            messages=messages,
+            temperature=0.5,
+            stream=True
+        )
+        for chunk in stream:
+            if self.close_requested:
+                break
+            if chunk.choices[0].delta.content:
+                yield chunk.choices[0].delta.content
 
     def after_load(self):
         self.client = OpenAI(
@@ -538,34 +869,51 @@ class OllamaProvider(AIProvider):
             "ollama", "Ollama Set-up Instructions",
             lambda: webbrowser.open("https://github.com/theJayTea/WritingTools?tab=readme-ov-file#-optional-ollama-local-llm-instructions-for-windows-v7-onwards"))
 
-    def get_response(self, system_instruction: str, prompt: str | list, return_response: bool = False) -> str:
+    def get_response(self, system_instruction: str, prompt: str, images: list = None, return_response: bool = False) -> str:
         """
         Send a chat request to the Ollama server.
-        
-        Always performs a non-streaming request.
-        Returns the response text if return_response is True,
-        otherwise emits it via output_ready_signal.
         """
         self.close_requested = False
 
-        if isinstance(prompt, list):
-            messages = prompt
-        else:
-            messages = [
-                {"role": "system", "content": system_instruction},
-                {"role": "user", "content": prompt}
-            ]
+        messages = [
+            {"role": "system", "content": system_instruction},
+            {"role": "user", "content": prompt}
+        ]
+        
+        # Add vision support
+        kwargs = {}
+        if images:
+            messages[-1]["images"] = images
 
         try:
-            response = self.client.chat(model=self.api_model, messages=messages)
+            response = self.client.chat(model=self.api_model, messages=messages, stream=False)
             response_text = response['message']['content'].strip()
             if not return_response and not hasattr(self.app, 'current_response_window'):
                 self.app.output_ready_signal.emit(response_text)
             return response_text
         except Exception as e:
             logging.error(f"Error during Ollama chat: {e}")
-            self.app.output_ready_signal.emit("An error occurred during Ollama chat.")
+            if not return_response:
+                self.app.output_ready_signal.emit("An error occurred during Ollama chat.")
             return ""
+
+    def get_response_stream(self, system_instruction: str, prompt: str, images: list = None):
+        """
+        Send a streaming chat request to the Ollama server.
+        """
+        self.close_requested = False
+        messages = [
+            {"role": "system", "content": system_instruction},
+            {"role": "user", "content": prompt}
+        ]
+        if images:
+            messages[-1]["images"] = images
+
+        stream = self.client.chat(model=self.api_model, messages=messages, stream=True)
+        for chunk in stream:
+            if self.close_requested:
+                break
+            yield chunk['message']['content']
 
     def after_load(self):
         self.client = OllamaClient(host=self.api_base)

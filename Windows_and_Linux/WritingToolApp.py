@@ -14,7 +14,9 @@ import ui.CustomPopupWindow
 import ui.OnboardingWindow
 import ui.ResponseWindow
 import ui.SettingsWindow
-from aiprovider import GeminiProvider, OllamaProvider, OpenAICompatibleProvider, obfuscate_api_key
+from aiprovider import (AnthropicProvider, GeminiProvider, MistralProvider,
+                        OllamaProvider, OpenAICompatibleProvider,
+                        OpenRouterProvider, obfuscate_api_key)
 from pynput import keyboard as pykeyboard
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import QLocale, Signal, Slot
@@ -33,6 +35,7 @@ class WritingToolApp(QtWidgets.QApplication):
     show_message_signal = Signal(str, str)  # a signal for showing message boxes
     hotkey_triggered_signal = Signal()
     followup_response_signal = Signal(str)
+    streaming_token_signal = Signal(str)
 
 
     def __init__(self, argv):
@@ -72,7 +75,14 @@ class WritingToolApp(QtWidgets.QApplication):
         self.setup_ctrl_c_listener()
 
         # Setup available AI providers
-        self.providers = [GeminiProvider(self), OpenAICompatibleProvider(self), OllamaProvider(self)]
+        self.providers = [
+            GeminiProvider(self),
+            AnthropicProvider(self),
+            MistralProvider(self),
+            OpenRouterProvider(self),
+            OpenAICompatibleProvider(self),
+            OllamaProvider(self)
+        ]
 
         if not self.config:
             logging.debug('No config found, showing onboarding')
@@ -499,7 +509,27 @@ class WritingToolApp(QtWidgets.QApplication):
 
                 if (option == 'Custom' and not selected_text.strip()) or self.options[option]['open_in_window']:
                     logging.debug('Getting response for window display')
-                    response = self.current_provider.get_response(system_instruction, prompt, return_response=True)
+                    
+                    if self.config.get('streaming', True):  # Default to True for better UX
+                        logging.debug('Using streaming response')
+                        full_response = ""
+                        try:
+                            for chunk in self.current_provider.get_response_stream(system_instruction, prompt):
+                                if chunk:
+                                    full_response += chunk
+                                    # noinspection PyTypeChecker
+                                    QtCore.QMetaObject.invokeMethod(
+                                        self, 'emit_streaming_token',
+                                        QtCore.Qt.ConnectionType.QueuedConnection,
+                                        QtCore.Q_ARG(str, chunk)
+                                    )
+                            response = full_response
+                        except Exception as e:
+                            logging.error(f"Streaming error: {e}")
+                            response = self.current_provider.get_response(system_instruction, prompt, return_response=True)
+                    else:
+                        response = self.current_provider.get_response(system_instruction, prompt, return_response=True)
+                    
                     logging.debug(f'Got response of length: {len(response) if response else 0}')
                     
                     # For custom prompts with no text, add question to chat history
@@ -607,6 +637,20 @@ class WritingToolApp(QtWidgets.QApplication):
                 logging.error(f'Error processing output: {e}')
         else:
             logging.debug('No new text to process')
+
+    @Slot(str)
+    def emit_streaming_token(self, token):
+        """
+        Slot to emit a streaming token to the current response window.
+        """
+        if hasattr(self, 'current_response_window') and self.current_response_window:
+            # noinspection PyTypeChecker
+            QtCore.QMetaObject.invokeMethod(
+                self.current_response_window,
+                'append_token',
+                QtCore.Qt.ConnectionType.QueuedConnection,
+                QtCore.Q_ARG(str, token)
+            )
 
     def create_tray_icon(self):
         """
@@ -757,59 +801,26 @@ class WritingToolApp(QtWidgets.QApplication):
                 
                 logging.debug('Sending request to AI provider')
                 
-                # Format conversation differently based on provider
-                if isinstance(self.current_provider, GeminiProvider):
-                    # For Gemini, use the proper history format with roles
-                    chat_messages = []
-                    
-                    # Convert our roles to Gemini's expected roles
-                    for msg in history:
-                        gemini_role = "model" if msg["role"] == "assistant" else "user"
-                        chat_messages.append({
-                            "role": gemini_role,
-                            "parts": msg["content"]
-                        })
-                    
-                    # Start chat with history
-                    chat = self.current_provider.model.start_chat(history=chat_messages)
-                    
-                    # Get response using the chat
-                    response = chat.send_message(question)
-                    response_text = response.text
-
-                elif isinstance(self.current_provider, OllamaProvider):  #
-                    # For Ollama, prepare messages with system instruction and history
-                    messages = [{"role": "system", "content": system_instruction}]
-
-                    for msg in history:
-                        messages.append({
-                            "role": msg["role"],
-                            "content": msg["content"]
-                        })
-
-                    # Get response from Ollama
-                    response_text = self.current_provider.get_response(
-                        system_instruction,
-                        messages,
-                        return_response=True
-                    )
-
+                # Decide whether to stream
+                if self.config.get('streaming', True):
+                    logging.debug('Using streaming for follow-up')
+                    full_response = ""
+                    try:
+                        for chunk in self.current_provider.get_response_stream(system_instruction, question):
+                            if chunk:
+                                full_response += chunk
+                                # noinspection PyTypeChecker
+                                QtCore.QMetaObject.invokeMethod(
+                                    self, 'emit_streaming_token',
+                                    QtCore.Qt.ConnectionType.QueuedConnection,
+                                    QtCore.Q_ARG(str, chunk)
+                                )
+                        response_text = full_response
+                    except Exception as e:
+                        logging.error(f"Streaming follow-up error: {e}")
+                        response_text = self.current_provider.get_response(system_instruction, question, return_response=True)
                 else:
-                    # For OpenAI/compatible providers, prepare messages array, add system message
-                    messages = [{"role": "system", "content": system_instruction}]
-
-                    # Add history messages (including latest question)
-                    for msg in history:
-                        # Convert 'assistant' role to 'assistant' for OpenAI
-                        role = "assistant" if msg["role"] == "assistant" else "user"
-                        messages.append({"role": role, "content": msg["content"]})
-                    
-                    # Get response by passing the full messages array
-                    response_text = self.current_provider.get_response(
-                        system_instruction,
-                        messages,  # Pass messages array directly
-                        return_response=True
-                    )
+                    response_text = self.current_provider.get_response(system_instruction, question, return_response=True)
 
                 logging.debug(f'Got response of length: {len(response_text)}')
                 

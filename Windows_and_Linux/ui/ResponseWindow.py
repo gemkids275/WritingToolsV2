@@ -312,6 +312,8 @@ class ResponseWindow(QtWidgets.QWidget):
         self.loading_container = None
         self.chat_area = None
         self.chat_history = []
+        self.current_streaming_display = None
+        self.current_streaming_text = ""
 
         # Setup thinking animation with full range of dots
         self.thinking_timer = QtCore.QTimer(self)
@@ -323,6 +325,7 @@ class ResponseWindow(QtWidgets.QWidget):
         self.init_ui()
         logging.debug('Connecting response signals')
         self.app.followup_response_signal.connect(self.handle_followup_response)
+        self.app.streaming_token_signal.connect(self.append_token)
         logging.debug('Response signals connected')
 
         # Set initial size for "Thinking..." state
@@ -616,9 +619,42 @@ class ResponseWindow(QtWidgets.QWidget):
             self._size_initialized = True
 
     @Slot(str)
+    def append_token(self, token):
+        """Append a token to the current streaming message display"""
+        if not token:
+            return
+            
+        if self.current_streaming_display is None:
+            self.stop_thinking_animation()
+            # Start a new message for streaming
+            self.current_streaming_text = token
+            self.current_streaming_display = self.chat_area.add_message(self.current_streaming_text)
+            
+            # Maintain consistent zoom level
+            if hasattr(self, 'current_text_display'):
+                self.current_streaming_display.zoom_factor = self.current_text_display.zoom_factor
+                self.current_streaming_display._apply_zoom()
+        else:
+            self.current_streaming_text += token
+            # Update HTML content with markdown
+            html = markdown2.markdown(self.current_streaming_text, extras=['tables', 'strike'])
+            self.current_streaming_display.setHtml(html)
+            self.current_streaming_display._update_size()
+            
+        # Smoothly scroll as content grows
+        self.chat_area.scroll_to_bottom()
+
+    @Slot(str)
     def set_text(self, text):
         """Set initial response text with enhanced handling"""
         if not text.strip():
+            return
+
+        # If we were streaming, this might be the final call with the full text
+        # or it might be a single-shot response.
+        if self.current_streaming_display:
+            self.current_streaming_display = None
+            self.current_streaming_text = ""
             return
                 
         # Always ensure chat history is initialized properly
@@ -640,21 +676,33 @@ class ResponseWindow(QtWidgets.QWidget):
     @Slot(str)
     def handle_followup_response(self, response_text):
         """Handle the follow-up response from the AI with improved layout handling"""
+        # Reset streaming state
+        self.current_streaming_display = None
+        self.current_streaming_text = ""
+
         if response_text:
+            # If we were already displaying it via streaming, don't add it again
+            # but ensure chat history is correct
+            already_in_history = any(msg["role"] == "assistant" and msg["content"] == response_text for msg in self.chat_history)
+            
+            if not already_in_history:
+                # If we didn't stream or it's different, add it
+                # (Actually, set_text logic implies we might have just finished streaming)
+                pass 
+
             self.loading_label.setVisible(False)
-            text_display = self.chat_area.add_message(response_text)
             
-            # Maintain consistent zoom level
-            if hasattr(self, 'current_text_display'):
-                text_display.zoom_factor = self.current_text_display.zoom_factor
-                text_display._apply_zoom()
-            
-            if len(self.chat_history) > 0 and self.chat_history[-1]["role"] != "assistant":
+            # If not streamed, add it now
+            # Find if the last assistant message is already there
+            last_msg = self.chat_history[-1] if self.chat_history else None
+            if last_msg and last_msg["role"] == "user":
+                # Need to add assistant response
+                self.chat_area.add_message(response_text)
                 self.chat_history.append({
                     "role": "assistant",
                     "content": response_text
                 })
-        
+
         self.stop_thinking_animation()
         self.input_field.setEnabled(True)
         

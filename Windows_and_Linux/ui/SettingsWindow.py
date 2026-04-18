@@ -297,6 +297,12 @@ class SettingsWindow(QtWidgets.QWidget):
         line.setFrameShadow(QtWidgets.QFrame.Shadow.Sunken)
         content_layout.addWidget(line)
 
+        # Add streaming toggle
+        self.streaming_checkbox = QtWidgets.QCheckBox(_("Real-time Streaming (Recommended)"))
+        self.streaming_checkbox.setStyleSheet(f"font-size: 16px; color: {'#ffffff' if colorMode == 'dark' else '#333333'};")
+        self.streaming_checkbox.setChecked(self.app.config.get('streaming', True))
+        content_layout.addWidget(self.streaming_checkbox)
+
         # Set up scroll area with content
         scroll_area.setWidget(scroll_content)
         main_layout.addWidget(scroll_area)
@@ -359,7 +365,7 @@ class SettingsWindow(QtWidgets.QWidget):
         else:
             self.app.create_tray_icon()
 
-        self.app.config['streaming'] = False
+        self.app.config['streaming'] = self.streaming_checkbox.isChecked()
         self.app.config['provider'] = self.provider_dropdown.currentText()
 
         self.app.providers[self.provider_dropdown.currentIndex()].save_config()
