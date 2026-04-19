@@ -209,41 +209,78 @@ class ChatContentScrollArea(QScrollArea):
     def add_message(self, text, is_user=False):
         # Remove bottom stretch
         self.layout.takeAt(self.layout.count() - 1)
-        
+
         # Create message container with improved width
         msg_container = QtWidgets.QWidget()
         msg_container.setSizePolicy(
             QtWidgets.QSizePolicy.Policy.Expanding,
             QtWidgets.QSizePolicy.Policy.Minimum
         )
-        
+
         # Message layout with minimal margins
         msg_layout = QtWidgets.QVBoxLayout(msg_container)
         msg_layout.setContentsMargins(0, 0, 0, 0)
-        msg_layout.setSpacing(0)
-        
+        msg_layout.setSpacing(2)
+
         # Create text display with updated width
         text_display = MarkdownTextBrowser(is_user_message=is_user)
-        
+        text_display.markdown_text = text
+
         # Enable tables extension in markdown2
         html = markdown2.markdown(text, extras=['tables', 'strike'])
         text_display.setHtml(html)
-        
+
         # Calculate proper text display size using full width
         text_display.document().setTextWidth(self.width() - 20)
         doc_size = text_display.document().size()
         text_display.setMinimumHeight(int(doc_size.height() + 16))
-        
+
         msg_layout.addWidget(text_display)
-        
+
+        # Copy button row (aligned right)
+        btn_row = QtWidgets.QHBoxLayout()
+        btn_row.setContentsMargins(0, 0, 0, 0)
+        btn_row.addStretch()
+        copy_btn = QtWidgets.QPushButton("Copy")
+        copy_btn.setFixedHeight(22)
+        copy_btn.setStyleSheet(f"""
+            QPushButton {{
+                background: transparent;
+                color: {'#888' if colorMode == 'dark' else '#999'};
+                border: none;
+                font-size: 11px;
+                padding: 0 4px;
+            }}
+            QPushButton:hover {{
+                color: {'#ccc' if colorMode == 'dark' else '#333'};
+            }}
+        """)
+        copy_btn.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
+
+        _icon_suffix = '_dark' if colorMode == 'dark' else '_light'
+        _copy_icon = QtGui.QIcon(os.path.join(os.path.dirname(sys.argv[0]), 'icons', f'copy{_icon_suffix}.png'))
+        _check_icon = QtGui.QIcon(os.path.join(os.path.dirname(sys.argv[0]), 'icons', f'check{_icon_suffix}.png'))
+        copy_btn.setIcon(_copy_icon)
+        copy_btn.setIconSize(QtCore.QSize(12, 12))
+
+        def _copy(checked=False, btn=copy_btn, td=text_display, ci=_copy_icon, ki=_check_icon):
+            QtWidgets.QApplication.clipboard().setText(td.markdown_text)
+            btn.setIcon(ki)
+            btn.setText("Copied!")
+            QtCore.QTimer.singleShot(1500, lambda: (btn.setIcon(ci), btn.setText("Copy")))
+
+        copy_btn.clicked.connect(_copy)
+        btn_row.addWidget(copy_btn)
+        msg_layout.addLayout(btn_row)
+
         self.layout.addWidget(msg_container)
         self.layout.addStretch()
-        
+
         if hasattr(self.parent(), 'current_text_display'):
             self.parent().current_text_display = text_display
-            
+
         QtCore.QTimer.singleShot(50, self.post_message_updates)
-        
+
         return text_display
 
     def post_message_updates(self):
@@ -300,9 +337,10 @@ class ChatContentScrollArea(QScrollArea):
 class ResponseWindow(QtWidgets.QWidget):
     """Enhanced response window with improved sizing and zoom handling"""
     
-    def __init__(self, app, title=_("Response"), parent=None):
+    def __init__(self, app, title=_("Response"), command_id=None, parent=None):
         super().__init__(parent)
         self.app = app
+        self.command_id = command_id
         self.original_title = title
         self.setWindowTitle(title)
         self.option = title.replace(" Result", "")
@@ -390,10 +428,10 @@ class ResponseWindow(QtWidgets.QWidget):
         copy_bar.addWidget(copy_hint)
         copy_bar.addStretch()
         
-        copy_md_btn = QtWidgets.QPushButton(_("Copy as Markdown"))
-        copy_md_btn.setStyleSheet(self.get_button_style())
-        copy_md_btn.clicked.connect(self.copy_first_response)  # Updated to only copy first response
-        copy_bar.addWidget(copy_md_btn)
+        self.copy_md_btn = QtWidgets.QPushButton(_("Copy All"))
+        self.copy_md_btn.setStyleSheet(self.get_button_style())
+        self.copy_md_btn.clicked.connect(self.copy_first_response)
+        copy_bar.addWidget(self.copy_md_btn)
         content_layout.addLayout(copy_bar)
 
         # Loading indicator
@@ -487,10 +525,14 @@ class ResponseWindow(QtWidgets.QWidget):
             return None
 
     def copy_first_response(self):
-        """Copy only the first model response as Markdown"""
-        response_text = self.get_first_response_text()
-        if response_text:
-            QtWidgets.QApplication.clipboard().setText(response_text)
+        """Copy all assistant responses as Markdown"""
+        all_responses = "\n\n".join(
+            msg["content"] for msg in self.chat_history if msg["role"] == "assistant"
+        )
+        if all_responses:
+            QtWidgets.QApplication.clipboard().setText(all_responses)
+            self.copy_md_btn.setText("Copied!")
+            QtCore.QTimer.singleShot(1500, lambda: self.copy_md_btn.setText(_("Copy as Markdown")))
 
     def get_button_style(self):
         return f"""
@@ -639,6 +681,7 @@ class ResponseWindow(QtWidgets.QWidget):
             # Update HTML content with markdown
             html = markdown2.markdown(self.current_streaming_text, extras=['tables', 'strike'])
             self.current_streaming_display.setHtml(html)
+            self.current_streaming_display.markdown_text = self.current_streaming_text
             self.current_streaming_display._update_size()
             
         # Smoothly scroll as content grows
@@ -650,9 +693,12 @@ class ResponseWindow(QtWidgets.QWidget):
         if not text.strip():
             return
 
-        # If we were streaming, this might be the final call with the full text
-        # or it might be a single-shot response.
+        # If we were streaming, save full response to history then return
         if self.current_streaming_display:
+            self.chat_history = [
+                {"role": "user", "content": f"{self.option}: {self.selected_text}"},
+                {"role": "assistant", "content": text}
+            ]
             self.current_streaming_display = None
             self.current_streaming_text = ""
             return
@@ -676,28 +722,17 @@ class ResponseWindow(QtWidgets.QWidget):
     @Slot(str)
     def handle_followup_response(self, response_text):
         """Handle the follow-up response from the AI with improved layout handling"""
-        # Reset streaming state
+        was_streaming = self.current_streaming_display is not None
         self.current_streaming_display = None
         self.current_streaming_text = ""
 
         if response_text:
-            # If we were already displaying it via streaming, don't add it again
-            # but ensure chat history is correct
-            already_in_history = any(msg["role"] == "assistant" and msg["content"] == response_text for msg in self.chat_history)
-            
-            if not already_in_history:
-                # If we didn't stream or it's different, add it
-                # (Actually, set_text logic implies we might have just finished streaming)
-                pass 
-
             self.loading_label.setVisible(False)
-            
-            # If not streamed, add it now
-            # Find if the last assistant message is already there
+
             last_msg = self.chat_history[-1] if self.chat_history else None
             if last_msg and last_msg["role"] == "user":
-                # Need to add assistant response
-                self.chat_area.add_message(response_text)
+                if not was_streaming:
+                    self.chat_area.add_message(response_text)
                 self.chat_history.append({
                     "role": "assistant",
                     "content": response_text

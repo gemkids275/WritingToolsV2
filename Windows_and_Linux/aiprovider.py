@@ -39,9 +39,9 @@ from typing import List
 
 # External libraries
 import anthropic
-from mistralai import Mistral
-import google.generativeai as genai
-from google.generativeai.types import HarmBlockThreshold, HarmCategory
+from mistralai.client import Mistral
+from google import genai
+from google.genai import types as genai_types
 from ollama import Client as OllamaClient
 from openai import OpenAI
 from PySide6 import QtWidgets
@@ -116,7 +116,7 @@ class TextSetting(AIProviderSetting):
         label = QtWidgets.QLabel(self.display_name)
         label.setStyleSheet(f"font-size: 16px; color: {'#ffffff' if colorMode=='dark' else '#333333'};")
         row_layout.addWidget(label)
-        self.input = QtWidgets.QLineEdit(self.internal_value)
+        self.input = QtWidgets.QLineEdit(self.internal_value or "")
         self.input.setStyleSheet(f"""
             font-size: 16px;
             padding: 5px;
@@ -125,7 +125,29 @@ class TextSetting(AIProviderSetting):
             border: 1px solid {'#666' if colorMode=='dark' else '#ccc'};
         """)
         self.input.setPlaceholderText(self.description)
-        row_layout.addWidget(self.input)
+        if self.name == "api_key":
+            self.input.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
+            toggle_btn = QtWidgets.QPushButton("Show")
+            toggle_btn.setFixedWidth(52)
+            toggle_btn.setStyleSheet(
+                f"QPushButton {{ font-size: 13px; padding: 5px 6px; "
+                f"background-color: {'#555' if colorMode=='dark' else '#e0e0e0'}; "
+                f"color: {'#fff' if colorMode=='dark' else '#333'}; "
+                f"border: 1px solid {'#666' if colorMode=='dark' else '#ccc'}; border-radius: 4px; }} "
+                f"QPushButton:hover {{ background-color: {'#666' if colorMode=='dark' else '#d0d0d0'}; }}"
+            )
+            def _toggle(_checked=False, inp=self.input, btn=toggle_btn):
+                if inp.echoMode() == QtWidgets.QLineEdit.EchoMode.Password:
+                    inp.setEchoMode(QtWidgets.QLineEdit.EchoMode.Normal)
+                    btn.setText("Hide")
+                else:
+                    inp.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
+                    btn.setText("Show")
+            toggle_btn.clicked.connect(_toggle)
+            row_layout.addWidget(self.input)
+            row_layout.addWidget(toggle_btn)
+        else:
+            row_layout.addWidget(self.input)
         layout.addLayout(row_layout)
 
     def set_value(self, value):
@@ -318,6 +340,13 @@ class AIProvider(ABC):
         """
         pass
 
+    def _require_client(self):
+        if not getattr(self, 'client', None):
+            raise RuntimeError(
+                f"{self.provider_name} API key is not configured. "
+                "Please set your API key in Settings → AI Providers."
+            )
+
     @abstractmethod
     def cancel(self):
         """
@@ -350,16 +379,25 @@ class AnthropicProvider(AIProvider):
             )
         ]
         super().__init__(app, "Anthropic", settings,
-            "• Anthropic's Claude is known for being highly steerable and safer.\n"
-            "• Optimized for high-quality writing and complex reasoning.",
+            "• Anthropic's Claude is renowned for high-quality writing, safe reasoning, and large context windows.\n"
+            "• Ideal for complex analysis and creative writing tasks.\n"
+            "• Supports Claude 3.5 Sonnet, Haiku, and Opus models.",
             "anthropic",
             "Get API Key",
             lambda: webbrowser.open("https://console.anthropic.com/settings/keys"))
 
+    def before_load(self):
+        self.client = None
+
     def after_load(self):
-        self.client = anthropic.Anthropic(api_key=self.api_key)
+        if self.api_key:
+            self.client = anthropic.Anthropic(api_key=self.api_key)
+
+    def before_load(self):
+        self.client = None
 
     def get_response(self, system_instruction: str, prompt: str, images: list = None, return_response: bool = False) -> str:
+        self._require_client()
         self.close_requested = False
         content = []
         if images:
@@ -401,6 +439,7 @@ class AnthropicProvider(AIProvider):
                 })
         content.append({"type": "text", "text": prompt})
 
+        self._require_client()
         with self.client.messages.stream(
             model=self.model_name,
             max_tokens=4096,
@@ -439,15 +478,22 @@ class MistralProvider(AIProvider):
             )
         ]
         super().__init__(app, "Mistral", settings,
-            "• Mistral AI provides efficient and open-weight models.",
+            "• Mistral AI offers state-of-the-art open models with high efficiency.\n"
+            "• Great performance in both European languages and coding.\n"
+            "• Supports Mistral Large, Small, and vision-capable Pixtral.",
             "mistral",
             "Get API Key",
             lambda: webbrowser.open("https://console.mistral.ai/api-keys/"))
 
+    def before_load(self):
+        self.client = None
+
     def after_load(self):
-        self.client = Mistral(api_key=self.api_key)
+        if self.api_key:
+            self.client = Mistral(api_key=self.api_key)
 
     def get_response(self, system_instruction: str, prompt: str, images: list = None, return_response: bool = False) -> str:
+        self._require_client()
         self.close_requested = False
         messages = [{"role": "system", "content": system_instruction}]
         
@@ -471,6 +517,7 @@ class MistralProvider(AIProvider):
         return response_text
 
     def get_response_stream(self, system_instruction: str, prompt: str, images: list = None):
+        self._require_client()
         self.close_requested = False
         messages = [{"role": "system", "content": system_instruction}]
         content = [{"type": "text", "text": prompt}]
@@ -519,23 +566,29 @@ class OpenRouterProvider(AIProvider):
             )
         ]
         super().__init__(app, "OpenRouter", settings,
-            "• OpenRouter provides access to dozens of models via a single API.\n"
-            "• Unified interface for Claude, GPT, Llama, and more.",
+            "• OpenRouter provides unified access to over 100+ AI models (Claude, Llama, GPT, etc.).\n"
+            "• Offers the most competitive pricing and many free-tier models.\n"
+            "• Best for power users who want to switch models frequently.",
             "openrouter",
             "Get API Key",
             lambda: webbrowser.open("https://openrouter.ai/keys"))
 
+    def before_load(self):
+        self.client = None
+
     def after_load(self):
-        self.client = OpenAI(
-            base_url="https://openrouter.ai/api/v1",
-            api_key=self.api_key,
-            default_headers={
-                "HTTP-Referer": "https://github.com/gemkids275/WritingToolsV2",
-                "X-Title": "Writing Tools V2",
-            }
-        )
+        if self.api_key:
+            self.client = OpenAI(
+                base_url="https://openrouter.ai/api/v1",
+                api_key=self.api_key,
+                default_headers={
+                    "HTTP-Referer": "https://github.com/gemkids275/WritingToolsV2",
+                    "X-Title": "Writing Tools V2",
+                }
+            )
 
     def get_response(self, system_instruction: str, prompt: str, images: list = None, return_response: bool = False) -> str:
+        self._require_client()
         self.close_requested = False
         content = [{"type": "text", "text": prompt}]
         if images:
@@ -559,6 +612,7 @@ class OpenRouterProvider(AIProvider):
         return response_text
 
     def get_response_stream(self, system_instruction: str, prompt: str, images: list = None):
+        self._require_client()
         self.close_requested = False
         content = [{"type": "text", "text": prompt}]
         if images:
@@ -595,7 +649,7 @@ class GeminiProvider(AIProvider):
     """
     def __init__(self, app):
         self.close_requested = False
-        self.model = None
+        self.client = None
 
         settings = [
             TextSetting(name="api_key", display_name="API Key", description="Paste your Gemini API key here"),
@@ -615,34 +669,48 @@ class GeminiProvider(AIProvider):
             )
         ]
         super().__init__(app, "Gemini (Recommended)", settings,
-            "• Google’s Gemini is a powerful AI model available for free!\n"
-            "• An API key is required to connect to Gemini on your behalf.\n"
-            "• Click the button below to get your API key.",
+            "• Google’s Gemini 1.5 & 2.0 (Gemma) are multimodal models with world-class performance.\n"
+            "• Offers extremely fast inference and massive context windows (up to 1M+ tokens).\n"
+            "• Get a free API key to start using Gemini Flash and Pro models.",
             "gemini",
             "Get API Key",
             lambda: webbrowser.open("https://aistudio.google.com/app/apikey"))
 
-    def get_response(self, system_instruction: str, prompt: str, images: list = None, return_response: bool = False) -> str:
-        """
-        Generate content using Gemini.
-        """
-        self.close_requested = False
-
-        contents = [system_instruction]
-        if images:
-            for img_data in images:
-                contents.append({
-                    "mime_type": "image/jpeg",
-                    "data": img_data
-                })
-        contents.append(prompt)
-
-        response = self.model.generate_content(
-            contents=contents,
-            stream=False
+    def _build_config(self, system_instruction: str) -> genai_types.GenerateContentConfig:
+        return genai_types.GenerateContentConfig(
+            system_instruction=system_instruction,
+            max_output_tokens=1000,
+            temperature=0.5,
+            safety_settings=[
+                genai_types.SafetySetting(category='HARM_CATEGORY_HARASSMENT', threshold='BLOCK_NONE'),
+                genai_types.SafetySetting(category='HARM_CATEGORY_HATE_SPEECH', threshold='BLOCK_NONE'),
+                genai_types.SafetySetting(category='HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold='BLOCK_NONE'),
+                genai_types.SafetySetting(category='HARM_CATEGORY_DANGEROUS_CONTENT', threshold='BLOCK_NONE'),
+            ]
         )
 
+    def _build_contents(self, prompt: str, images: list = None) -> list:
+        parts = []
+        if images:
+            for img_data in images:
+                parts.append(genai_types.Part.from_bytes(
+                    data=base64.b64decode(img_data),
+                    mime_type='image/jpeg'
+                ))
+        parts.append(genai_types.Part.from_text(text=prompt))
+        return parts
+
+
+
+    def get_response(self, system_instruction: str, prompt: str, images: list = None, return_response: bool = False) -> str:
+        self.close_requested = False
         try:
+            self._require_client()
+            response = self.client.models.generate_content(
+                model=self.model_name,
+                contents=self._build_contents(prompt, images),
+                config=self._build_config(system_instruction)
+            )
             response_text = response.text.rstrip('\n')
             if not return_response and not hasattr(self.app, 'current_response_window'):
                 self.app.output_ready_signal.emit(response_text)
@@ -650,58 +718,40 @@ class GeminiProvider(AIProvider):
             return response_text
         except Exception as e:
             logging.error(f"Error processing Gemini response: {e}")
+            error_msg = str(e)
             if not return_response:
-                self.app.output_ready_signal.emit("An error occurred while processing the response.")
+                self.app.output_ready_signal.emit(error_msg)
+            return error_msg
         finally:
             self.close_requested = False
-
         return ""
 
     def get_response_stream(self, system_instruction: str, prompt: str, images: list = None):
-        """
-        Generate content using Gemini with streaming.
-        """
+        self._require_client()
         self.close_requested = False
-        contents = [system_instruction]
-        if images:
-            for img_data in images:
-                contents.append({
-                    "mime_type": "image/jpeg",
-                    "data": img_data
-                })
-        contents.append(prompt)
-
-        response = self.model.generate_content(
-            contents=contents,
-            stream=True
-        )
-
-        for chunk in response:
+        for chunk in self.client.models.generate_content_stream(
+            model=self.model_name,
+            contents=self._build_contents(prompt, images),
+            config=self._build_config(system_instruction)
+        ):
             if self.close_requested:
                 break
-            yield chunk.text
+            if chunk.text:
+                yield chunk.text
 
     def cancel(self):
         self.close_requested = True
 
     def load_config(self, config: dict):
-        """
-        Load configuration, deobfuscating the API key if needed.
-        """
-        # Deobfuscate API key before loading
         if 'api_key' in config:
-            config = config.copy()  # Don't modify the original
+            config = config.copy()
             config['api_key'] = deobfuscate_api_key(config['api_key'])
         super().load_config(config)
 
     def save_config(self):
-        """
-        Save configuration, obfuscating the API key for storage.
-        """
         config = {}
         for setting in self.settings:
             value = setting.get_value()
-            # Obfuscate API key before saving
             if setting.name == 'api_key':
                 value = obfuscate_api_key(value)
             config[setting.name] = value
@@ -709,27 +759,11 @@ class GeminiProvider(AIProvider):
         self.app.save_config(self.app.config)
 
     def after_load(self):
-        """
-        Configure the google.generativeai client and create the generative model.
-        """
-        genai.configure(api_key=self.api_key)
-        self.model = genai.GenerativeModel(
-            model_name=self.model_name,
-            generation_config=genai.types.GenerationConfig(
-                candidate_count=1,
-                max_output_tokens=1000,
-                temperature=0.5
-            ),
-            safety_settings={
-                HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
-                HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
-                HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
-                HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
-            }
-        )
+        if self.api_key:
+            self.client = genai.Client(api_key=self.api_key)
 
     def before_load(self):
-        self.model = None
+        self.client = None
 
     def cancel(self):
         self.close_requested = True
@@ -754,14 +788,19 @@ class OpenAICompatibleProvider(AIProvider):
             TextSetting("api_model", "API Model", "gpt-4o-mini", "E.g. gpt-4o-mini"),
         ]
         super().__init__(app, "OpenAI Compatible (For Experts)", settings,
-            "• Connect to ANY OpenAI-compatible API (v1/chat/completions).\n"
-            "• You must abide by the service's Terms of Service.",
+            "• Connect to ANY OpenAI-compatible service (e.g. OpenAI, Groq, Together AI, Perplexity).\n"
+            "• Supports custom Base URLs, Organizations, and Project IDs.\n"
+            "• Perfect for local LLM servers (LM Studio, LocalAI) or specialized providers.",
             "openai", "Get OpenAI API Key", lambda: webbrowser.open("https://platform.openai.com/account/api-keys"))
+
+    def before_load(self):
+        self.client = None
 
     def get_response(self, system_instruction: str, prompt: str, images: list = None, return_response: bool = False) -> str:
         """
         Send a chat request to the OpenAI-compatible API.
         """
+        self._require_client()
         self.close_requested = False
 
         content = [{"type": "text", "text": prompt}]
@@ -801,12 +840,13 @@ class OpenAICompatibleProvider(AIProvider):
                     )
                 else:
                     self.app.show_message_signal.emit("Error", f"An error occurred: {error_str}")
-            return ""
+            return error_str
 
     def get_response_stream(self, system_instruction: str, prompt: str, images: list = None):
         """
         Send a streaming chat request to the OpenAI-compatible API.
         """
+        self._require_client()
         self.close_requested = False
         content = [{"type": "text", "text": prompt}]
         if images:
@@ -892,10 +932,11 @@ class OllamaProvider(AIProvider):
                 self.app.output_ready_signal.emit(response_text)
             return response_text
         except Exception as e:
-            logging.error(f"Error during Ollama chat: {e}")
+            error_str = str(e)
+            logging.error(f"Error during Ollama chat: {error_str}")
             if not return_response:
-                self.app.output_ready_signal.emit("An error occurred during Ollama chat.")
-            return ""
+                self.app.output_ready_signal.emit(error_str)
+            return error_str
 
     def get_response_stream(self, system_instruction: str, prompt: str, images: list = None):
         """

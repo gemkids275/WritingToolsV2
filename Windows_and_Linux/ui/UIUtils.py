@@ -13,12 +13,11 @@ class UIUtils:
         """
         Clear the layout of all widgets.
         """
-        while ((child := layout.takeAt(0)) != None):
-            #If the child is a layout, delete it
+        while (child := layout.takeAt(0)) is not None:
             if child.layout():
                 cls.clear_layout(child.layout())
                 child.layout().deleteLater()
-            else:
+            elif child.widget():
                 child.widget().deleteLater()
 
     @classmethod

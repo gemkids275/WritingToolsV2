@@ -23,7 +23,7 @@ class OnboardingWindow(QtWidgets.QWidget):
 
     def init_ui(self):
         logging.debug('Initializing onboarding UI')
-        self.setWindowTitle(_('Welcome to Writing Tools'))
+        self.setWindowTitle(_('Welcome to AI Shortcuts'))
         self.resize(600, 500)
 
         UIUtils.setup_window_and_layout(self)
@@ -39,21 +39,20 @@ class OnboardingWindow(QtWidgets.QWidget):
     def show_welcome_screen(self):
         UIUtils.clear_layout(self.content_layout)
 
-        title_label = QtWidgets.QLabel(_("Welcome to Writing Tools")+"!")
+        title_label = QtWidgets.QLabel(_("Welcome to AI Shortcuts")+"!")
         title_label.setStyleSheet(f"font-size: 24px; font-weight: bold; color: {'#ffffff' if colorMode == 'dark' else '#333333'};")
         self.content_layout.addWidget(title_label, alignment=QtCore.Qt.AlignmentFlag.AlignCenter)
 
         features_text = f"""
-        • {_('Instantly optimize your writing with AI by selecting your text and invoking Writing Tools with "ctrl+space", anywhere.')} 
+        • {_('Instantly optimize your writing with AI by selecting your text and invoking AI Shortcuts with "ctrl+space", anywhere.')} 
 
-        • {_('Get a summary you can chat with of articles, YouTube videos, or documents by select all text with "ctrl+a"')}
-          {_('(or select the YouTube transcript from its description), invoking Writing Tools, and choosing Summary.')}
+        • {_('Get a comprehensive summary of articles, YouTube videos, or documents by selecting all text (ctrl+a) and invoking AI Shortcuts.')}
 
-        • {_('Chat with AI anytime by invoking Writing Tools without selecting any text.')}
+        • {_('Chat with world-class AI models anytime (even without selecting text) to brainstorm, code, or translate.')}
 
         • {_('Supports an extensive range of AI models:')}
-            - {_('Gemini 2.0')}
-            - {_('ANY OpenAI Compatible API — including local LLMs!')}
+            - {_('Gemini 2.0, Claude 3.5, GPT-4o, Mistral Large')}
+            - {_('Local LLMs via Ollama & ANY OpenAI Compatible API!')}
         """
         features_label = QtWidgets.QLabel(features_text)
         features_label.setStyleSheet(f"font-size: 16px; color: {'#ffffff' if colorMode == 'dark' else '#333333'};")

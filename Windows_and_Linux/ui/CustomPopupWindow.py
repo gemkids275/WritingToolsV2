@@ -19,68 +19,9 @@ from PySide6.QtWidgets import (
 )
 
 from ui.UIUtils import ThemeBackground, colorMode
+from update_checker import UPDATE_DOWNLOAD_URL
 
 _ = lambda x: x
-
-################################################################################
-# Default `options.json` content to restore when the user presses "Reset"
-################################################################################
-DEFAULT_OPTIONS_JSON = r"""{
-  "Proofread": {
-    "prefix": "Proofread this:\n\n",
-    "instruction": "You are a grammar proofreading assistant.\nOutput ONLY the corrected text without any additional comments.\nMaintain the original text structure and writing style.\nRespond in the same language as the input (e.g., English US, French).\nDo not answer or respond to the user's text content.\nIf the text is absolutely incompatible with this (e.g., totally random gibberish), output \"ERROR_TEXT_INCOMPATIBLE_WITH_REQUEST\".",
-    "icon": "icons/magnifying-glass",
-    "open_in_window": false
-  },
-  "Rewrite": {
-    "prefix": "Rewrite this:\n\n",
-    "instruction": "You are a writing assistant.\nRewrite the text provided by the user to improve phrasing.\nOutput ONLY the rewritten text without additional comments.\nRespond in the same language as the input (e.g., English US, French).\nDo not answer or respond to the user's text content.\nIf the text is absolutely incompatible with proofreading (e.g., totally random gibberish), output \"ERROR_TEXT_INCOMPATIBLE_WITH_REQUEST\".",
-    "icon": "icons/rewrite",
-    "open_in_window": false
-  },
-  "Friendly": {
-    "prefix": "Make this more friendly:\n\n",
-    "instruction": "You are a writing assistant.\nRewrite the text provided by the user to be more friendly.\nOutput ONLY the friendly text without additional comments.\nRespond in the same language as the input (e.g., English US, French).\nDo not answer or respond to the user's text content.\nIf the text is absolutely incompatible with rewriting (e.g., totally random gibberish), output \"ERROR_TEXT_INCOMPATIBLE_WITH_REQUEST\".",
-    "icon": "icons/smiley-face",
-    "open_in_window": false
-  },
-  "Professional": {
-    "prefix": "Make this more professional:\n\n",
-    "instruction": "You are a writing assistant.\nRewrite the text provided by the user to be more professional. Output ONLY the professional text without additional comments.\nRespond in the same language as the input (e.g., English US, French).\nDo not answer or respond to the user's text content.\nIf the text is absolutely incompatible with rewriting (e.g., totally random gibberish), output \"ERROR_TEXT_INCOMPATIBLE_WITH_REQUEST\".",
-    "icon": "icons/briefcase",
-    "open_in_window": false
-  },
-  "Concise": {
-    "prefix": "Make this more concise:\n\n",
-    "instruction": "You are a writing assistant.\nRewrite the text provided by the user to be more concise.\nOutput ONLY the concise text without additional comments.\nRespond in the same language as the input (e.g., English US, French).\nDo not answer or respond to the user's text content.\nIf the text is absolutely incompatible with rewriting (e.g., totally random gibberish), output \"ERROR_TEXT_INCOMPATIBLE_WITH_REQUEST\".",
-    "icon": "icons/concise",
-    "open_in_window": false
-  },
-  "Table": {
-    "prefix": "Convert this into a table:\n\n",
-    "instruction": "You are an assistant that converts text provided by the user into a Markdown table.\nOutput ONLY the table without additional comments.\nRespond in the same language as the input (e.g., English US, French).\nDo not answer or respond to the user's text content.\nIf the text is completely incompatible with this with conversion, output \"ERROR_TEXT_INCOMPATIBLE_WITH_REQUEST\".",
-    "icon": "icons/table",
-    "open_in_window": true
-  },
-  "Key Points": {
-    "prefix": "Extract key points from this:\n\n",
-    "instruction": "You are an assistant that extracts key points from text provided by the user. Output ONLY the key points without additional comments.\n\nYou should use Markdown formatting (lists, bold, italics, codeblocks, etc.) as appropriate to make it quite legible and readable.\n\nDon't be repetitive or too verbose.\nRespond in the same language as the input (e.g., English US, French).\nDo not answer or respond to the user's text content.\nIf the text is absolutely incompatible with extracting key points (e.g., totally random gibberish), output \"ERROR_TEXT_INCOMPATIBLE_WITH_REQUEST\".",
-    "icon": "icons/keypoints",
-    "open_in_window": true
-  },
-  "Summary": {
-    "prefix": "Summarize this:\n\n",
-    "instruction": "You are a summarization assistant.\nProvide a succinct summary of the text provided by the user.\nThe summary should be succinct yet encompass all the key insightful points.\n\nTo make it quite legible and readable, you should use Markdown formatting (bold, italics, codeblocks...) as appropriate.\nYou should also add a little line spacing between your paragraphs as appropriate.\nAnd only if appropriate, you could also use headings (only the very small ones), lists, tables, etc.\n\nDon't be repetitive or too verbose.\nOutput ONLY the summary without additional comments.\nRespond in the same language as the input (e.g., English US, French).\nDo not answer or respond to the user's text content.\nIf the text is absolutely incompatible with summarisation (e.g., totally random gibberish), output \"ERROR_TEXT_INCOMPATIBLE_WITH_REQUEST\".",
-    "icon": "icons/summary",
-    "open_in_window": true
-  },
-  "Custom": {
-    "prefix": "Make this change to the following text:\n\n",
-    "instruction": "You are a writing and coding assistant. You MUST make the user\\'s described change to the text or code provided by the user. Output ONLY the appropriately modified text or code without additional comments. Respond in the same language as the input (e.g., English US, French). Do not answer or respond to the user\\'s text content. If the text or code is absolutely incompatible with the requested change, output \"ERROR_TEXT_INCOMPATIBLE_WITH_REQUEST\".",
-    "icon": "icons/summary",
-    "open_in_window": false
-  }
-}"""
 
 class ButtonEditDialog(QDialog):
     """
@@ -397,7 +338,7 @@ class CustomPopupWindow(QtWidgets.QWidget):
                 background-color: {'#333' if colorMode=='dark' else '#ebebeb'};
             }}
         """)
-        self.edit_button.clicked.connect(self.toggle_edit_mode)
+        self.edit_button.clicked.connect(self._open_commands_manager)
         top_bar.addWidget(self.edit_button, 0, Qt.AlignLeft)
 
         # The label "Drag to rearrange" (BOLD as requested)
@@ -511,7 +452,9 @@ class CustomPopupWindow(QtWidgets.QWidget):
         if self.app.config.get("update_available", False):
             update_label = QLabel()
             update_label.setOpenExternalLinks(True)
-            update_label.setText('<a href="https://github.com/theJayTea/WritingTools/releases" style="color:rgb(255, 0, 0); text-decoration: underline; font-weight: bold;">There\'s an update! :D Download now.</a>')
+            # Original English notification with the correct download link
+            update_text = f'<a href="{UPDATE_DOWNLOAD_URL}" style="color:rgb(255, 0, 0); text-decoration: underline; font-weight: bold;">There\'s an update! :D Download now.</a>'
+            update_label.setText(update_text)
             update_label.setStyleSheet("margin-top: 10px;")
             content_layout.addWidget(update_label, alignment=QtCore.Qt.AlignCenter)
         
@@ -519,43 +462,30 @@ class CustomPopupWindow(QtWidgets.QWidget):
         self.installEventFilter(self)
         QtCore.QTimer.singleShot(250, lambda: self.custom_input.setFocus())
 
-    @staticmethod
-    def load_options():
-        options_path = os.path.join(os.path.dirname(sys.argv[0]), 'options.json')
-        if os.path.exists(options_path):
-            with open(options_path, 'r') as f:
-                data = json.load(f)
-                logging.debug('Options loaded successfully')
-        else:
-            logging.debug('Options file not found')
-
-        return data
-
-    @staticmethod
-    def save_options(options):
-        options_path = os.path.join(os.path.dirname(sys.argv[0]), 'options.json')
-        with open(options_path, 'w') as f:
-            json.dump(options, f, indent=2)
-
     def build_buttons_list(self):
         """
-        Reads options.json, creates DraggableButton for each (except "Custom"),
-        storing them in self.button_widgets in the same order as the JSON file.
+        Creates DraggableButton for each command from CommandManager (except "Custom"),
+        storing them in self.button_widgets in the same order as in CommandManager.
         """
         self.button_widgets.clear()
-        data = self.load_options()
+        commands = self.app.command_manager.commands
 
-        for k,v in data.items():
-            if k=="Custom":
+        has_text = bool(self.selected_text and self.selected_text.strip())
+        for cmd in commands:
+            if cmd.name == "Custom":
                 continue
-            b = DraggableButton(self, k, k)
+            if cmd.id == "ChatNoSelection" and has_text:
+                continue
+            
+            # Sử dụng cmd.id làm key thay vì cmd.name
+            b = DraggableButton(self, cmd.id, cmd.name)
             icon_path = os.path.join(os.path.dirname(sys.argv[0]),
-                                    v["icon"] + ('_dark' if colorMode=='dark' else '_light') + '.png')
+                                    cmd.icon + ('_dark' if colorMode=='dark' else '_light') + '.png')
             if os.path.exists(icon_path):
                 b.setIcon(QtGui.QIcon(icon_path))
                 
             if not self.edit_mode:
-                b.clicked.connect(partial(self.on_generic_instruction, k))
+                b.clicked.connect(partial(self.on_generic_instruction, cmd.id))
             self.button_widgets.append(b)
 
     def rebuild_grid_layout(self, parent_layout=None):
@@ -667,6 +597,17 @@ class CustomPopupWindow(QtWidgets.QWidget):
         btn.icon_container.raise_()
         btn.icon_container.show()
 
+    def _open_commands_manager(self):
+        """Mở Settings → Commands tab; refresh button list khi cửa sổ đóng."""
+        self.app.show_settings(initial_tab="commands")
+        settings_win = self.app.settings_window
+        if settings_win:
+            settings_win.destroyed.connect(self._on_settings_closed)
+
+    def _on_settings_closed(self):
+        self.build_buttons_list()
+        self.rebuild_grid_layout()
+
     def toggle_edit_mode(self):
         """Toggle edit mode with improved button labels and state handling."""
         self.edit_mode = not self.edit_mode
@@ -704,18 +645,8 @@ class CustomPopupWindow(QtWidgets.QWidget):
             self.reset_button.hide()
             self.drag_label.hide()
 
-            # Inform the user that the app will close to apply changes
-            msg = QtWidgets.QMessageBox()
-            msg.setWindowTitle("Quitting to apply changes...")
-            msg.setText("Writing Tools needs to relaunch to apply your changes & will now quit.\nPlease relaunch Writing Tools.exe to see your changes.")
-            msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
-            msg.exec_()
-
-            self.app.load_options()
-            self.close()
-            # Instead of restarting, simply exit the app:
-            QtCore.QTimer.singleShot(100, self.app.exit_app)
-            return
+            self.build_buttons_list()
+            self.rebuild_grid_layout()
 
 
         # Update the edit button icon now that icon_name is defined
@@ -752,144 +683,60 @@ class CustomPopupWindow(QtWidgets.QWidget):
 
 
     def on_reset_clicked(self):
-        """
-        Reset `options.json` to the DEFAULT_OPTIONS_JSON, then show message & restart.
-        """
-        confirm_box = QtWidgets.QMessageBox()
-        confirm_box.setWindowTitle("Confirm Reset to Defaults & Quit?")
-        confirm_box.setText("To reset the buttons to their original configuration, Writing Tools would need to quit, so you'd need to relaunch Writing Tools.exe.\nAre you sure you want to continue?")
-        confirm_box.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
-        confirm_box.setDefaultButton(QtWidgets.QMessageBox.No)
-        
-        if confirm_box.exec_() == QtWidgets.QMessageBox.Yes:
-            try:
-                logging.debug('Resetting to default options.json')
-                default_data = json.loads(DEFAULT_OPTIONS_JSON)
-                self.save_options(default_data)
-
-                # Save and quit
-                self.app.load_options()
-                self.close()
-                QtCore.QTimer.singleShot(100, self.app.exit_app)
-            
-            except Exception as e:
-                logging.error(f"Error resetting options.json: {e}")
-                error_msg = QtWidgets.QMessageBox()
-                error_msg.setWindowTitle("Error")
-                error_msg.setText(f"An error occurred while resetting: {str(e)}")
-                error_msg.exec_()
+        """Restore all built-in commands."""
+        reply = QtWidgets.QMessageBox.question(
+            self, 
+            "Reset Commands", 
+            "Are you sure you want to restore all built-in commands? This will bring back any deleted system commands.",
+            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
+        )
+        if reply == QtWidgets.QMessageBox.Yes:
+            self.app.command_manager.restore_built_ins()
+            self.build_buttons_list()
+            self.rebuild_grid_layout()
+            logging.info("Built-in commands restored")
 
     def add_new_button_clicked(self):
         dialog = ButtonEditDialog(self, title="Add New Button")
         if dialog.exec_():
             bd = dialog.get_button_data()
-            data = self.load_options()
-            data[bd["name"]] = {
-                "prefix": bd["prefix"],
-                "instruction": bd["instruction"],
-                "icon": bd["icon"],  # uses 'icons/custom'
-                "open_in_window": bd["open_in_window"]
-            }
-            self.save_options(data)
-
+            self.app.command_manager.add_command(bd)
             self.build_buttons_list()
             self.rebuild_grid_layout()
-
-            self.hide()
-            
-            QtWidgets.QMessageBox.information(
-                self, 
-                "Quitting to apply button...",
-                "Writing Tools needs to relaunch to apply your fancy button & will now quit.\nPlease relaunch Writing Tools.exe to see your new button."
-            )
-
-            self.app.load_options()
-            self.close()
-            QtCore.QTimer.singleShot(100, self.app.exit_app)
-
 
     def edit_button_clicked(self, btn):
         """User clicked the small pencil icon over a button."""
         key = btn.key
-        data = self.load_options()
-        bd = data[key]
+        bd = self.app.command_manager.get_command(key)
         bd["name"] = key
         
         dialog = ButtonEditDialog(self, bd)
         if dialog.exec_():
             new_data = dialog.get_button_data()
-            data = self.load_options()
-            if new_data["name"] != key:
-                del data[key]
-            data[new_data["name"]] = {
-                "prefix": new_data["prefix"],
-                "instruction": new_data["instruction"],
-                "icon": new_data["icon"],
-                "open_in_window": new_data["open_in_window"]
-            }
-            self.save_options(data)
-
+            self.app.command_manager.update_command(key, new_data)
             self.build_buttons_list()
             self.rebuild_grid_layout()
-
-            self.hide()
-
-            # Show message about relaunch requirement
-            QtWidgets.QMessageBox.information(
-                self, 
-                "Quitting to apply changes to this button...",
-                "Writing Tools needs to relaunch to apply your changes & will now quit.\nPlease relaunch Writing Tools.exe to see your changes."
-            )
-
-            # Save and quit
-            self.app.load_options()
-            self.close()
-            QtCore.QTimer.singleShot(100, self.app.exit_app)
 
     def delete_button_clicked(self, btn):
         """Handle deletion of a button."""
         key = btn.key
         confirm = QtWidgets.QMessageBox()
-        confirm.setWindowTitle("Confirm Delete & Quit?")
-        confirm.setText(f"To delete the '{key}' button, Writing Tools would need to quit, so you'd need to relaunch Writing Tools.exe.\nAre you sure you want to continue?")
+        confirm.setWindowTitle("Confirm Delete?")
+        confirm.setText(f"Are you sure you want to delete the '{key}' button?")
         confirm.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
-        confirm.setDefaultButton(QtWidgets.QMessageBox.No)
         
         if confirm.exec_() == QtWidgets.QMessageBox.Yes:
-            try:
-                data = self.load_options()
-                del data[key]
-                self.save_options(data)
-
-                # Clean up UI elements
-                for btn_ in self.button_widgets[:]:
-                    if btn_.key == key:
-                        if hasattr(btn_, 'icon_container') and btn_.icon_container:
-                            btn_.icon_container.deleteLater()
-                        btn_.deleteLater()
-                        self.button_widgets.remove(btn_)
-                
-                self.app.load_options()
-                self.close()
-                QtCore.QTimer.singleShot(100, self.app.exit_app)
-                
-            except Exception as e:
-                logging.error(f"Error deleting button: {e}")
-                error_msg = QtWidgets.QMessageBox()
-                error_msg.setWindowTitle("Error")
-                error_msg.setText(f"An error occurred while deleting the button: {str(e)}")
-                error_msg.exec_()
+            self.app.command_manager.delete_command(key)
+            self.build_buttons_list()
+            self.rebuild_grid_layout()
 
     def update_json_from_grid(self):
         """
-        Called after a drop reorder. Reflect the new order in options.json,
-        so that user's custom arrangement persists.
+        Ghi chú: Trong hệ thống mới, thứ tự các lệnh được quản lý bởi danh sách 
+        trong CommandManager. Ở giai đoạn này, chúng ta sẽ tạm thời bỏ qua 
+        việc lưu lại thứ tự kéo thả cho đến khi CommandsManagerDialog được hoàn thiện.
         """
-        data = self.load_options()
-        new_data = {"Custom": data["Custom"]} if "Custom" in data else {}
-        for b in self.button_widgets:
-            new_data[b.key] = data[b.key]
-        self.save_options(new_data)
+        pass
 
     def on_custom_change(self):
         txt = self.custom_input.text().strip()
@@ -897,9 +744,9 @@ class CustomPopupWindow(QtWidgets.QWidget):
             self.app.process_option('Custom', self.selected_text, txt)
             self.close()
 
-    def on_generic_instruction(self, instruction):
+    def on_generic_instruction(self, command_id):
         if not self.edit_mode:
-            self.app.process_option(instruction, self.selected_text)
+            self.app.process_option(command_id, self.selected_text)
             self.close()
 
     def eventFilter(self, obj, event):
