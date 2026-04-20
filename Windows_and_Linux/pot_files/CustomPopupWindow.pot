@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-19 19:10+0700\n"
+"POT-Creation-Date: 2026-04-20 23:45+0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,10 +17,35 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ui/CustomPopupWindow.py:406
+#: ui/CustomPopupWindow.py:452
+msgid "Drag to rearrange"
+msgstr ""
+
+#: ui/CustomPopupWindow.py:519
 msgid "Describe your change..."
 msgstr ""
 
-#: ui/CustomPopupWindow.py:406
+#: ui/CustomPopupWindow.py:519
 msgid "Ask your AI..."
+msgstr ""
+
+#: ui/CustomPopupWindow.py:553
+msgid "Attach file"
+msgstr ""
+
+#: ui/CustomPopupWindow.py:668
+msgid "+ Add New"
+msgstr ""
+
+#: ui/CustomPopupWindow.py:862
+msgid "Confirm Delete?"
+msgstr ""
+
+#: ui/CustomPopupWindow.py:863
+#, python-brace-format
+msgid "Are you sure you want to delete the '{0}' button?"
+msgstr ""
+
+#: ui/CustomPopupWindow.py:883
+msgid "Attach File"
 msgstr ""

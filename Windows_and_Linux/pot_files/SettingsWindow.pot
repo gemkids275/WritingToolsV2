@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-04-19 19:10+0700\n"
+"POT-Creation-Date: 2026-04-20 23:45+0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -25,7 +25,7 @@ msgstr ""
 msgid "General"
 msgstr ""
 
-#: ui/SettingsWindow.py:69 ui/SettingsWindow.py:264
+#: ui/SettingsWindow.py:69 ui/SettingsWindow.py:266
 msgid "AI Providers"
 msgstr ""
 
@@ -65,153 +65,153 @@ msgstr ""
 msgid "Interface Language:"
 msgstr ""
 
-#: ui/SettingsWindow.py:240
+#: ui/SettingsWindow.py:242
 msgid "Enable Real-time Streaming (Recommended)"
 msgstr ""
 
-#: ui/SettingsWindow.py:248 ui/SettingsWindow.py:321
+#: ui/SettingsWindow.py:250 ui/SettingsWindow.py:323
 msgid "Save Settings"
 msgstr ""
 
-#: ui/SettingsWindow.py:273
+#: ui/SettingsWindow.py:275
 msgid "Select Active Provider:"
 msgstr ""
 
-#: ui/SettingsWindow.py:337
+#: ui/SettingsWindow.py:339
 msgid "Commands Management"
 msgstr ""
 
-#: ui/SettingsWindow.py:341
+#: ui/SettingsWindow.py:343
 msgid "Add, edit, or remove AI shortcuts and system prompts."
 msgstr ""
 
-#: ui/SettingsWindow.py:394
+#: ui/SettingsWindow.py:396
 msgid "Add New..."
 msgstr ""
 
-#: ui/SettingsWindow.py:398
+#: ui/SettingsWindow.py:400
 msgid "Edit..."
 msgstr ""
 
-#: ui/SettingsWindow.py:402
+#: ui/SettingsWindow.py:404
 msgid "Delete"
 msgstr ""
 
-#: ui/SettingsWindow.py:412
+#: ui/SettingsWindow.py:414
 msgid "Export Selected..."
 msgstr ""
 
-#: ui/SettingsWindow.py:416
+#: ui/SettingsWindow.py:418
 msgid "Import Command..."
 msgstr ""
 
-#: ui/SettingsWindow.py:424
+#: ui/SettingsWindow.py:426
 msgid "Restore Defaults"
 msgstr ""
 
-#: ui/SettingsWindow.py:436
+#: ui/SettingsWindow.py:438
 msgid "Backup All Config..."
 msgstr ""
 
-#: ui/SettingsWindow.py:440
+#: ui/SettingsWindow.py:442
 msgid "Restore Full Config..."
 msgstr ""
 
-#: ui/SettingsWindow.py:599
+#: ui/SettingsWindow.py:601
 msgid "Export Command"
 msgstr ""
 
-#: ui/SettingsWindow.py:610 ui/SettingsWindow.py:655 ui/SettingsWindow.py:671
-#: ui/SettingsWindow.py:1027
+#: ui/SettingsWindow.py:612 ui/SettingsWindow.py:657 ui/SettingsWindow.py:673
+#: ui/SettingsWindow.py:1029
 msgid "Success"
 msgstr ""
 
-#: ui/SettingsWindow.py:610
+#: ui/SettingsWindow.py:612
 msgid "Command exported successfully."
 msgstr ""
 
-#: ui/SettingsWindow.py:612 ui/SettingsWindow.py:628 ui/SettingsWindow.py:673
-#: ui/SettingsWindow.py:689
+#: ui/SettingsWindow.py:614 ui/SettingsWindow.py:630 ui/SettingsWindow.py:675
+#: ui/SettingsWindow.py:691
 msgid "Error"
 msgstr ""
 
-#: ui/SettingsWindow.py:616
+#: ui/SettingsWindow.py:618
 msgid "Import Command"
 msgstr ""
 
-#: ui/SettingsWindow.py:655
+#: ui/SettingsWindow.py:657
 #, python-brace-format
 msgid "{0} command(s) imported."
 msgstr ""
 
-#: ui/SettingsWindow.py:659
+#: ui/SettingsWindow.py:661
 msgid "Export All Config"
 msgstr ""
 
-#: ui/SettingsWindow.py:671
+#: ui/SettingsWindow.py:673
 msgid "Config exported successfully."
 msgstr ""
 
-#: ui/SettingsWindow.py:677
+#: ui/SettingsWindow.py:679
 msgid "Restore Config"
 msgstr ""
 
-#: ui/SettingsWindow.py:689
+#: ui/SettingsWindow.py:691
 #, python-brace-format
 msgid "Invalid file: {0}"
 msgstr ""
 
-#: ui/SettingsWindow.py:693
+#: ui/SettingsWindow.py:695
 msgid "Empty Backup"
 msgstr ""
 
-#: ui/SettingsWindow.py:693
+#: ui/SettingsWindow.py:695
 msgid "No commands found in this file."
 msgstr ""
 
-#: ui/SettingsWindow.py:777
+#: ui/SettingsWindow.py:779
 msgid "About AI Shortcuts"
 msgstr ""
 
-#: ui/SettingsWindow.py:782
+#: ui/SettingsWindow.py:784
 msgid ""
 "AI Shortcuts is a free, lightweight utility that enhances your writing with "
 "AI."
 msgstr ""
 
-#: ui/SettingsWindow.py:795
+#: ui/SettingsWindow.py:797
 msgid "Creators"
 msgstr ""
 
-#: ui/SettingsWindow.py:821
+#: ui/SettingsWindow.py:823
 msgid "Customized version & Forked by Nam Trần"
 msgstr ""
 
-#: ui/SettingsWindow.py:826
+#: ui/SettingsWindow.py:828
 msgid "A technology enthusiast"
 msgstr ""
 
-#: ui/SettingsWindow.py:849
+#: ui/SettingsWindow.py:851
 msgid "Original Developers"
 msgstr ""
 
-#: ui/SettingsWindow.py:891
+#: ui/SettingsWindow.py:893
 msgid "Version & Updates"
 msgstr ""
 
-#: ui/SettingsWindow.py:901
+#: ui/SettingsWindow.py:903
 #, python-brace-format
 msgid "Version: {0}"
 msgstr ""
 
-#: ui/SettingsWindow.py:905
+#: ui/SettingsWindow.py:907
 msgid "Not checked yet."
 msgstr ""
 
-#: ui/SettingsWindow.py:910
+#: ui/SettingsWindow.py:912
 msgid "Check for Updates"
 msgstr ""
 
-#: ui/SettingsWindow.py:1027
+#: ui/SettingsWindow.py:1029
 msgid "Settings saved successfully."
 msgstr ""

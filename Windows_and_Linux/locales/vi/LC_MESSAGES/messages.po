@@ -172,6 +172,180 @@ msgstr "Thêm, sửa hoặc xóa các phím tắt AI và câu lệnh hệ thốn
 msgid "Add New..."
 msgstr "Thêm mới..."
 
-#: ui/SettingsWindow.py:398
+#: ui/SettingsWindow.py:176
 msgid "Edit..."
 msgstr "Chỉnh sửa..."
+
+msgid "Proofread"
+msgstr "Sửa lỗi & Trau chuốt"
+
+msgid "Rewrite"
+msgstr "Viết lại"
+
+msgid "Friendly"
+msgstr "Thân thiện"
+
+msgid "Professional"
+msgstr "Chuyên nghiệp"
+
+msgid "Concise"
+msgstr "Ngắn gọn"
+
+msgid "Summary"
+msgstr "Tổng hợp"
+
+msgid "Key Points"
+msgstr "Ý chính"
+
+msgid "Table"
+msgstr "Bảng"
+
+msgid "Chat"
+msgstr "Trò chuyện"
+
+msgid "Describe your change..."
+msgstr "Mô tả yêu cầu thay đổi..."
+
+msgid "Ask your AI..."
+msgstr "Hỏi AI của bạn..."
+
+msgid "There's an update! :D Download now."
+msgstr "Đã có bản cập nhật mới! Tải về ngay."
+
+msgid "Drag to rearrange"
+msgstr "Kéo để sắp xếp"
+
+msgid "+ Add New"
+msgstr "+ Thêm mới"
+
+msgid "Attach File"
+msgstr "Đính kèm tệp"
+
+msgid "Confirm Delete?"
+msgstr "Xác nhận xóa?"
+
+msgid "Are you sure you want to delete the '{0}' button?"
+msgstr "Bạn có chắc chắn muốn xóa nút '{0}' không?"
+
+msgid "Gemini (Recommended)"
+msgstr "Gemini (Khuyên dùng)"
+
+msgid "Anthropic"
+msgstr "Anthropic"
+
+msgid "Mistral"
+msgstr "Mistral"
+
+msgid "OpenRouter"
+msgstr "OpenRouter"
+
+msgid "OpenAI Compatible (For Experts)"
+msgstr "Tương thích OpenAI (Dành cho chuyên gia)"
+
+msgid "Get API Key"
+msgstr "Lấy mã API"
+
+msgid "Show"
+msgstr "Hiện"
+
+msgid "Hide"
+msgstr "Ẩn"
+
+msgid "Model"
+msgstr "Mẫu Model"
+
+msgid "API Key"
+msgstr "Mã API"
+
+msgid "🔧 Custom"
+msgstr "🔧 Tùy chỉnh"
+
+msgid "• Google’s Gemini 1.5 & 2.0 (Gemma) are multimodal models with world-class performance.\n• Offers extremely fast inference and massive context windows (up to 1M+ tokens).\n• Get a free API key to start using Gemini Flash and Pro models."
+msgstr "• Google Gemini 1.5 & 2.0 (Gemma) là các model đa phương thức với hiệu suất đẳng cấp thế giới.\n• Cung cấp tốc độ suy luận cực nhanh và cửa sổ ngữ cảnh khổng lồ (lên đến hơn 1 triệu token).\n• Nhận mã API miễn phí để bắt đầu sử dụng các mẫu Gemini Flash và Pro."
+
+msgid "• Anthropic's Claude is renowned for high-quality writing, safe reasoning, and large context windows.\n• Ideal for complex analysis and creative writing tasks.\n• Supports Claude 3.5 Sonnet, Haiku, and Opus models."
+msgstr "• Claude của Anthropic nổi tiếng với khả năng viết lách chất lượng cao, lập luận an toàn và cửa sổ ngữ cảnh lớn.\n• Lý tưởng cho các phân tích phức tạp và tác vụ viết sáng tạo.\n• Hỗ trợ các mẫu Claude 3.5 Sonnet, Haiku và Opus."
+
+msgid "• Mistral AI offers state-of-the-art open models with high efficiency.\n• Great performance in both European languages and coding.\n• Supports Mistral Large, Small, and vision-capable Pixtral."
+msgstr "• Mistral AI cung cấp các model mã nguồn mở hiện đại với hiệu suất cao.\n• Hiệu năng tuyệt vời trong cả ngôn ngữ châu Âu và lập trình.\n• Hỗ trợ Mistral Large, Small và Pixtral có khả năng thị giác."
+
+msgid "• OpenRouter provides unified access to over 100+ AI models (Claude, Llama, GPT, etc.).\n• Offers the most competitive pricing and many free-tier models.\n• Best for power users who want to switch models frequently."
+msgstr "• OpenRouter cung cấp quyền truy cập thống nhất vào hơn 100+ model AI (Claude, Llama, GPT, v.v.).\n• Cung cấp mức giá cạnh tranh nhất và nhiều model cấp miễn phí.\n• Tốt nhất cho người dùng nâng cao muốn thay đổi model thường xuyên."
+
+msgid "• Connect to ANY OpenAI-compatible service (e.g. OpenAI, Groq, Together AI, Perplexity).\n• Supports custom Base URLs, Organizations, and Project IDs.\n• Perfect for local LLM servers (LM Studio, LocalAI) or specialized providers."
+msgstr "• Kết nối với BẤT KỲ dịch vụ nào tương thích với OpenAI (ví dụ: OpenAI, Groq, Together AI, Perplexity).\n• Hỗ trợ URL cơ sở, Tổ chức và ID dự án tùy chỉnh.\n• Hoàn hảo cho các máy chủ LLM cục bộ (LM Studio, LocalAI) hoặc các nhà cung cấp chuyên biệt."
+
+msgid "⭐ Gemma 3 27B (very intelligent | unlimited usage)"
+msgstr "⭐ Gemma 3 27B (Rất thông minh | không giới hạn)"
+
+msgid "Gemma 3 4B (intelligent | unlimited usage)"
+msgstr "Gemma 3 4B (Thông minh | không giới hạn)"
+
+msgid "Gemini Flash Latest (very intelligent | only 20 uses/day)"
+msgstr "Gemini Flash Mới nhất (Rất thông minh | chỉ 20 lần/ngày)"
+
+msgid "Gemini Flash Lite Latest (intelligent | only 20 uses/day)"
+msgstr "Gemini Flash Lite Mới nhất (Thông minh | chỉ 20 lần/ngày)"
+
+msgid "Claude 3.5 Sonnet"
+msgstr "Claude 3.5 Sonnet"
+
+msgid "Claude 3.5 Haiku"
+msgstr "Claude 3.5 Haiku"
+
+msgid "Claude 3 Opus"
+msgstr "Claude 3 Opus"
+
+msgid "Mistral Large"
+msgstr "Mistral Large"
+
+msgid "Mistral Small"
+msgstr "Mistral Small"
+
+msgid "Pixtral 12B (Vision)"
+msgstr "Pixtral 12B (Thị giác)"
+
+msgid "GPT-4o"
+msgstr "GPT-4o"
+
+msgid "DeepSeek V3"
+msgstr "DeepSeek V3"
+
+msgid "Copy"
+msgstr "Sao chép"
+
+msgid "Copied!"
+msgstr "Đã sao chép!"
+
+msgid "Zoom:"
+msgstr "Phóng to:"
+
+msgid "Zoom In"
+msgstr "Phóng to"
+
+msgid "Zoom Out"
+msgstr "Thu nhỏ"
+
+msgid "Reset Zoom"
+msgstr "Đặt lại Zoom"
+
+msgid "Response"
+msgstr "Kết quả"
+
+msgid "Chat Result"
+msgstr "Kết quả Chat"
+
+msgid "Copy as Markdown"
+msgstr "Sao chép dạng Markdown"
+
+msgid "Select to copy with formatting"
+msgstr "Chọn để sao chép kèm định dạng"
+
+msgid "Ask a follow-up question"
+msgstr "Đặt câu hỏi tiếp theo"
+
+msgid "Attach file"
+msgstr "Đính kèm tệp"
+
+msgid "Thinking"
+msgstr "Đang suy nghĩ"

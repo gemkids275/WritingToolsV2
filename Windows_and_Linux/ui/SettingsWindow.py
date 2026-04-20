@@ -220,6 +220,8 @@ class SettingsWindow(QtWidgets.QWidget):
         self.language_dropdown.addItem("Tiếng Việt", "vi")
         self.language_dropdown.addItem("English", "en")
         self.language_dropdown.addItem("Italiano", "it")
+        self.language_dropdown.addItem("日本語 (Japanese)", "ja")
+        self.language_dropdown.addItem("简体中文 (Chinese)", "zh")
         self.language_dropdown.setStyleSheet(f"""
             font-size: 16px; padding: 8px; border-radius: 5px;
             background-color: {'#444' if colorMode == 'dark' else 'white'};

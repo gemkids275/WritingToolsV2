@@ -48,6 +48,8 @@ from PySide6 import QtWidgets
 from PySide6.QtWidgets import QVBoxLayout
 from ui.UIUtils import colorMode
 
+_ = lambda x: x  # Will be overridden by WritingToolApp
+
 # Obfuscation prefix to identify encrypted API keys
 _OBFUSCATION_PREFIX = "enc:"
 _XOR_KEY = 0x5A  # Simple XOR key for obfuscation
@@ -127,7 +129,7 @@ class TextSetting(AIProviderSetting):
         self.input.setPlaceholderText(self.description)
         if self.name == "api_key":
             self.input.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
-            toggle_btn = QtWidgets.QPushButton("Show")
+            toggle_btn = QtWidgets.QPushButton(_("Show"))
             toggle_btn.setFixedWidth(52)
             toggle_btn.setStyleSheet(
                 f"QPushButton {{ font-size: 13px; padding: 5px 6px; "
@@ -139,10 +141,10 @@ class TextSetting(AIProviderSetting):
             def _toggle(_checked=False, inp=self.input, btn=toggle_btn):
                 if inp.echoMode() == QtWidgets.QLineEdit.EchoMode.Password:
                     inp.setEchoMode(QtWidgets.QLineEdit.EchoMode.Normal)
-                    btn.setText("Hide")
+                    btn.setText(_("Hide"))
                 else:
                     inp.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
-                    btn.setText("Show")
+                    btn.setText(_("Show"))
             toggle_btn.clicked.connect(_toggle)
             row_layout.addWidget(self.input)
             row_layout.addWidget(toggle_btn)
@@ -182,7 +184,7 @@ class DropdownSetting(AIProviderSetting):
 
     def render_to_layout(self, layout: QVBoxLayout):
         row_layout = QtWidgets.QHBoxLayout()
-        label = QtWidgets.QLabel(self.display_name)
+        label = QtWidgets.QLabel(_(self.display_name))
         label.setStyleSheet(f"font-size: 16px; color: {'#ffffff' if colorMode=='dark' else '#333333'};")
         row_layout.addWidget(label)
         self.dropdown = QtWidgets.QComboBox()
@@ -196,11 +198,11 @@ class DropdownSetting(AIProviderSetting):
 
         # Add preset options
         for option, value in self.options:
-            self.dropdown.addItem(option, value)
+            self.dropdown.addItem(_(option), value)
 
         # Add "Custom" option if enabled
         if self.allow_custom:
-            self.dropdown.addItem("🔧 Custom", self._CUSTOM_SENTINEL)
+            self.dropdown.addItem(_("🔧 Custom"), self._CUSTOM_SENTINEL)
 
         # Set initial selection based on internal_value
         index = self.dropdown.findData(self.internal_value)
@@ -343,8 +345,7 @@ class AIProvider(ABC):
     def _require_client(self):
         if not getattr(self, 'client', None):
             raise RuntimeError(
-                f"{self.provider_name} API key is not configured. "
-                "Please set your API key in Settings → AI Providers."
+                _("{0} API key is not configured. Please set your API key in Settings → AI Providers.").format(self.provider_name)
             )
 
     @abstractmethod
@@ -379,11 +380,11 @@ class AnthropicProvider(AIProvider):
             )
         ]
         super().__init__(app, "Anthropic", settings,
-            "• Anthropic's Claude is renowned for high-quality writing, safe reasoning, and large context windows.\n"
-            "• Ideal for complex analysis and creative writing tasks.\n"
-            "• Supports Claude 3.5 Sonnet, Haiku, and Opus models.",
+            _("• Anthropic's Claude is renowned for high-quality writing, safe reasoning, and large context windows.\n"
+              "• Ideal for complex analysis and creative writing tasks.\n"
+              "• Supports Claude 3.5 Sonnet, Haiku, and Opus models."),
             "anthropic",
-            "Get API Key",
+            _("Get API Key"),
             lambda: webbrowser.open("https://console.anthropic.com/settings/keys"))
 
     def before_load(self):
@@ -401,13 +402,13 @@ class AnthropicProvider(AIProvider):
         self.close_requested = False
         content = []
         if images:
-            for img_data in images:
+            for mime_type, b64 in images:
                 content.append({
                     "type": "image",
                     "source": {
                         "type": "base64",
-                        "media_type": "image/jpeg",
-                        "data": img_data
+                        "media_type": mime_type,
+                        "data": b64
                     }
                 })
         content.append({"type": "text", "text": prompt})
@@ -428,13 +429,13 @@ class AnthropicProvider(AIProvider):
         self.close_requested = False
         content = []
         if images:
-            for img_data in images:
+            for mime_type, b64 in images:
                 content.append({
                     "type": "image",
                     "source": {
                         "type": "base64",
-                        "media_type": "image/jpeg",
-                        "data": img_data
+                        "media_type": mime_type,
+                        "data": b64
                     }
                 })
         content.append({"type": "text", "text": prompt})
@@ -478,11 +479,11 @@ class MistralProvider(AIProvider):
             )
         ]
         super().__init__(app, "Mistral", settings,
-            "• Mistral AI offers state-of-the-art open models with high efficiency.\n"
-            "• Great performance in both European languages and coding.\n"
-            "• Supports Mistral Large, Small, and vision-capable Pixtral.",
+            _("• Mistral AI offers state-of-the-art open models with high efficiency.\n"
+              "• Great performance in both European languages and coding.\n"
+              "• Supports Mistral Large, Small, and vision-capable Pixtral."),
             "mistral",
-            "Get API Key",
+            _("Get API Key"),
             lambda: webbrowser.open("https://console.mistral.ai/api-keys/"))
 
     def before_load(self):
@@ -499,10 +500,10 @@ class MistralProvider(AIProvider):
         
         content = [{"type": "text", "text": prompt}]
         if images:
-            for img_data in images:
+            for mime_type, b64 in images:
                 content.append({
                     "type": "image_url",
-                    "image_url": f"data:image/jpeg;base64,{img_data}"
+                    "image_url": f"data:{mime_type};base64,{b64}"
                 })
         messages.append({"role": "user", "content": content})
 
@@ -522,10 +523,10 @@ class MistralProvider(AIProvider):
         messages = [{"role": "system", "content": system_instruction}]
         content = [{"type": "text", "text": prompt}]
         if images:
-            for img_data in images:
+            for mime_type, b64 in images:
                 content.append({
                     "type": "image_url",
-                    "image_url": f"data:image/jpeg;base64,{img_data}"
+                    "image_url": f"data:{mime_type};base64,{b64}"
                 })
         messages.append({"role": "user", "content": content})
 
@@ -566,11 +567,11 @@ class OpenRouterProvider(AIProvider):
             )
         ]
         super().__init__(app, "OpenRouter", settings,
-            "• OpenRouter provides unified access to over 100+ AI models (Claude, Llama, GPT, etc.).\n"
-            "• Offers the most competitive pricing and many free-tier models.\n"
-            "• Best for power users who want to switch models frequently.",
+            _("• OpenRouter provides unified access to over 100+ AI models (Claude, Llama, GPT, etc.).\n"
+              "• Offers the most competitive pricing and many free-tier models.\n"
+              "• Best for power users who want to switch models frequently."),
             "openrouter",
-            "Get API Key",
+            _("Get API Key"),
             lambda: webbrowser.open("https://openrouter.ai/keys"))
 
     def before_load(self):
@@ -592,10 +593,10 @@ class OpenRouterProvider(AIProvider):
         self.close_requested = False
         content = [{"type": "text", "text": prompt}]
         if images:
-            for img_data in images:
+            for mime_type, b64 in images:
                 content.append({
                     "type": "image_url",
-                    "image_url": {"url": f"data:image/jpeg;base64,{img_data}"}
+                    "image_url": {"url": f"data:{mime_type};base64,{b64}"}
                 })
         
         response = self.client.chat.completions.create(
@@ -616,10 +617,10 @@ class OpenRouterProvider(AIProvider):
         self.close_requested = False
         content = [{"type": "text", "text": prompt}]
         if images:
-            for img_data in images:
+            for mime_type, b64 in images:
                 content.append({
                     "type": "image_url",
-                    "image_url": {"url": f"data:image/jpeg;base64,{img_data}"}
+                    "image_url": {"url": f"data:{mime_type};base64,{b64}"}
                 })
 
         stream = self.client.chat.completions.create(
@@ -669,11 +670,11 @@ class GeminiProvider(AIProvider):
             )
         ]
         super().__init__(app, "Gemini (Recommended)", settings,
-            "• Google’s Gemini 1.5 & 2.0 (Gemma) are multimodal models with world-class performance.\n"
-            "• Offers extremely fast inference and massive context windows (up to 1M+ tokens).\n"
-            "• Get a free API key to start using Gemini Flash and Pro models.",
+            _("• Google’s Gemini 1.5 & 2.0 (Gemma) are multimodal models with world-class performance.\n"
+              "• Offers extremely fast inference and massive context windows (up to 1M+ tokens).\n"
+              "• Get a free API key to start using Gemini Flash and Pro models."),
             "gemini",
-            "Get API Key",
+            _("Get API Key"),
             lambda: webbrowser.open("https://aistudio.google.com/app/apikey"))
 
     def _build_config(self, system_instruction: str) -> genai_types.GenerateContentConfig:
@@ -692,10 +693,10 @@ class GeminiProvider(AIProvider):
     def _build_contents(self, prompt: str, images: list = None) -> list:
         parts = []
         if images:
-            for img_data in images:
+            for mime_type, b64 in images:
                 parts.append(genai_types.Part.from_bytes(
-                    data=base64.b64decode(img_data),
-                    mime_type='image/jpeg'
+                    data=base64.b64decode(b64),
+                    mime_type=mime_type
                 ))
         parts.append(genai_types.Part.from_text(text=prompt))
         return parts
@@ -788,10 +789,10 @@ class OpenAICompatibleProvider(AIProvider):
             TextSetting("api_model", "API Model", "gpt-4o-mini", "E.g. gpt-4o-mini"),
         ]
         super().__init__(app, "OpenAI Compatible (For Experts)", settings,
-            "• Connect to ANY OpenAI-compatible service (e.g. OpenAI, Groq, Together AI, Perplexity).\n"
-            "• Supports custom Base URLs, Organizations, and Project IDs.\n"
-            "• Perfect for local LLM servers (LM Studio, LocalAI) or specialized providers.",
-            "openai", "Get OpenAI API Key", lambda: webbrowser.open("https://platform.openai.com/account/api-keys"))
+            _("• Connect to ANY OpenAI-compatible service (e.g. OpenAI, Groq, Together AI, Perplexity).\n"
+              "• Supports custom Base URLs, Organizations, and Project IDs.\n"
+              "• Perfect for local LLM servers (LM Studio, LocalAI) or specialized providers."),
+            "openai", _("Get OpenAI API Key"), lambda: webbrowser.open("https://platform.openai.com/account/api-keys"))
 
     def before_load(self):
         self.client = None
@@ -805,10 +806,10 @@ class OpenAICompatibleProvider(AIProvider):
 
         content = [{"type": "text", "text": prompt}]
         if images:
-            for img_data in images:
+            for mime_type, b64 in images:
                 content.append({
                     "type": "image_url",
-                    "image_url": {"url": f"data:image/jpeg;base64,{img_data}"}
+                    "image_url": {"url": f"data:{mime_type};base64,{b64}"}
                 })
 
         messages = [
@@ -850,10 +851,10 @@ class OpenAICompatibleProvider(AIProvider):
         self.close_requested = False
         content = [{"type": "text", "text": prompt}]
         if images:
-            for img_data in images:
+            for mime_type, b64 in images:
                 content.append({
                     "type": "image_url",
-                    "image_url": {"url": f"data:image/jpeg;base64,{img_data}"}
+                    "image_url": {"url": f"data:{mime_type};base64,{b64}"}
                 })
 
         messages = [

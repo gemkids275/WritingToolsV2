@@ -1,0 +1,247 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-20 22:30+0700\n"
+"PO-Revision-Date: 2026-04-20 22:30+0700\n"
+"Last-Translator: AI Assistant\n"
+"Language-Team: Japanese\n"
+"Language: ja\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Poedit 3.5\n"
+
+#: ui/SettingsWindow.py:65 WritingToolApp.py:759 ui/SettingsWindow.py:37
+msgid "Settings"
+msgstr "設定"
+
+#: ui/SettingsWindow.py:68
+msgid "General"
+msgstr "一般"
+
+#: ui/SettingsWindow.py:69 ui/SettingsWindow.py:264
+msgid "AI Providers"
+msgstr "AI プロバイダー"
+
+#: ui/SettingsWindow.py:70
+msgid "Commands"
+msgstr "コマンド"
+
+#: ui/SettingsWindow.py:71 WritingToolApp.py:767
+msgid "About"
+msgstr "バージョン情報"
+
+#: ui/SettingsWindow.py:156
+msgid "General Settings"
+msgstr "一般設定"
+
+#: ui/SettingsWindow.py:165
+msgid "Global Shortcut Key:"
+msgstr "グローバルショートカットキー:"
+
+#: ui/SettingsWindow.py:181
+msgid "Launch Writing Tools on system startup"
+msgstr "システム起動時に実行する"
+
+#: ui/SettingsWindow.py:191
+msgid "Background Appearance:"
+msgstr "背景の外観:"
+
+#: ui/SettingsWindow.py:196
+msgid "Vibrant Gradient"
+msgstr "鮮やかなグラデーション"
+
+#: ui/SettingsWindow.py:197
+msgid "Minimal Plain"
+msgstr "ミニマルプレーン"
+
+#: ui/SettingsWindow.py:215
+msgid "Interface Language:"
+msgstr "インターフェース言語:"
+
+#: ui/SettingsWindow.py:240
+msgid "Enable Real-time Streaming (Recommended)"
+msgstr "リアルタイムストリーミングを有効にする（推奨）"
+
+#: ui/SettingsWindow.py:248 ui/SettingsWindow.py:321
+msgid "Save Settings"
+msgstr "設定を保存"
+
+#: WritingToolApp.py:771
+msgid "Exit"
+msgstr "終了"
+
+msgid "Proofread"
+msgstr "校正"
+
+msgid "Rewrite"
+msgstr "書き換え"
+
+msgid "Friendly"
+msgstr "フレンドリー"
+
+msgid "Professional"
+msgstr "プロフェッショナル"
+
+msgid "Concise"
+msgstr "簡潔"
+
+msgid "Summary"
+msgstr "要約"
+
+msgid "Key Points"
+msgstr "要点"
+
+msgid "Table"
+msgstr "表"
+
+msgid "Chat"
+msgstr "チャット"
+
+msgid "Describe your change..."
+msgstr "変更内容を入力してください..."
+
+msgid "Ask your AI..."
+msgstr "AIに質問する..."
+
+msgid "There's an update! :D Download now."
+msgstr "アップデートがあります! 今すぐダウンロード。"
+
+msgid "Drag to rearrange"
+msgstr "ドラッグして並べ替え"
+
+msgid "+ Add New"
+msgstr "+ 新規追加"
+
+msgid "Attach File"
+msgstr "ファイルを添付"
+
+msgid "Confirm Delete?"
+msgstr "削除の確認"
+
+msgid "Are you sure you want to delete the '{0}' button?"
+msgstr "本当にボタン「{0}」を削除しますか？"
+
+msgid "Gemini (Recommended)"
+msgstr "Gemini (推奨)"
+
+msgid "Anthropic"
+msgstr "Anthropic"
+
+msgid "Mistral"
+msgstr "Mistral"
+
+msgid "OpenRouter"
+msgstr "OpenRouter"
+
+msgid "OpenAI Compatible (For Experts)"
+msgstr "OpenAI 互換 (エキスパート向け)"
+
+msgid "Get API Key"
+msgstr "APIキーを取得"
+
+msgid "Show"
+msgstr "表示"
+
+msgid "Hide"
+msgstr "非表示"
+
+msgid "Model"
+msgstr "モデル"
+
+msgid "API Key"
+msgstr "APIキー"
+
+msgid "🔧 Custom"
+msgstr "🔧 カスタム"
+
+msgid "• Google’s Gemini 1.5 & 2.0 (Gemma) are multimodal models with world-class performance.\n• Offers extremely fast inference and massive context windows (up to 1M+ tokens).\n• Get a free API key to start using Gemini Flash and Pro models."
+msgstr "• GoogleのGemini 1.5 & 2.0 (Gemma) は、世界クラスのパフォーマンスを備えたマルチモーダルモデルです。\n• 非常に高速な推論と巨大なコンテキストウィンドウ (最大100万トークン以上) を提供します。\n• 無料のAPIキーを取得して、Gemini FlashおよびProモデルの使用を開始してください。"
+
+msgid "• Anthropic's Claude is renowned for high-quality writing, safe reasoning, and large context windows.\n• Ideal for complex analysis and creative writing tasks.\n• Supports Claude 3.5 Sonnet, Haiku, and Opus models."
+msgstr "• AnthropicのClaudeは、高品質な文章作成、安全な推論、および大きなコンテキストウィンドウで有名です。\n• 複雑な分析やクリエイティブな執筆タスクに最適です。\n• Claude 3.5 Sonnet、Haiku、およびOpusモデルをサポートしています。"
+
+msgid "• Mistral AI offers state-of-the-art open models with high efficiency.\n• Great performance in both European languages and coding.\n• Supports Mistral Large, Small, and vision-capable Pixtral."
+msgstr "• Mistral AIは、高効率で最先端のオープンモデルを提供します。\n• ヨーロッパ言語とコーディングの両方で優れたパフォーマンスを発揮します。\n• Mistral Large、Small、およびビジョン対応のPixtralをサポートしています。"
+
+msgid "• OpenRouter provides unified access to over 100+ AI models (Claude, Llama, GPT, etc.).\n• Offers the most competitive pricing and many free-tier models.\n• Best for power users who want to switch models frequently."
+msgstr "• OpenRouterは、100以上のAIモデル (Claude、Llama、GPTなど) への統合アクセスを提供します。\n• 最も競争力のある価格設定と多くの無料枠モデルを提供します。\n• モデルを頻繁に切り替えたいパワーユーザーに最適です。"
+
+msgid "• Connect to ANY OpenAI-compatible service (e.g. OpenAI, Groq, Together AI, Perplexity).\n• Supports custom Base URLs, Organizations, and Project IDs.\n• Perfect for local LLM servers (LM Studio, LocalAI) or specialized providers."
+msgstr "• OpenAI互換のあらゆるサービス (OpenAI、Groq、Together AI、Perplexityなど) に接続します。\n• カスタムベースURL、組織、およびプロジェクトIDをサポートします。\n• ローカルLLMサーバー (LM Studio, LocalAI) や専門的なプロバイダーに最適です。"
+
+msgid "⭐ Gemma 3 27B (very intelligent | unlimited usage)"
+msgstr "⭐ Gemma 3 27B (非常に知的 | 無制限)"
+
+msgid "Gemma 3 4B (intelligent | unlimited usage)"
+msgstr "Gemma 3 4B (知的 | 無制限)"
+
+msgid "Gemini Flash Latest (very intelligent | only 20 uses/day)"
+msgstr "Gemini Flash 最新 (非常に知的 | 1日20回まで)"
+
+msgid "Gemini Flash Lite Latest (intelligent | only 20 uses/day)"
+msgstr "Gemini Flash Lite 最新 (知的 | 1日20回まで)"
+
+msgid "Claude 3.5 Sonnet"
+msgstr "Claude 3.5 Sonnet"
+
+msgid "Claude 3.5 Haiku"
+msgstr "Claude 3.5 Haiku"
+
+msgid "Claude 3 Opus"
+msgstr "Claude 3 Opus"
+
+msgid "Mistral Large"
+msgstr "Mistral Large"
+
+msgid "Mistral Small"
+msgstr "Mistral Small"
+
+msgid "Pixtral 12B (Vision)"
+msgstr "Pixtral 12B (ビジョン)"
+
+msgid "GPT-4o"
+msgstr "GPT-4o"
+
+msgid "DeepSeek V3"
+msgstr "DeepSeek V3"
+
+msgid "Copy"
+msgstr "コピー"
+
+msgid "Copied!"
+msgstr "コピーしました！"
+
+msgid "Zoom:"
+msgstr "ズーム:"
+
+msgid "Zoom In"
+msgstr "拡大"
+
+msgid "Zoom Out"
+msgstr "縮小"
+
+msgid "Reset Zoom"
+msgstr "ズームをリセット"
+
+msgid "Response"
+msgstr "レスポンス"
+
+msgid "Chat Result"
+msgstr "チャット結果"
+
+msgid "Copy as Markdown"
+msgstr "Markdownとしてコピー"
+
+msgid "Select to copy with formatting"
+msgstr "書式付きでコピーするには選択してください"
+
+msgid "Ask a follow-up question"
+msgstr "フォローアップの質問をする"
+
+msgid "Attach file"
+msgstr "ファイルを添付"
+
+msgid "Thinking"
+msgstr "思考中"

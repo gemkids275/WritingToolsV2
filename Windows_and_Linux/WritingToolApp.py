@@ -1,3 +1,4 @@
+import base64
 import gettext
 import json
 import logging
@@ -16,6 +17,7 @@ import ui.SettingsWindow
 from aiprovider import (AnthropicProvider, GeminiProvider, MistralProvider,
                         OllamaProvider, OpenAICompatibleProvider,
                         OpenRouterProvider, obfuscate_api_key)
+from models.attachment import Attachment, AttachmentType
 from models.command_manager import CommandManager
 from models.secure_storage import get_command_api_key
 from models.shortcut_manager import ShortcutManager
@@ -465,7 +467,7 @@ class WritingToolApp(QtWidgets.QApplication):
         except Exception as e:
             logging.error(f'Error clearing clipboard: {e}')
 
-    def process_option(self, option_id_or_name, selected_text, custom_change=None):
+    def process_option(self, option_id_or_name, selected_text, custom_change=None, attachments=None):
         """
         Process the selected writing option in a separate thread.
         """
@@ -508,14 +510,22 @@ class WritingToolApp(QtWidgets.QApplication):
             if hasattr(self, 'current_response_window'):
                 delattr(self, 'current_response_window')
                 
-        threading.Thread(target=self.process_option_thread, args=(option_id_or_name, selected_text, custom_change), daemon=True).start()
+        threading.Thread(target=self.process_option_thread, args=(option_id_or_name, selected_text, custom_change, attachments or []), daemon=True).start()
 
-    def process_option_thread(self, option_id_or_name, selected_text, custom_change=None):
+    def process_option_thread(self, option_id_or_name, selected_text, custom_change=None, attachments=None):
             """
             Thread function to process the selected writing option using the AI model.
             """
             logging.debug(f'Starting processing thread for option: {option_id_or_name}')
             try:
+                attachments = attachments or []
+                images = [(a.mime_type, base64.b64encode(a.data).decode()) for a in attachments if a.type == AttachmentType.IMAGE and a.data]
+                text_context = "\n\n".join(
+                    f"[{a.label}]:\n{a.text}"
+                    for a in attachments
+                    if a.type == AttachmentType.TEXT and a.text
+                )
+
                 command = None  # khởi tạo sớm để _resolve_provider không UnboundLocalError
                 # Default custom instruction prompt if no text is selected
                 DEFAULT_PROMPT = "You are a friendly, helpful, compassionate, and endearing AI conversational assistant. Avoid making assumptions or generating harmful, biased, or inappropriate content. When in doubt, do not make up information. Ask the user for clarification if needed. Try not be unnecessarily repetitive in your response. You can, and should as appropriate, use Markdown formatting to make your response nicely readable."
@@ -523,7 +533,9 @@ class WritingToolApp(QtWidgets.QApplication):
                 if selected_text.strip() == '':
                     # No selected text
                     if option_id_or_name == 'Custom':
-                        prompt = custom_change
+                        prompt = custom_change or ""
+                        if text_context:
+                            prompt = f"{prompt}\n\nAdditional Context:\n{text_context}" if prompt else text_context
                         chat_cmd = self.command_manager.get_command('ChatNoSelection')
                         if chat_cmd:
                             system_instruction = chat_cmd.prompt
@@ -538,7 +550,6 @@ class WritingToolApp(QtWidgets.QApplication):
                         command = self.command_manager.get_by_name(option_id_or_name)
 
                     if not command:
-                        # Fallback for dynamic custom button if not found
                         prompt_prefix = "Make this change to the following text:\n\n"
                         system_instruction = "You are a writing assistant."
                     else:
@@ -549,6 +560,9 @@ class WritingToolApp(QtWidgets.QApplication):
                         prompt = f"{prompt_prefix}Described change: {custom_change}\n\nText: {selected_text}"
                     else:
                         prompt = f"{prompt_prefix}{selected_text}"
+
+                    if text_context:
+                        prompt += f"\n\nAdditional Context:\n{text_context}"
 
                 self.output_queue = ""
 
@@ -572,11 +586,12 @@ class WritingToolApp(QtWidgets.QApplication):
                 if use_window:
                     logging.debug('Getting response for window display')
                     
+                    img_arg = images or None
                     if self.config.get('streaming', True):  # Default to True for better UX
                         logging.debug('Using streaming response')
                         full_response = ""
                         try:
-                            for chunk in active_provider.get_response_stream(system_instruction, prompt):
+                            for chunk in active_provider.get_response_stream(system_instruction, prompt, images=img_arg):
                                 if chunk:
                                     full_response += chunk
                                     # noinspection PyTypeChecker
@@ -589,12 +604,12 @@ class WritingToolApp(QtWidgets.QApplication):
                         except Exception as e:
                             logging.error(f"Streaming error: {e}")
                             try:
-                                response = active_provider.get_response(system_instruction, prompt, return_response=True)
+                                response = active_provider.get_response(system_instruction, prompt, images=img_arg, return_response=True)
                             except Exception as e2:
                                 response = str(e2)
                     else:
                         try:
-                            response = active_provider.get_response(system_instruction, prompt, return_response=True)
+                            response = active_provider.get_response(system_instruction, prompt, images=img_arg, return_response=True)
                         except Exception as e:
                             response = str(e)
                     
@@ -619,7 +634,7 @@ class WritingToolApp(QtWidgets.QApplication):
                         logging.debug('Invoked set_text on response window')
                 else:
                     logging.debug('Getting response for direct replacement')
-                    active_provider.get_response(system_instruction, prompt)
+                    active_provider.get_response(system_instruction, prompt, images=images or None)
                     logging.debug('Response processed')
 
             except Exception as e:
@@ -841,12 +856,13 @@ class WritingToolApp(QtWidgets.QApplication):
     This implementation is a bit convoluted, but it allows us to manage chat history & model roles across both providers! :3
     """
 
-    def process_followup_question(self, response_window, question):
+    def process_followup_question(self, response_window, question, attachments: list[Attachment] | None = None):
         """
         Process a follow-up question in the chat window.
         """
         logging.debug(f'Processing follow-up question: {question}')
-        
+        attachments = attachments or []
+
         def process_thread():
             logging.debug('Starting follow-up processing thread')
             try:
@@ -855,23 +871,31 @@ class WritingToolApp(QtWidgets.QApplication):
                     self.show_message_signal.emit('Error', 'Chat history not found')
                     return
 
-                # Add current question to chat history
+                # Extract images và text context từ attachments
+                images = [(a.mime_type, base64.b64encode(a.data).decode()) for a in attachments if a.type == AttachmentType.IMAGE and a.data]
+                text_context = "\n\n".join(
+                    f"[{a.label}]:\n{a.text}"
+                    for a in attachments
+                    if a.type == AttachmentType.TEXT and a.text
+                )
+                full_question = question
+                if text_context:
+                    full_question = f"{question}\n\nAdditional Context:\n{text_context}" if question else text_context
+
+                # Add current question to chat history (với full context)
                 response_window.chat_history.append({
                     "role": "user",
-                    "content": question
+                    "content": full_question or "(see attachments)"
                 })
-                
-                # Get chat history
-                history = response_window.chat_history.copy()
-                
+
                 # System instruction based on original option
                 system_instruction = "You are a helpful AI assistant. Provide clear and direct responses, maintaining the same format and style as your previous responses. If appropriate, use Markdown formatting to make your response more readable."
-                
+
                 # Resolve provider for this specific window/command
                 command = None
                 if response_window.command_id:
                     command = self.command_manager.get_command(response_window.command_id)
-                
+
                 try:
                     active_provider = self._resolve_provider(command)
                 except ValueError as e:
@@ -879,13 +903,13 @@ class WritingToolApp(QtWidgets.QApplication):
                     return
 
                 logging.debug('Sending request to AI provider')
-                
+
                 # Decide whether to stream
                 if self.config.get('streaming', True):
                     logging.debug('Using streaming for follow-up')
                     full_response = ""
                     try:
-                        for chunk in active_provider.get_response_stream(system_instruction, question):
+                        for chunk in active_provider.get_response_stream(system_instruction, full_question, images=images or None):
                             if chunk:
                                 full_response += chunk
                                 # noinspection PyTypeChecker
@@ -897,9 +921,9 @@ class WritingToolApp(QtWidgets.QApplication):
                         response_text = full_response
                     except Exception as e:
                         logging.error(f"Streaming follow-up error: {e}")
-                        response_text = active_provider.get_response(system_instruction, question, return_response=True)
+                        response_text = active_provider.get_response(system_instruction, full_question, images=images or None, return_response=True)
                 else:
-                    response_text = active_provider.get_response(system_instruction, question, return_response=True)
+                    response_text = active_provider.get_response(system_instruction, full_question, images=images or None, return_response=True)
 
                 logging.debug(f'Got response of length: {len(response_text)}')
                 

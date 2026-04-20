@@ -1,4 +1,3 @@
-import json
 import logging
 import os
 import sys
@@ -6,8 +5,11 @@ from functools import partial
 
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QKeySequence
 from PySide6.QtWidgets import (
+    QApplication,
     QDialog,
+    QFileDialog,
     QHBoxLayout,
     QLabel,
     QLineEdit,
@@ -18,10 +20,135 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
+from ui.AttachmentBar import AttachmentBar, attachment_from_file, attachment_from_qimage
 from ui.UIUtils import ThemeBackground, colorMode
 from update_checker import UPDATE_DOWNLOAD_URL
 
-_ = lambda x: x
+_ = lambda x: x  # Will be overridden by WritingToolApp
+
+
+class PopupTextEdit(QtWidgets.QTextEdit):
+    """Auto-resize text input cho popup window, hỗ trợ paste ảnh và drop file."""
+    submit_requested = QtCore.Signal()
+
+    MIN_HEIGHT = 80
+    MAX_HEIGHT = 120
+
+    def __init__(self, attachment_bar: AttachmentBar, parent=None):
+        super().__init__(parent)
+        self._attachment_bar = attachment_bar
+        self.setMinimumHeight(self.MIN_HEIGHT)
+        self.setMaximumHeight(self.MAX_HEIGHT)
+        self.setFixedHeight(self.MIN_HEIGHT)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+        self.setAcceptDrops(True)
+        self.document().contentsChanged.connect(self._adjust_height)
+
+    def _adjust_height(self):
+        doc_h = int(self.document().size().height()) + 12
+        self.setFixedHeight(min(max(self.MIN_HEIGHT, doc_h), self.MAX_HEIGHT))
+
+    def keyPressEvent(self, event):
+        if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
+            if event.modifiers() & (Qt.KeyboardModifier.ShiftModifier | Qt.KeyboardModifier.AltModifier):
+                self.textCursor().insertText("\n")
+                return
+            self.submit_requested.emit()
+            return
+
+        if event.matches(QKeySequence.StandardKey.Paste):
+            mime = QApplication.clipboard().mimeData()
+            if mime.hasImage():
+                self._handle_image_mime(mime)
+                return
+            if mime.hasUrls():
+                if self._handle_url_mime(mime.urls()):
+                    return
+
+        super().keyPressEvent(event)
+
+    def dragEnterEvent(self, event):
+        if event.mimeData().hasUrls() or event.mimeData().hasImage():
+            event.acceptProposedAction()
+        else:
+            super().dragEnterEvent(event)
+
+    def dragMoveEvent(self, event):
+        if event.mimeData().hasUrls() or event.mimeData().hasImage():
+            event.acceptProposedAction()
+        else:
+            super().dragMoveEvent(event)
+
+    def dropEvent(self, event):
+        mime = event.mimeData()
+        if mime.hasImage():
+            self._handle_image_mime(mime)
+            event.acceptProposedAction()
+            return
+        if mime.hasUrls():
+            if self._handle_url_mime(mime.urls()):
+                event.acceptProposedAction()
+                return
+        super().dropEvent(event)
+
+    def _handle_image_mime(self, mime):
+        qimage = mime.imageData()
+        if not isinstance(qimage, QtGui.QImage) or qimage.isNull():
+            qimage = QApplication.clipboard().image()
+        if qimage and not qimage.isNull():
+            att = attachment_from_qimage(qimage)
+            if att:
+                self._attachment_bar.add_attachment(att)
+
+    def insertFromMimeData(self, source):
+        """Override để bắt paste ảnh từ right-click menu và Ctrl+V."""
+        if source.hasImage():
+            self._handle_image_mime(source)
+            return
+        # Windows right-click paste: source.hasImage() may be False even when clipboard has image
+        clipboard_image = QApplication.clipboard().image()
+        if not clipboard_image.isNull():
+            att = attachment_from_qimage(clipboard_image)
+            if att:
+                self._attachment_bar.add_attachment(att)
+            return
+        if source.hasUrls():
+            if self._handle_url_mime(source.urls()):
+                return
+        super().insertFromMimeData(source)
+
+    def contextMenuEvent(self, event):
+        """Override context menu để xử lý Paste ảnh đúng trên Windows."""
+        menu = self.createStandardContextMenu()
+        clipboard_image = QApplication.clipboard().image()
+        if not clipboard_image.isNull():
+            for action in menu.actions():
+                if 'paste' in action.text().lower() or 'dán' in action.text().lower():
+                    try:
+                        action.triggered.disconnect()
+                    except Exception:
+                        pass
+                    action.triggered.connect(lambda: self._paste_image_direct())
+                    break
+        menu.exec(event.globalPos())
+
+    def _paste_image_direct(self):
+        clipboard_image = QApplication.clipboard().image()
+        if not clipboard_image.isNull():
+            att = attachment_from_qimage(clipboard_image)
+            if att:
+                self._attachment_bar.add_attachment(att)
+
+    def _handle_url_mime(self, urls) -> bool:
+        added = False
+        for url in urls:
+            if url.isLocalFile():
+                att = attachment_from_file(url.toLocalFile())
+                if att:
+                    self._attachment_bar.add_attachment(att)
+                    added = True
+        return added
+
 
 class ButtonEditDialog(QDialog):
     """
@@ -286,6 +413,8 @@ class CustomPopupWindow(QtWidgets.QWidget):
         self.input_area = None
         
         self.button_widgets = []
+        self._drag_pos = None
+        self._suppress_deactivate = False
 
         logging.debug('Initializing CustomPopupWindow')
         self.init_ui()
@@ -342,7 +471,7 @@ class CustomPopupWindow(QtWidgets.QWidget):
         top_bar.addWidget(self.edit_button, 0, Qt.AlignLeft)
 
         # The label "Drag to rearrange" (BOLD as requested)
-        self.drag_label = QLabel("Drag to rearrange")
+        self.drag_label = QLabel(_("Drag to rearrange"))
         self.drag_label.setStyleSheet(f"""
             color: {'#fff' if colorMode=='dark' else '#333'};
             font-size: 14px;
@@ -399,13 +528,19 @@ class CustomPopupWindow(QtWidgets.QWidget):
         
         # Input area (hidden in edit mode)
         self.input_area = QWidget()
-        input_layout = QHBoxLayout(self.input_area)
-        input_layout.setContentsMargins(0,0,0,0)
-        
-        self.custom_input = QLineEdit()
+        input_area_layout = QVBoxLayout(self.input_area)
+        input_area_layout.setContentsMargins(0, 0, 0, 0)
+        input_area_layout.setSpacing(4)
+
+        # Attachment bar (ẩn khi trống)
+        self.attachment_bar = AttachmentBar()
+        input_area_layout.addWidget(self.attachment_bar)
+
+        # Textarea full-width
+        self.custom_input = PopupTextEdit(self.attachment_bar)
         self.custom_input.setPlaceholderText(_("Describe your change...") if self.has_text else _("Ask your AI..."))
         self.custom_input.setStyleSheet(f"""
-            QLineEdit {{
+            QTextEdit {{
                 padding: 8px;
                 border: 1px solid {'#777' if colorMode=='dark' else '#ccc'};
                 border-radius: 8px;
@@ -413,31 +548,56 @@ class CustomPopupWindow(QtWidgets.QWidget):
                 color: {'#fff' if colorMode=='dark' else '#000'};
             }}
         """)
-        self.custom_input.returnPressed.connect(self.on_custom_change)
-        input_layout.addWidget(self.custom_input)
-        
+        self.custom_input.submit_requested.connect(self.on_custom_change)
+        input_area_layout.addWidget(self.custom_input)
+
+        # Buttons căn phải phía dưới textarea
+        btn_row = QHBoxLayout()
+        btn_row.setContentsMargins(0, 0, 0, 0)
+        btn_row.setSpacing(6)
+        btn_row.addStretch()
+
+        btn_size = 28
+        attach_btn = QPushButton("📎")
+        attach_btn.setFixedSize(btn_size, btn_size)
+        attach_btn.setStyleSheet(f"""
+            QPushButton {{
+                background-color: transparent;
+                border: none;
+                font-size: 16px;
+                padding: 0px;
+                color: {'#aaa' if colorMode=='dark' else '#666'};
+            }}
+            QPushButton:hover {{
+                color: {'#fff' if colorMode=='dark' else '#000'};
+            }}
+        """)
+        attach_btn.setToolTip(_("Attach file"))
+        attach_btn.clicked.connect(self._open_file_dialog)
+        btn_row.addWidget(attach_btn)
+
         send_btn = QPushButton()
         send_icon = os.path.join(os.path.dirname(sys.argv[0]),
                                 'icons',
                                 'send' + ('_dark' if colorMode=='dark' else '_light') + '.png')
         if os.path.exists(send_icon):
             send_btn.setIcon(QtGui.QIcon(send_icon))
+        send_btn.setFixedSize(btn_size, btn_size)
         send_btn.setStyleSheet(f"""
             QPushButton {{
                 background-color: {'#2e7d32' if colorMode=='dark' else '#4CAF50'};
                 border: none;
-                border-radius: 8px;
-                padding: 5px;
+                border-radius: 6px;
+                padding: 4px;
             }}
             QPushButton:hover {{
                 background-color: {'#1b5e20' if colorMode=='dark' else '#45a049'};
             }}
         """)
-        send_btn.setFixedSize(self.custom_input.sizeHint().height(),
-                            self.custom_input.sizeHint().height())
         send_btn.clicked.connect(self.on_custom_change)
-        input_layout.addWidget(send_btn)
-        
+        btn_row.addWidget(send_btn)
+
+        input_area_layout.addLayout(btn_row)
         content_layout.addWidget(self.input_area)
         
         if self.has_text:
@@ -446,14 +606,14 @@ class CustomPopupWindow(QtWidgets.QWidget):
         else:
             # If no text, hide the edit button; user can only do custom instructions
             self.edit_button.hide()
-            self.custom_input.setMinimumWidth(300)
+            self.custom_input.setMinimumWidth(260)
 
         # show update notice if applicable
         if self.app.config.get("update_available", False):
             update_label = QLabel()
             update_label.setOpenExternalLinks(True)
-            # Original English notification with the correct download link
-            update_text = f'<a href="{UPDATE_DOWNLOAD_URL}" style="color:rgb(255, 0, 0); text-decoration: underline; font-weight: bold;">There\'s an update! :D Download now.</a>'
+            # Translated update notification
+            update_text = f'<a href="{UPDATE_DOWNLOAD_URL}" style="color:rgb(255, 0, 0); text-decoration: underline; font-weight: bold;">{_("There\'s an update! :D Download now.")}</a>'
             update_label.setText(update_text)
             update_label.setStyleSheet("margin-top: 10px;")
             content_layout.addWidget(update_label, alignment=QtCore.Qt.AlignCenter)
@@ -477,8 +637,8 @@ class CustomPopupWindow(QtWidgets.QWidget):
             if cmd.id == "ChatNoSelection" and has_text:
                 continue
             
-            # Sử dụng cmd.id làm key thay vì cmd.name
-            b = DraggableButton(self, cmd.id, cmd.name)
+            # Sử dụng cmd.id làm key thay vì cmd.name, và dịch tên hiển thị
+            b = DraggableButton(self, cmd.id, _(cmd.name))
             icon_path = os.path.join(os.path.dirname(sys.argv[0]),
                                     cmd.icon + ('_dark' if colorMode=='dark' else '_light') + '.png')
             if os.path.exists(icon_path):
@@ -527,7 +687,7 @@ class CustomPopupWindow(QtWidgets.QWidget):
         
         # Add New button (only in edit mode & only if we have text)
         if self.edit_mode and self.has_text:
-            add_btn = QPushButton("+ Add New")
+            add_btn = QPushButton(_("+ Add New"))
             add_btn.setStyleSheet(f"""
                 QPushButton {{
                     background-color: {'#333' if colorMode=='dark' else '#e0e0e0'};
@@ -721,8 +881,8 @@ class CustomPopupWindow(QtWidgets.QWidget):
         """Handle deletion of a button."""
         key = btn.key
         confirm = QtWidgets.QMessageBox()
-        confirm.setWindowTitle("Confirm Delete?")
-        confirm.setText(f"Are you sure you want to delete the '{key}' button?")
+        confirm.setWindowTitle(_("Confirm Delete?"))
+        confirm.setText(_("Are you sure you want to delete the '{0}' button?").format(key))
         confirm.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
         
         if confirm.exec_() == QtWidgets.QMessageBox.Yes:
@@ -738,10 +898,27 @@ class CustomPopupWindow(QtWidgets.QWidget):
         """
         pass
 
+    def _open_file_dialog(self):
+        self._suppress_deactivate = True
+        files, unused_filter = QFileDialog.getOpenFileNames(
+            self,
+            _("Attach File"),
+            "",
+            "Images (*.png *.jpg *.jpeg *.gif *.webp *.bmp *.tiff);;"
+            "Text Files (*.txt *.md *.csv *.json *.xml *.py *.js *.ts *.html *.css *.yaml *.yml *.toml *.ini *.log);;"
+            "All Files (*)"
+        )
+        self._suppress_deactivate = False
+        for path in files:
+            att = attachment_from_file(path)
+            if att:
+                self.attachment_bar.add_attachment(att)
+
     def on_custom_change(self):
-        txt = self.custom_input.text().strip()
-        if txt:
-            self.app.process_option('Custom', self.selected_text, txt)
+        txt = self.custom_input.toPlainText().strip()
+        attachments = self.attachment_bar.get_attachments()
+        if txt or attachments:
+            self.app.process_option('Custom', self.selected_text, txt, attachments=attachments)
             self.close()
 
     def on_generic_instruction(self, command_id):
@@ -749,12 +926,25 @@ class CustomPopupWindow(QtWidgets.QWidget):
             self.app.process_option(command_id, self.selected_text)
             self.close()
 
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            self._drag_pos = event.globalPosition().toPoint() - self.frameGeometry().topLeft()
+            event.accept()
+        else:
+            super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event):
+        if event.buttons() & Qt.MouseButton.LeftButton and self._drag_pos is not None:
+            self.move(event.globalPosition().toPoint() - self._drag_pos)
+            event.accept()
+        else:
+            super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        self._drag_pos = None
+        super().mouseReleaseEvent(event)
+
     def eventFilter(self, obj, event):
-        # Hide on deactivate only if NOT in edit mode
-        if event.type()==QtCore.QEvent.WindowDeactivate:
-            if not self.edit_mode:
-                self.hide()
-                return True
         return super().eventFilter(obj, event)
 
     def keyPressEvent(self, event):
