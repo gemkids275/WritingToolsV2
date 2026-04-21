@@ -32,7 +32,7 @@ struct MenuBarMenu: View {
     
     var body: some View {
         // Settings - use Button with openSettings to ensure proper activation
-        Button("Settings") {
+        Button(String(localized: "Settings")) {
             openSettings()
             // For accessory apps, activate after opening so the window
             // comes to front above other applications.
@@ -48,44 +48,44 @@ struct MenuBarMenu: View {
         }
         .keyboardShortcut(",", modifiers: .command)
         
-        Button("About AI Shortcuts") {
+        Button(String(localized: "About AI Shortcuts")) {
             showAboutWindow()
         }
         
-        Button(settings.hotkeysPaused ? "Resume Hotkeys" : "Pause Hotkeys") {
+        Button(settings.hotkeysPaused ? String(localized: "Resume Hotkeys") : String(localized: "Pause Hotkeys")) {
             settings.hotkeysPaused.toggle()
         }
         
         Divider()
         
-        Button("Reset App") {
+        Button(String(localized: "Reset App")) {
             showResetConfirmation = true
         }
         .dialogSeverity(.critical)
         .confirmationDialog(
-            "Reset AI Shortcuts?",
+            String(localized: "Reset AI Shortcuts?"),
             isPresented: $showResetConfirmation
         ) {
-            Button("Reset", role: .destructive) {
+            Button(String(localized: "Reset"), role: .destructive) {
                 WindowManager.shared.cleanupWindows()
                 showResetComplete = true
             }
-            Button("Cancel", role: .cancel) {}
+            Button(String(localized: "Cancel"), role: .cancel) {}
         } message: {
-            Text("This will reset windows and UI state. Your commands and settings will remain.")
+            Text(String(localized: "This will reset windows and UI state. Your commands and settings will remain."))
         }
         .alert(
-            "App Reset Complete",
+            String(localized: "App Reset Complete"),
             isPresented: $showResetComplete
         ) {
-            Button("OK") {}
+            Button(String(localized: "OK")) {}
         } message: {
-            Text("The app has been reset. If you're still experiencing issues, try restarting the app.")
+            Text(String(localized: "The app has been reset. If you're still experiencing issues, try restarting the app."))
         }
         
         Divider()
         
-        Button("Quit") {
+        Button(String(localized: "Quit")) {
             NSApplication.shared.terminate(nil)
         }
         .keyboardShortcut("q", modifiers: .command)

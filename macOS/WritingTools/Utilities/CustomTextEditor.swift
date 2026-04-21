@@ -1,11 +1,14 @@
 import SwiftUI
 import AppKit
 
+let supportedImageExtensions: Set<String> = ["png", "jpg", "jpeg", "gif", "webp", "heic", "heif", "tiff", "bmp"]
+
 /// NSTextView-backed text editor with a thin overlay scrollbar.
 struct CustomTextEditor: NSViewRepresentable {
     @Binding var text: String
     var placeholder: String = ""
     var onSubmit: (() -> Void)? = nil
+    var onPasteImage: ((Data) -> Void)? = nil
 
     func makeCoordinator() -> Coordinator {
         Coordinator(text: $text, onSubmit: onSubmit)
@@ -36,6 +39,7 @@ struct CustomTextEditor: NSViewRepresentable {
         textView.textContainer?.containerSize = NSSize(width: 0, height: CGFloat.greatestFiniteMagnitude)
         textView.delegate = context.coordinator
         textView.onSubmit = onSubmit
+        textView.onPasteImage = onPasteImage
         context.coordinator.textView = textView
 
         scrollView.documentView = textView
@@ -50,6 +54,7 @@ struct CustomTextEditor: NSViewRepresentable {
             textView.selectedRanges = selected
         }
         textView.onSubmit = onSubmit
+        textView.onPasteImage = onPasteImage
         context.coordinator.updatePlaceholder(textView, placeholder: placeholder, text: text)
     }
 
@@ -101,6 +106,7 @@ struct CustomTextEditor: NSViewRepresentable {
 
 private class PasteAwareTextView: NSTextView {
     var onSubmit: (() -> Void)?
+    var onPasteImage: ((Data) -> Void)?
 
     override func validateMenuItem(_ menuItem: NSMenuItem) -> Bool {
         if menuItem.action == #selector(paste(_:)) {
@@ -146,7 +152,11 @@ private class PasteAwareTextView: NSTextView {
                 data = imageData
             }
             Task { @MainActor in
-                AppState.shared.customAttachments.append(.image(data))
+                if let handler = self.onPasteImage {
+                    handler(data)
+                } else {
+                    AppState.shared.customAttachments.append(.image(data))
+                }
             }
             return
         }
@@ -154,13 +164,24 @@ private class PasteAwareTextView: NSTextView {
         // Image file URL (e.g. drag a file from Finder then paste)
         if let urls = pb.readObjects(forClasses: [NSURL.self], options: nil) as? [URL], !urls.isEmpty {
             Task { @MainActor in
-                let rejected = urls.filter { !AppState.shared.addAttachment(from: $0) }.map { $0.lastPathComponent }
-                if !rejected.isEmpty {
-                    let alert = NSAlert()
-                    alert.messageText = "Unsupported File(s)"
-                    alert.informativeText = "\(rejected.joined(separator: ", "))\n\nOnly images and plain text files are supported."
-                    alert.alertStyle = .warning
-                    alert.runModal()
+                if let handler = self.onPasteImage {
+                    for url in urls {
+                        let values = try? url.resourceValues(forKeys: [.contentTypeKey])
+                        let isImage = (values?.contentType?.conforms(to: .image) ?? false)
+                            || supportedImageExtensions.contains(url.pathExtension.lowercased())
+                        if isImage, let data = try? Data(contentsOf: url) {
+                            handler(data)
+                        }
+                    }
+                } else {
+                    let rejected = urls.filter { !AppState.shared.addAttachment(from: $0) }.map { $0.lastPathComponent }
+                    if !rejected.isEmpty {
+                        let alert = NSAlert()
+                        alert.messageText = "Unsupported File(s)"
+                        alert.informativeText = "\(rejected.joined(separator: ", "))\n\nOnly images and plain text files are supported."
+                        alert.alertStyle = .warning
+                        alert.runModal()
+                    }
                 }
             }
             return

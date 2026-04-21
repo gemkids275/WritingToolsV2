@@ -148,6 +148,20 @@ final class AppSettings {
         didSet { defaults.set(openRouterCustomModel, forKey: "openrouter_custom_model") }
     }
     
+    // MARK: - Special Settings
+    private var _preferredLanguage: String?
+    var preferredLanguage: String? {
+        get { _preferredLanguage }
+        set {
+            _preferredLanguage = newValue
+            if let lang = newValue {
+                defaults.set([lang], forKey: "AppleLanguages")
+            } else {
+                defaults.removeObject(forKey: "AppleLanguages")
+            }
+        }
+    }
+    
     // Store the ID (rawValue) of the selected local LLM model type
     var selectedLocalLLMId: String? {
         didSet { defaults.set(selectedLocalLLMId, forKey: "selected_local_llm_id") }
@@ -227,6 +241,8 @@ final class AppSettings {
         self.anthropicModel = defaults.string(forKey: "anthropic_model") ?? AnthropicConfig.defaultModel
         
         self.selectedLocalLLMId = defaults.string(forKey: "selected_local_llm_id")
+        
+        self._preferredLanguage = defaults.stringArray(forKey: "AppleLanguages")?.first
         
         self.openRouterApiKey = keychain.bootstrapRetrieve(forKey: "openrouter_api_key") ?? ""
         self.openRouterModel = defaults.string(forKey: "openrouter_model") ?? OpenRouterConfig.defaultModel

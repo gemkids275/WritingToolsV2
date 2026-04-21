@@ -36,21 +36,27 @@ struct ChatMessage: Identifiable, Equatable, Sendable {
     var content: String
     let timestamp: Date
     var isStreaming: Bool
-    
-    init(role: String, content: String, isStreaming: Bool = false) {
+    let imageData: [Data]
+
+    init(role: String, content: String, isStreaming: Bool = false, attachments: [Attachment] = []) {
         self.id = UUID()
         self.role = role
         self.content = content
         self.timestamp = Date()
         self.isStreaming = isStreaming
+        self.imageData = attachments.compactMap {
+            if case .image(let data) = $0 { return data }
+            return nil
+        }
     }
-    
+
     static func == (lhs: ChatMessage, rhs: ChatMessage) -> Bool {
         lhs.id == rhs.id &&
         lhs.role == rhs.role &&
         lhs.content == rhs.content &&
         lhs.timestamp == rhs.timestamp &&
-        lhs.isStreaming == rhs.isStreaming
+        lhs.isStreaming == rhs.isStreaming &&
+        lhs.imageData == rhs.imageData
     }
 }
 
@@ -62,7 +68,6 @@ struct ResponseView: View {
     @Environment(\.colorScheme) var colorScheme
     @Environment(\.accessibilityReduceMotion) var reduceMotion
     @State private var inputText: String = ""
-    @State private var isRegenerating: Bool = false
     @State private var errorMessage: String?
     @State private var showError: Bool = false
     @State private var followUpAttachments: [Attachment] = []
@@ -217,7 +222,8 @@ struct ResponseView: View {
                     }
                 }
             }
-            
+            .layoutPriority(1)
+
             // Input area
             VStack(spacing: 8) {
                 Divider()
@@ -226,12 +232,13 @@ struct ResponseView: View {
                     CustomTextEditor(
                         text: $inputText,
                         placeholder: "Ask a follow-up question...",
-                        onSubmit: sendMessage
+                        onSubmit: sendMessage,
+                        onPasteImage: { data in followUpAttachments.append(.image(data)) }
                     )
-                    .frame(minHeight: 36, maxHeight: 300)
+                    .frame(minHeight: 36, maxHeight: 120)
                     .appleStyleTextField(
                         text: inputText,
-                        isLoading: isRegenerating,
+                        isLoading: viewModel.isProcessing,
                         topContent: followUpAttachments.isEmpty ? nil : AnyView(followUpAttachmentsRow),
                         onAttach: { isImporting = true },
                         onSubmit: sendMessage
@@ -285,11 +292,10 @@ struct ResponseView: View {
                 defer { if accessing { url.stopAccessingSecurityScopedResource() } }
                 let values = try? url.resourceValues(forKeys: [.contentTypeKey])
                 let contentType = values?.contentType
-                let imageExtensions: Set<String> = ["png", "jpg", "jpeg", "gif", "webp", "heic", "heif", "tiff", "bmp"]
-                let isImage = (contentType?.conforms(to: .image) ?? false) || imageExtensions.contains(url.pathExtension.lowercased())
+                let isImage = (contentType?.conforms(to: .image) ?? false) || supportedImageExtensions.contains(url.pathExtension.lowercased())
                 if isImage, let data = try? Data(contentsOf: url) {
                     followUpAttachments.append(.image(data))
-                } else if let data = try? Data(contentsOf: url), let _ = String(data: data, encoding: .utf8) {
+                } else if let data = try? Data(contentsOf: url), String(data: data, encoding: .utf8) != nil {
                     followUpAttachments.append(.file(url, data: data))
                 } else {
                     rejected.append(url.lastPathComponent)
@@ -311,13 +317,10 @@ struct ResponseView: View {
         let attachments = followUpAttachments
         inputText = ""
         followUpAttachments = []
-        isRegenerating = true
-
         viewModel.startFollowUpQuestion(
             question,
             attachments: attachments,
             onCompletion: {
-                isRegenerating = false
             },
             onFailure: { message in
                 errorMessage = message
@@ -334,6 +337,7 @@ struct ChatMessageView: View {
     let fontSize: CGFloat
     @Environment(\.accessibilityReduceMotion) var reduceMotion
     @State private var showCopiedFeedback: Bool = false
+    @State private var expandedImage: NSImage? = nil
     
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
@@ -347,28 +351,55 @@ struct ChatMessageView: View {
         }
         .padding(.top, 4)
         .animation(reduceMotion ? nil : .spring(), value: message.role)
+        .sheet(isPresented: Binding(
+            get: { expandedImage != nil },
+            set: { if !$0 { expandedImage = nil } }
+        )) {
+            if let image = expandedImage {
+                ImagePreviewSheet(image: image)
+            }
+        }
     }
     
     @ViewBuilder
     private func bubbleView(role: String) -> some View {
         VStack(alignment: role == "assistant" ? .leading : .trailing, spacing: 2) {
-            Group {
-                if message.isStreaming && role == "assistant" {
-                    if !message.content.isEmpty {
-                        Text(message.content)
-                            .font(.system(size: fontSize))
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                            .textSelection(.enabled)
+            VStack(alignment: .leading, spacing: 6) {
+                if !message.imageData.isEmpty {
+                    HStack(spacing: 8) {
+                        ForEach(Array(message.imageData.enumerated()), id: \.offset) { _, data in
+                            if let nsImage = NSImage(data: data) {
+                                Image(nsImage: nsImage)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 120, height: 90)
+                                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                                    .contentShape(Rectangle())
+                                    .onTapGesture { expandedImage = nsImage }
+                                    .help("Click to enlarge")
+                            }
+                        }
+                        Spacer()
                     }
-                } else {
-                    RichMarkdownView(text: message.content, fontSize: fontSize)
-                        // Keep markdown constrained to bubble width while allowing vertical growth.
-                        .fixedSize(horizontal: false, vertical: true)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .textSelection(.enabled)
+                }
+
+                if !message.content.isEmpty || (message.isStreaming && message.imageData.isEmpty) {
+                    Group {
+                        if message.isStreaming && role == "assistant" {
+                            Text(message.content)
+                                .font(.system(size: fontSize))
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .textSelection(.enabled)
+                        } else {
+                            RichMarkdownView(text: message.content, fontSize: fontSize)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .textSelection(.enabled)
+                        }
+                    }
                 }
             }
-            .chatBubbleStyle(isFromUser: message.role == "user", isEmpty: message.isStreaming && message.content.isEmpty)
+            .chatBubbleStyle(isFromUser: message.role == "user", isEmpty: message.isStreaming && message.content.isEmpty && message.imageData.isEmpty)
             .accessibilityLabel(message.role == "user" ? "Your message" : "Assistant's response")
             .accessibilityValue(message.content)
             .contextMenu {
@@ -649,7 +680,7 @@ final class ResponseViewModel {
     
     func processFollowUpQuestion(_ question: String, attachments: [Attachment] = []) async throws {
         // Add user message to UI
-        messages.append(ChatMessage(role: "user", content: question))
+        messages.append(ChatMessage(role: "user", content: question, attachments: attachments))
         
         // Add to conversation history
         conversationHistory.append((role: "user", content: question))
@@ -848,5 +879,45 @@ struct RichMarkdownView: View {
             .font(.system(size: fontSize + 2), for: .displayMath)
             // Tint for inline code
             .tint(.primary, for: .inlineCodeBlock)
+    }
+}
+
+// MARK: - Image Preview Sheet
+
+private struct ImagePreviewSheet: View {
+    let image: NSImage
+    @Environment(\.dismiss) var dismiss
+
+    var body: some View {
+        VStack(spacing: 0) {
+            HStack {
+                Spacer()
+                Button {
+                    dismiss()
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .font(.title2)
+                        .foregroundStyle(.secondary)
+                }
+                .buttonStyle(.plain)
+                .padding(12)
+            }
+
+            ScrollView([.horizontal, .vertical]) {
+                Image(nsImage: image)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(
+                        maxWidth: image.size.width,
+                        maxHeight: image.size.height
+                    )
+                    .padding(16)
+            }
+            .frame(minWidth: 300, minHeight: 200)
+        }
+        .frame(
+            idealWidth: min(image.size.width + 32, 900),
+            idealHeight: min(image.size.height + 80, 700)
+        )
     }
 }

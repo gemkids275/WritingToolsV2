@@ -16,16 +16,16 @@ struct OpenAISettingsView: View {
         VStack(alignment: .leading, spacing: 16) {
             Group {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("API Configuration")
+                    Text(String(localized: "API Configuration"))
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                     
-                    SecureAPIKeyField("API Key", text: $settings.openAIApiKey)
+                    SecureAPIKeyField(String(localized: "API Key"), text: $settings.openAIApiKey)
                         .onChange(of: settings.openAIApiKey) { _, _ in
                             needsSaving = true
                         }
                     
-                    TextField("Base URL", text: $settings.openAIBaseURL)
+                    TextField(String(localized: "Base URL"), text: $settings.openAIBaseURL)
                         .textFieldStyle(.roundedBorder)
                         .onChange(of: settings.openAIBaseURL) { _, _ in
                             needsSaving = true
@@ -33,11 +33,11 @@ struct OpenAISettingsView: View {
                 }
                 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Model Configuration")
+                    Text(String(localized: "Model Configuration"))
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                     
-                    TextField("Model Name", text: $settings.openAIModel)
+                    TextField(String(localized: "Model Name"), text: $settings.openAIModel)
                         .textFieldStyle(.roundedBorder)
                         .onChange(of: settings.openAIModel) { _, _ in
                             needsSaving = true
@@ -51,13 +51,13 @@ struct OpenAISettingsView: View {
             }
             .padding(.bottom, 4)
             
-            Button("Get OpenAI API Key") {
+            Button(String(localized: "Get OpenAI API Key")) {
                 if let url = URL(string: "https://platform.openai.com/account/api-keys") {
                     NSWorkspace.shared.open(url)
                 }
             }
             .buttonStyle(.link)
-            .help("Open OpenAI dashboard to create an API key.")
+            .help(String(localized: "Open OpenAI dashboard to create an API key."))
         }
     }
 }

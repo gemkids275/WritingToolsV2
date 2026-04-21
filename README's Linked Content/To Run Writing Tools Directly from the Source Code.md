@@ -35,4 +35,4 @@ Of course, you'll need to have [Python installed](https://www.python.org/downloa
    ```
 
 
-### [**◀️ Back to main page**](https://github.com/theJayTea/WritingTools)
+### [**◀️ Back to main page**](https://github.com/gemkids275/WritingToolsV2)

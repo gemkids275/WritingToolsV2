@@ -64,7 +64,7 @@ struct CommandEditor: View {
         VStack(spacing: 0) {
             // Enhanced Header
             HStack {
-                Text(isBuiltIn ? "Edit Built-In Command" : "Edit Command")
+                Text(isBuiltIn ? LocalizedStringKey("Edit Built-In Command") : LocalizedStringKey("Edit Command"))
                     .font(.headline)
                     .foregroundStyle(.primary)
                 Spacer()
@@ -241,7 +241,7 @@ struct CommandEditor: View {
                                         .foregroundStyle(.red)
                                         .padding(.leading, 92)
                                 }
-                                Text("The base URL of your API endpoint (e.g., https://api.openai.com/v1)")
+                                Text(verbatim: "The base URL of your API endpoint (e.g., https://api.openai.com/v1)")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                                     .padding(.leading, 92)
@@ -260,7 +260,7 @@ struct CommandEditor: View {
                                         .foregroundStyle(.red)
                                         .padding(.leading, 92)
                                 }
-                                Text(selectedProvider == "custom" ? "Your API authentication key" : "Optional: Override the global API key for this command. Leave empty to use default.")
+                                Text(selectedProvider == "custom" ? LocalizedStringKey("Your API authentication key") : LocalizedStringKey("Optional: Override the global API key for this command. Leave empty to use default."))
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                                     .padding(.leading, 92)
@@ -435,15 +435,15 @@ struct CommandEditor: View {
 
         var hasValidationError = false
         if trimmedBaseURL.isEmpty {
-            customProviderBaseURLError = "Base URL is required."
+            customProviderBaseURLError = String(localized: "Base URL is required.")
             hasValidationError = true
         }
         if trimmedApiKey.isEmpty {
-            customProviderApiKeyError = "API key is required."
+            customProviderApiKeyError = String(localized: "API key is required.")
             hasValidationError = true
         }
         if trimmedModel.isEmpty {
-            customProviderModelError = "Model is required."
+            customProviderModelError = String(localized: "Model is required.")
             hasValidationError = true
         }
 

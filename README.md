@@ -133,7 +133,7 @@ https://github.com/user-attachments/assets/30e22e1a-361d-4767-b6da-6639ef5ca66e
 
 ---
 
-## 🆕 What's New in This Fork (macOS)
+## 🆕 What's New in This Fork
 
 On top of everything the original macOS port offers, this fork adds:
 
@@ -162,6 +162,11 @@ On top of everything the original macOS port offers, this fork adds:
 - **Drag popup across multiple screens** — not locked to the originating display
 - Horizontal attachment strip with **drag-to-scroll** gesture
 - Response window follow-up input also supports attachments and multi-line
+
+### 🌐 Multi-language UI
+- UI localized in **7 languages**: English, German, French, Spanish, Vietnamese, Japanese, Simplified Chinese
+- **In-app language switcher** — change the interface language without touching system settings
+- Available on **all platforms** (macOS, Windows & Linux)
 
 ### 🐛 Bug Fixes
 - **Fixed:** On newer macOS versions, the onboarding flow could not locate the correct path to **System Settings → Privacy & Security**, leaving users unable to grant Accessibility or Screen Recording permissions. The deep link now opens the correct pane directly.
@@ -192,7 +197,6 @@ AI Shortcuts needs Accessibility access to read your selected text. Without it, 
 ## 🔮 What's Coming
 
 - **Windows & Linux parity** — Gradually bring the macOS-exclusive features (attachments, richer command management, more providers) to the Windows & Linux version
-- **Multi-language & custom language support** — Let users set a preferred response language, and support custom language configurations beyond the built-in UI locales
 - **Ongoing bug fixes** — Continuously improving stability and compatibility across macOS versions
 
 ---
@@ -218,7 +222,6 @@ AI Shortcuts needs Accessibility access to read your selected text. Without it, 
 - **RTF-preserving Proofread** — keeps bold, italics, lists, and links intact
 - **Command shortcuts** — assign keyboard shortcuts to any command
 - **Custom command editor** — create and edit your own AI buttons
-- Localized UI in **English, German, French, Spanish**
 - Multiple themes including dark mode
 
 ---

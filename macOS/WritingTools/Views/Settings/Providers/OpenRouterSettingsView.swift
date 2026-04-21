@@ -14,12 +14,12 @@ struct OpenRouterSettingsView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Configure OpenRouter")
+            Text(String(localized: "Configure OpenRouter"))
                 .font(.headline)
-            SecureAPIKeyField("API Key", text: $settings.openRouterApiKey)
+            SecureAPIKeyField(String(localized: "API Key"), text: $settings.openRouterApiKey)
                 .onChange(of: settings.openRouterApiKey) { _, _ in needsSaving = true }
             
-            Picker("Model", selection: $settings.openRouterModel) {
+            Picker(String(localized: "Model"), selection: $settings.openRouterModel) {
                 ForEach(OpenRouterModel.allCases, id: \.self) { model in
                     Text(model.displayName).tag(model.rawValue)
                 }
@@ -29,19 +29,19 @@ struct OpenRouterSettingsView: View {
             .onChange(of: settings.openRouterModel) { _, _ in needsSaving = true }
             
             if settings.openRouterModel == OpenRouterModel.custom.rawValue {
-                TextField("Custom Model Name", text: $settings.openRouterCustomModel)
+                TextField(String(localized: "Custom Model Name"), text: $settings.openRouterCustomModel)
                     .textFieldStyle(.roundedBorder)
                     .onChange(of: settings.openRouterCustomModel) { _, _ in needsSaving = true }
                     .padding(.top, 4)
             }
             
-            Button("Get OpenRouter API Key") {
+            Button(String(localized: "Get OpenRouter API Key")) {
                 if let url = URL(string: "https://openrouter.ai/keys") {
                     NSWorkspace.shared.open(url)
                 }
             }
             .buttonStyle(.link)
-            .help("Open OpenRouter to retrieve your API key.")
+            .help(String(localized: "Open OpenRouter to retrieve your API key."))
         }
     }
 }

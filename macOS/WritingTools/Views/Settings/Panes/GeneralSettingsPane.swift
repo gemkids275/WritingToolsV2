@@ -21,7 +21,7 @@ struct GeneralSettingsPane<SaveButton: View>: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("General Settings")
+            Text(String(localized: "General Settings"))
                 .font(.headline)
                 .accessibilityAddTraits(.isHeader)
 
@@ -47,14 +47,14 @@ struct GeneralSettingsPane<SaveButton: View>: View {
 
     private var generalContent: some View {
         VStack(alignment: .leading, spacing: 12) {
-            GroupBox("Keyboard Shortcuts") {
+            GroupBox(String(localized: "Keyboard Shortcuts")) {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Set a global shortcut to quickly activate AI Shortcuts.")
+                    Text(String(localized: "Set a global shortcut to quickly activate AI Shortcuts."))
                         .font(.footnote)
                         .foregroundStyle(.secondary)
 
                     HStack(alignment: .center, spacing: 12) {
-                        Text("Activate AI Shortcuts:")
+                        Text(String(localized: "Activate AI Shortcuts:"))
                             .frame(width: 180, alignment: .leading)
                             .foregroundStyle(.primary)
                         KeyboardShortcuts.Recorder(
@@ -63,17 +63,17 @@ struct GeneralSettingsPane<SaveButton: View>: View {
                                 needsSaving = true
                             }
                         )
-                        .accessibilityLabel("Activate AI Shortcuts shortcut")
-                        .accessibilityHint("Sets the global shortcut to open AI Shortcuts.")
-                        .help("Choose a convenient key combination to bring up AI Shortcuts from anywhere.")
+                        .accessibilityLabel(String(localized: "Activate AI Shortcuts shortcut"))
+                        .accessibilityHint(String(localized: "Sets the global shortcut to open AI Shortcuts."))
+                        .help(String(localized: "Choose a convenient key combination to bring up AI Shortcuts from anywhere."))
                     }
                     .padding(.vertical, 2)
                 }
             }
 
-            GroupBox("Commands") {
+            GroupBox(String(localized: "Commands")) {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Manage your writing tools and assign keyboard shortcuts.")
+                    Text(String(localized: "Manage your writing tools and assign keyboard shortcuts."))
                         .font(.footnote)
                         .foregroundStyle(.secondary)
 
@@ -82,7 +82,7 @@ struct GeneralSettingsPane<SaveButton: View>: View {
                     }) {
                         HStack(spacing: 8) {
                             Image(systemName: "list.bullet.rectangle")
-                            Text("Manage Commands")
+                            Text(String(localized: "Manage Commands"))
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.vertical, 6)
@@ -91,32 +91,58 @@ struct GeneralSettingsPane<SaveButton: View>: View {
                         .clipShape(.rect(cornerRadius: 8))
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel("Manage Commands")
-                    .accessibilityHint("Open the Commands Manager to add, edit, or remove commands.")
-                    .help("Open the Commands Manager to add, edit, or remove commands.")
+                    .accessibilityLabel(String(localized: "Manage Commands"))
+                    .accessibilityHint(String(localized: "Open the Commands Manager to add, edit, or remove commands."))
+                    .help(String(localized: "Open the Commands Manager to add, edit, or remove commands."))
 
                     Toggle(isOn: $settings.openCustomCommandsInResponseWindow) {
                         VStack(alignment: .leading, spacing: 1) {
-                            Text("Open custom prompts in response window")
-                            Text("When unchecked, custom prompts will replace selected text inline")
+                            Text(String(localized: "Open custom prompts in response window"))
+                            Text(String(localized: "When unchecked, custom prompts will replace selected text inline"))
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
                     }
                     .toggleStyle(.checkbox)
-                    .accessibilityLabel("Open custom prompts in response window")
-                    .accessibilityHint("When off, custom prompts replace selected text inline.")
+                    .accessibilityLabel(String(localized: "Open custom prompts in response window"))
+                    .accessibilityHint(String(localized: "When off, custom prompts replace selected text inline."))
                     .onChange(of: settings.openCustomCommandsInResponseWindow) { _, _ in
                         needsSaving = true
                     }
-                    .help("Choose whether custom prompts open in a separate response window or replace text inline.")
+                    .help(String(localized: "Choose whether custom prompts open in a separate response window or replace text inline."))
 
                 }
             }
 
-            GroupBox("Onboarding") {
+            GroupBox(String(localized: "Language")) {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(String(localized: "Choose your preferred language for the interface."))
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+
+                    Picker(String(localized: "Interface Language:"), selection: $settings.preferredLanguage) {
+                        Text(String(localized: "System Default")).tag(String?.none)
+                        Divider()
+                        Text("English").tag(String?.some("en"))
+                        Text("Deutsch").tag(String?.some("de"))
+                        Text("Español").tag(String?.some("es"))
+                        Text("Français").tag(String?.some("fr"))
+                        Text("Tiếng Việt").tag(String?.some("vi"))
+                        Text("日本語").tag(String?.some("ja"))
+                        Text("中文简体").tag(String?.some("zh-Hans"))
+                    }
+                    .frame(width: 300)
+                    .onChange(of: settings.preferredLanguage) { oldValue, newValue in
+                        if oldValue != newValue {
+                            showRestartAlert()
+                        }
+                    }
+                }
+            }
+
+            GroupBox(String(localized: "Onboarding")) {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("You can rerun the onboarding flow to review permissions and quickly configure the app.")
+                    Text(String(localized: "You can rerun the onboarding flow to review permissions and quickly configure the app."))
                         .font(.footnote)
                         .foregroundStyle(.secondary)
 
@@ -124,21 +150,21 @@ struct GeneralSettingsPane<SaveButton: View>: View {
                         Button {
                             restartOnboarding()
                         } label: {
-                            Label("Restart Onboarding", systemImage: "arrow.counterclockwise")
+                            Label(String(localized: "Restart Onboarding"), systemImage: "arrow.counterclockwise")
                         }
                         .buttonStyle(.bordered)
-                        .accessibilityLabel("Restart onboarding")
-                        .accessibilityHint("Open the onboarding window to review permissions and setup.")
-                        .help("Open the onboarding window to set up AI Shortcuts again.")
+                        .accessibilityLabel(String(localized: "Restart onboarding"))
+                        .accessibilityHint(String(localized: "Open the onboarding window to review permissions and setup."))
+                        .help(String(localized: "Open the onboarding window to set up AI Shortcuts again."))
 
                         Spacer()
                     }
                 }
             }
 
-            GroupBox("Custom AI Response") {
+            GroupBox(String(localized: "Custom AI Response")) {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Customize the system instructions used when you enter a manual description in the popup.")
+                    Text(String(localized: "Customize the system instructions used when you enter a manual description in the popup."))
                         .font(.footnote)
                         .foregroundStyle(.secondary)
 
@@ -147,7 +173,7 @@ struct GeneralSettingsPane<SaveButton: View>: View {
                     }) {
                         HStack(spacing: 8) {
                             Image(systemName: "square.and.pencil")
-                            Text("Edit Custom Response Prompt")
+                            Text(String(localized: "Edit Custom Response Prompt"))
                         }
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.vertical, 6)
@@ -156,26 +182,26 @@ struct GeneralSettingsPane<SaveButton: View>: View {
                         .clipShape(.rect(cornerRadius: 8))
                     }
                     .buttonStyle(.plain)
-                    .accessibilityLabel("Edit Custom Response Prompt")
-                    .accessibilityHint("Open the editor to customize the AI's behavior for manual inputs.")
-                    .help("Open the editor to customize the AI's behavior for manual inputs.")
+                    .accessibilityLabel(String(localized: "Edit Custom Response Prompt"))
+                    .accessibilityHint(String(localized: "Open the editor to customize the AI's behavior for manual inputs."))
+                    .help(String(localized: "Open the editor to customize the AI's behavior for manual inputs."))
                 }
             }
 
-            GroupBox("Backup & Restore") {
+            GroupBox(String(localized: "Backup & Restore")) {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Backup all your commands and AI response settings to a JSON file, or restore them from a previous backup.")
+                    Text(String(localized: "Backup all your commands and AI response settings to a JSON file, or restore them from a previous backup."))
                         .font(.footnote)
                         .foregroundStyle(.secondary)
 
                     HStack(spacing: 12) {
                         Button(action: exportFullConfig) {
-                            Label("Export All Config", systemImage: "square.and.arrow.up")
+                            Label(String(localized: "Export All Config"), systemImage: "square.and.arrow.up")
                         }
                         .buttonStyle(.bordered)
 
                         Button(action: importFullConfig) {
-                            Label("Import Full Config", systemImage: "square.and.arrow.down")
+                            Label(String(localized: "Import Full Config"), systemImage: "square.and.arrow.down")
                         }
                         .buttonStyle(.bordered)
                     }
@@ -211,6 +237,38 @@ struct GeneralSettingsPane<SaveButton: View>: View {
         NSApp.keyWindow?.close()
         WindowManager.shared.closeSettingsWindow()
     }
+    
+    private func showRestartAlert() {
+        let alert = NSAlert()
+        alert.messageText = String(localized: "Restart Required")
+        alert.informativeText = String(localized: "The language change will take effect after restarting the application. Would you like to restart now?")
+        alert.alertStyle = .informational
+        alert.addButton(withTitle: String(localized: "Restart Now"))
+        alert.addButton(withTitle: String(localized: "Later"))
+        
+        if alert.runModal() == .alertFirstButtonReturn {
+            restartApp()
+        }
+    }
+
+    private func restartApp() {
+        let url = Bundle.main.bundleURL
+        let config = NSWorkspace.OpenConfiguration()
+        config.createsNewApplicationInstance = true
+        NSWorkspace.shared.openApplication(at: url, configuration: config) { _, error in
+            DispatchQueue.main.async {
+                if error != nil {
+                    let alert = NSAlert()
+                    alert.messageText = String(localized: "Restart Failed")
+                    alert.informativeText = String(localized: "Could not relaunch the app. Please restart it manually.")
+                    alert.alertStyle = .warning
+                    alert.addButton(withTitle: String(localized: "OK"))
+                    alert.runModal()
+                }
+                NSApp.terminate(nil)
+            }
+        }
+    }
 
     // MARK: - Backup & Restore Logic
 
@@ -219,8 +277,8 @@ struct GeneralSettingsPane<SaveButton: View>: View {
         savePanel.allowedContentTypes = [.json]
         savePanel.canCreateDirectories = true
         savePanel.isExtensionHidden = false
-        savePanel.title = "Export Full Configuration"
-        savePanel.message = "Choose where to save your AI Shortcuts configuration backup."
+        savePanel.title = String(localized: "Export Full Configuration")
+        savePanel.message = String(localized: "Choose where to save your AI Shortcuts configuration backup.")
         savePanel.nameFieldStringValue = "AIShortcuts_Full_Backup.json"
 
         if savePanel.runModal() == .OK {
@@ -229,18 +287,18 @@ struct GeneralSettingsPane<SaveButton: View>: View {
                     do {
                         try data.write(to: url)
                         let alert = NSAlert()
-                        alert.messageText = "Export Successful"
-                        alert.informativeText = "Your configuration has been saved to \(url.lastPathComponent)."
+                        alert.messageText = String(localized: "Export Successful")
+                        alert.informativeText = String(localized: "Your configuration has been saved to \(url.lastPathComponent).")
                         alert.alertStyle = .informational
-                        alert.addButton(withTitle: "OK")
+                        alert.addButton(withTitle: String(localized: "OK"))
                         alert.runModal()
                     } catch {
                         AppLogger.logger("Backup").error("Failed to write backup to \(url): \(error.localizedDescription)")
                         let alert = NSAlert()
-                        alert.messageText = "Export Failed"
+                        alert.messageText = String(localized: "Export Failed")
                         alert.informativeText = error.localizedDescription
                         alert.alertStyle = .critical
-                        alert.addButton(withTitle: "OK")
+                        alert.addButton(withTitle: String(localized: "OK"))
                         alert.runModal()
                     }
                 }
@@ -254,8 +312,8 @@ struct GeneralSettingsPane<SaveButton: View>: View {
         openPanel.allowsMultipleSelection = false
         openPanel.canChooseDirectories = false
         openPanel.canChooseFiles = true
-        openPanel.title = "Import Full Configuration"
-        openPanel.message = "Select a AI Shortcuts configuration backup file to restore."
+        openPanel.title = String(localized: "Import Full Configuration")
+        openPanel.message = String(localized: "Select a AI Shortcuts configuration backup file to restore.")
 
         if openPanel.runModal() == .OK {
             if let url = openPanel.url {
@@ -274,18 +332,18 @@ struct GeneralSettingsPane<SaveButton: View>: View {
                     needsSaving = true
                     
                     let alert = NSAlert()
-                    alert.messageText = "Import Successful"
-                    alert.informativeText = "All commands and settings have been restored."
+                    alert.messageText = String(localized: "Import Successful")
+                    alert.informativeText = String(localized: "All commands and settings have been restored.")
                     alert.alertStyle = .informational
-                    alert.addButton(withTitle: "OK")
+                    alert.addButton(withTitle: String(localized: "OK"))
                     alert.runModal()
                 } catch {
                     AppLogger.logger("Backup").error("Failed to import backup from \(url): \(error.localizedDescription)")
                     let alert = NSAlert()
-                    alert.messageText = "Import Failed"
-                    alert.informativeText = "Could not import configuration: \(error.localizedDescription)"
+                    alert.messageText = String(localized: "Import Failed")
+                    alert.informativeText = String(localized: "Could not import configuration: \(error.localizedDescription)")
                     alert.alertStyle = .critical
-                    alert.addButton(withTitle: "OK")
+                    alert.addButton(withTitle: String(localized: "OK"))
                     alert.runModal()
                 }
             }

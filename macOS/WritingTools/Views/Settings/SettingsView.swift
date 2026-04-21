@@ -57,7 +57,7 @@ struct SettingsView: View {
                 )
                 .tag(SettingsTab.general)
                 .tabItem {
-                    Label("General", systemImage: SettingsTab.general.systemImage)
+                    Label(String(localized: "General"), systemImage: SettingsTab.general.systemImage)
                 }
                 
                 AppearanceSettingsPane(
@@ -67,7 +67,7 @@ struct SettingsView: View {
                 )
                 .tag(SettingsTab.appearance)
                 .tabItem {
-                    Label("Appearance", systemImage: SettingsTab.appearance.systemImage)
+                    Label(String(localized: "Appearance"), systemImage: SettingsTab.appearance.systemImage)
                 }
                 
                 AIProviderSettingsPane(
@@ -79,7 +79,7 @@ struct SettingsView: View {
                 )
                 .tag(SettingsTab.aiProvider)
                 .tabItem {
-                    Label("AI Provider", systemImage: SettingsTab.aiProvider.systemImage)
+                    Label(String(localized: "AI Provider"), systemImage: SettingsTab.aiProvider.systemImage)
                 }
             }
             .padding(16)
@@ -106,8 +106,8 @@ struct SettingsView: View {
             pendingProviderApplyTask?.cancel()
             appState.saveCurrentProviderSettings()
         }
-        .alert("Settings Incomplete", isPresented: $showingValidationAlert) {
-            Button("OK", role: .cancel) {}
+        .alert(String(localized: "Settings Incomplete"), isPresented: $showingValidationAlert) {
+            Button(String(localized: "OK"), role: .cancel) {}
         } message: {
             Text(validationAlertMessage)
         }
@@ -123,31 +123,37 @@ struct SettingsView: View {
     
     private func updateWindowTitle(to tab: SettingsTab) {
         Task { @MainActor in
-            hostingWindow?.title = "\(tab.rawValue) Settings"
+            let title: String
+            switch tab {
+            case .general:    title = String(localized: "General Settings")
+            case .appearance: title = String(localized: "Appearance Settings")
+            case .aiProvider: title = String(localized: "AI Provider Settings")
+            }
+            hostingWindow?.title = title
         }
     }
     
     private var saveButton: some View {
         HStack(spacing: 8) {
-            Text("Most changes apply automatically. Click Done to apply API key updates.")
+            Text(String(localized: "Most changes apply automatically. Click Done to apply API key updates."))
                 .font(.caption)
                 .foregroundStyle(.secondary)
             Spacer()
-            Button("Done") {
+            Button(String(localized: "Done")) {
                 saveSettings()
             }
             .buttonStyle(.borderedProminent)
             .keyboardShortcut(.return)
-            .help("Close settings.")
-            .accessibilityLabel("Done")
-            .accessibilityHint("Closes the settings window")
+            .help(String(localized: "Close settings."))
+            .accessibilityLabel(String(localized: "Done"))
+            .accessibilityHint(String(localized: "Closes the settings window"))
         }
     }
     
     private var completeSetupButton: some View {
         HStack {
             Spacer()
-            Button("Complete Setup") {
+            Button(String(localized: "Complete Setup")) {
                 saveSettings()
             }
             .buttonStyle(.borderedProminent)
@@ -231,47 +237,47 @@ struct SettingsView: View {
         switch settings.currentProvider {
         case "gemini":
             if settings.geminiApiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                return "Gemini API key is required."
+                return String(localized: "Gemini API key is required.")
             }
             if settings.geminiModel == .custom &&
                 settings.geminiCustomModel.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                return "Custom Gemini model name is required."
+                return String(localized: "Custom Gemini model name is required.")
             }
         case "mistral":
             if settings.mistralApiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                return "Mistral API key is required."
+                return String(localized: "Mistral API key is required.")
             }
             if settings.mistralModel.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                return "Mistral model is required."
+                return String(localized: "Mistral model is required.")
             }
         case "anthropic":
             if settings.anthropicApiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                return "Anthropic API key is required."
+                return String(localized: "Anthropic API key is required.")
             }
             if settings.anthropicModel.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                return "Anthropic model is required."
+                return String(localized: "Anthropic model is required.")
             }
         case "openrouter":
             if settings.openRouterApiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                return "OpenRouter API key is required."
+                return String(localized: "OpenRouter API key is required.")
             }
             if OpenRouterModel(rawValue: settings.openRouterModel) == .custom &&
                 settings.openRouterCustomModel.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                return "Custom OpenRouter model name is required."
+                return String(localized: "Custom OpenRouter model name is required.")
             }
         case "openai":
             if settings.openAIApiKey.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                return "OpenAI API key is required."
+                return String(localized: "OpenAI API key is required.")
             }
             if settings.openAIModel.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                return "OpenAI model is required."
+                return String(localized: "OpenAI model is required.")
             }
         case "ollama":
             if settings.ollamaBaseURL.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                return "Ollama base URL is required."
+                return String(localized: "Ollama base URL is required.")
             }
             if settings.ollamaModel.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                return "Ollama model is required."
+                return String(localized: "Ollama model is required.")
             }
         default:
             break

@@ -50,7 +50,7 @@ struct PromptEditorView: View {
             HStack {
                 Picker("Editor Mode", selection: $selectedMode) {
                     ForEach(EditorMode.allCases, id: \.self) { mode in
-                        Text(mode.rawValue).tag(mode)
+                        Text(LocalizedStringKey(mode.rawValue)).tag(mode)
                     }
                 }
                 .pickerStyle(.segmented)
@@ -121,7 +121,7 @@ struct PromptEditorView: View {
             HStack {
                 Picker("Editor Mode", selection: $selectedMode) {
                     ForEach(EditorMode.allCases, id: \.self) { mode in
-                        Text(mode.rawValue).tag(mode)
+                        Text(LocalizedStringKey(mode.rawValue)).tag(mode)
                     }
                 }
                 .pickerStyle(.segmented)
