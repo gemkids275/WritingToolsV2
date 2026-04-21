@@ -22,7 +22,7 @@ msgstr "一般"
 
 #: ui/SettingsWindow.py:69 ui/SettingsWindow.py:264
 msgid "AI Providers"
-msgstr "AI プロバイダー"
+msgstr "AI Provider"
 
 #: ui/SettingsWindow.py:70
 msgid "Commands"
@@ -38,7 +38,7 @@ msgstr "一般設定"
 
 #: ui/SettingsWindow.py:165
 msgid "Global Shortcut Key:"
-msgstr "グローバルショートカットキー:"
+msgstr "グローバルShortcutキー:"
 
 #: ui/SettingsWindow.py:181
 msgid "Launch Writing Tools on system startup"
@@ -100,13 +100,13 @@ msgid "Chat"
 msgstr "チャット"
 
 msgid "Describe your change..."
-msgstr "変更内容を入力してください..."
+msgstr "Describe your change..."
 
 msgid "Ask your AI..."
-msgstr "AIに質問する..."
+msgstr "Ask your AI..."
 
 msgid "There's an update! :D Download now."
-msgstr "アップデートがあります! 今すぐダウンロード。"
+msgstr "新しいアップデートがあります！🚀 今すぐダウンロード。"
 
 msgid "Drag to rearrange"
 msgstr "ドラッグして並べ替え"
@@ -136,10 +136,10 @@ msgid "OpenRouter"
 msgstr "OpenRouter"
 
 msgid "OpenAI Compatible (For Experts)"
-msgstr "OpenAI 互換 (エキスパート向け)"
+msgstr "OpenAI Compatible (エキスパート向け)"
 
 msgid "Get API Key"
-msgstr "APIキーを取得"
+msgstr "Get API Key"
 
 msgid "Show"
 msgstr "表示"
@@ -148,28 +148,28 @@ msgid "Hide"
 msgstr "非表示"
 
 msgid "Model"
-msgstr "モデル"
+msgstr "Model"
 
 msgid "API Key"
-msgstr "APIキー"
+msgstr "API Key"
 
 msgid "🔧 Custom"
 msgstr "🔧 カスタム"
 
 msgid "• Google’s Gemini 1.5 & 2.0 (Gemma) are multimodal models with world-class performance.\n• Offers extremely fast inference and massive context windows (up to 1M+ tokens).\n• Get a free API key to start using Gemini Flash and Pro models."
-msgstr "• GoogleのGemini 1.5 & 2.0 (Gemma) は、世界クラスのパフォーマンスを備えたマルチモーダルモデルです。\n• 非常に高速な推論と巨大なコンテキストウィンドウ (最大100万トークン以上) を提供します。\n• 無料のAPIキーを取得して、Gemini FlashおよびProモデルの使用を開始してください。"
+msgstr "• GoogleのGemini 1.5 & 2.0 (Gemma) は、世界クラスのパフォーマンスを備えたマルチモーダルModelです。\n• 非常に高速な推論と巨大なコンテキストウィンドウ (最大100万トークン以上) を提供します。\n• 無料のAPI Keyを取得して、Gemini FlashおよびPro Modelの使用を開始してください。"
 
 msgid "• Anthropic's Claude is renowned for high-quality writing, safe reasoning, and large context windows.\n• Ideal for complex analysis and creative writing tasks.\n• Supports Claude 3.5 Sonnet, Haiku, and Opus models."
-msgstr "• AnthropicのClaudeは、高品質な文章作成、安全な推論、および大きなコンテキストウィンドウで有名です。\n• 複雑な分析やクリエイティブな執筆タスクに最適です。\n• Claude 3.5 Sonnet、Haiku、およびOpusモデルをサポートしています。"
+msgstr "• AnthropicのClaudeは、高品質な文章作成、安全な推論、および大きなコンテキストウィンドウで有名です。\n• 複雑な分析やクリエイティブな執筆タスクに最適です。\n• Claude 3.5 Sonnet、Haiku、およびOpusModelをサポートしています。"
 
 msgid "• Mistral AI offers state-of-the-art open models with high efficiency.\n• Great performance in both European languages and coding.\n• Supports Mistral Large, Small, and vision-capable Pixtral."
-msgstr "• Mistral AIは、高効率で最先端のオープンモデルを提供します。\n• ヨーロッパ言語とコーディングの両方で優れたパフォーマンスを発揮します。\n• Mistral Large、Small、およびビジョン対応のPixtralをサポートしています。"
+msgstr "• Mistral AIは、高効率で最先端のオープンModelを提供します。\n• ヨーロッパ言語とコーディングの両方で優れたパフォーマンスを発揮します。\n• Mistral Large、Small、およびビジョン対応のPixtralをサポートしています。"
 
 msgid "• OpenRouter provides unified access to over 100+ AI models (Claude, Llama, GPT, etc.).\n• Offers the most competitive pricing and many free-tier models.\n• Best for power users who want to switch models frequently."
-msgstr "• OpenRouterは、100以上のAIモデル (Claude、Llama、GPTなど) への統合アクセスを提供します。\n• 最も競争力のある価格設定と多くの無料枠モデルを提供します。\n• モデルを頻繁に切り替えたいパワーユーザーに最適です。"
+msgstr "• OpenRouterは、100以上のAIModel (Claude、Llama、GPTなど) への統合アクセスを提供します。\n• 最も競争力のある価格設定と多くの無料枠Modelを提供します。\n• Modelを頻繁に切り替えたいパワーユーザーに最適です。"
 
 msgid "• Connect to ANY OpenAI-compatible service (e.g. OpenAI, Groq, Together AI, Perplexity).\n• Supports custom Base URLs, Organizations, and Project IDs.\n• Perfect for local LLM servers (LM Studio, LocalAI) or specialized providers."
-msgstr "• OpenAI互換のあらゆるサービス (OpenAI、Groq、Together AI、Perplexityなど) に接続します。\n• カスタムベースURL、組織、およびプロジェクトIDをサポートします。\n• ローカルLLMサーバー (LM Studio, LocalAI) や専門的なプロバイダーに最適です。"
+msgstr "• OpenAI互換のあらゆるサービス (OpenAI、Groq、Together AI、Perplexityなど) に接続します。\n• カスタムベースURL、組織、およびプロジェクトIDをサポートします。\n• ローカルLLMサーバー (LM Studio, LocalAI) や専門的なProviderに最適です。"
 
 msgid "⭐ Gemma 3 27B (very intelligent | unlimited usage)"
 msgstr "⭐ Gemma 3 27B (非常に知的 | 無制限)"
@@ -229,7 +229,7 @@ msgid "Response"
 msgstr "レスポンス"
 
 msgid "Chat Result"
-msgstr "チャット結果"
+msgstr "Chat Result"
 
 msgid "Copy as Markdown"
 msgstr "Markdownとしてコピー"
@@ -238,10 +238,274 @@ msgid "Select to copy with formatting"
 msgstr "書式付きでコピーするには選択してください"
 
 msgid "Ask a follow-up question"
-msgstr "フォローアップの質問をする"
+msgstr "続けて質問する"
 
 msgid "Attach file"
 msgstr "ファイルを添付"
 
 msgid "Thinking"
-msgstr "思考中"
+msgstr "AIが考え中..."
+
+msgid "Select Icon"
+msgstr "Select Icon"
+
+msgid "Search icons..."
+msgstr "Search Icons..."
+
+msgid "Edit Command"
+msgstr "コマンドを編集"
+
+msgid "Add New Command"
+msgstr "新しいコマンドを追加"
+
+msgid "e.g., Proofread"
+msgstr "例：校正する"
+
+msgid "Command Name"
+msgstr "コマンド名"
+
+msgid "Change Icon"
+msgstr "アイコンを変更"
+
+msgid "Icon:"
+msgstr "アイコン："
+
+msgid "e.g., Proofread this:\n\n"
+msgstr "例：このテキストを校正してください:\n\n"
+
+msgid "Prefix Text:"
+msgstr "プレフィックステキスト："
+
+msgid "System Prompt / Instruction"
+msgstr "システムプロンプト / 指示"
+
+msgid "Describe how the AI should behave..."
+msgstr "AIの動作を説明してください..."
+
+msgid "Open in a separate pop-up window"
+msgstr "別のポップアップウィンドウで開く"
+
+msgid "Keyboard Shortcut:"
+msgstr "キーボードShortcut："
+
+msgid "AI Override (Optional)"
+msgstr "AI上書き（オプション）"
+
+msgid "Use custom AI provider for this command"
+msgstr "このコマンドにカスタムAIProviderを使用"
+
+msgid "Provider:"
+msgstr "Provider："
+
+msgid "Leave blank for default"
+msgstr "デフォルトの場合は空白のまま"
+
+msgid "Model:"
+msgstr "Model："
+
+msgid "Leave blank to use global key"
+msgstr "グローバルキーを使用する場合は空白のまま"
+
+msgid "API Key:"
+msgstr "API Key："
+
+msgid "Base URL:"
+msgstr "ベースURL："
+
+msgid "Save"
+msgstr "保存"
+
+msgid "Cancel"
+msgstr "キャンセル"
+
+msgid "•••• Saved •••• (re-enter to change)"
+msgstr "•••• 保存済み •••• (変更するには再入力)"
+
+msgid "E.g. llama3.1:8b"
+msgstr "例：llama3.1:8b"
+
+msgid "E.g. gpt-4o"
+msgstr "例：gpt-4o"
+
+msgid "⚠ Already used by \"{name}\""
+msgstr "⚠ 「{name}」で既に使用されています"
+
+msgid "Required Field"
+msgstr "必須項目"
+
+msgid "Please enter a Command Name."
+msgstr "コマンド名を入力してください。"
+
+msgid "Please enter the System Prompt / Instruction."
+msgstr "システムプロンプト / 指示を入力してください。"
+
+msgid "• Connect to an Ollama server (local LLM)."
+msgstr "• Ollamaサーバー（ローカルLLM）に接続します。"
+
+msgid "Ollama Set-up Instructions"
+msgstr "Ollamaのセットアップ手順"
+
+msgid "Pause"
+msgstr "一時停止"
+
+msgid "Resume"
+msgstr "再開"
+
+msgid "About AI Shortcuts"
+msgstr "AI Shortcutsについて"
+
+msgid "AI Shortcuts is a free, lightweight utility that enhances your writing with AI."
+msgstr "AI Shortcutsは、AIでライティングを強化する無料の軽量ツールです。"
+
+msgid "Version & Updates"
+msgstr "バージョンとアップデート"
+
+msgid "Version: {0}"
+msgstr "バージョン：{0}"
+
+msgid "Check for Updates"
+msgstr "アップデートを確認"
+
+msgid "Not checked yet."
+msgstr "まだ確認していません。"
+
+msgid "View Releases"
+msgstr "リリースを見る"
+
+msgid "Creators"
+msgstr "制作者"
+
+msgid "Original Developers"
+msgstr "オリジナル開発者"
+
+msgid "A technology enthusiast"
+msgstr "テクノロジー愛好家"
+
+msgid "Customized version & Forked by Nam Trần"
+msgstr "カスタマイズ版 & Nam Trầnによるフォーク"
+
+msgid "Welcome to AI Shortcuts"
+msgstr "AI Shortcutsへようこそ"
+
+msgid "Commands Management"
+msgstr "コマンド管理"
+
+msgid "Add New..."
+msgstr "新規追加..."
+
+msgid "Add, edit, or remove AI shortcuts and system prompts."
+msgstr "AIShortcutとシステムプロンプトを追加、編集、または削除します。"
+
+msgid "Edit..."
+msgstr "編集..."
+
+msgid "Delete"
+msgstr "削除"
+
+msgid "Export Command"
+msgstr "コマンドをエクスポート"
+
+msgid "Export Selected..."
+msgstr "選択をエクスポート..."
+
+msgid "Import Command"
+msgstr "コマンドをインポート"
+
+msgid "Import Command..."
+msgstr "コマンドをインポート..."
+
+msgid "Command exported successfully."
+msgstr "コマンドを正常にエクスポートしました。"
+
+msgid "Config exported successfully."
+msgstr "設定を正常にエクスポートしました。"
+
+msgid "Invalid file: {0}"
+msgstr "無効なファイル：{0}"
+
+msgid "No commands found in this file."
+msgstr "このファイルにコマンドが見つかりません。"
+
+msgid "{0} command(s) imported."
+msgstr "{0}件のコマンドをインポートしました。"
+
+msgid "Backup All Config..."
+msgstr "全設定をバックアップ..."
+
+msgid "Restore Full Config..."
+msgstr "全設定を復元..."
+
+msgid "Export All Config"
+msgstr "全設定をエクスポート"
+
+msgid "Restore Config"
+msgstr "設定を復元"
+
+msgid "Restore Defaults"
+msgstr "デフォルトに戻す"
+
+msgid "Empty Backup"
+msgstr "バックアップが空です"
+
+msgid "Select Active Provider:"
+msgstr "アクティブProviderを選択："
+
+msgid "Get OpenAI API Key"
+msgstr "OpenAI API Keyを取得"
+
+msgid "{0} API key is not configured. Please set your API key in Settings → AI Providers."
+msgstr "{0} API Keyが設定されていません。設定 → AIProviderで設定してください。"
+
+msgid "Error"
+msgstr "エラー"
+
+msgid "Success"
+msgstr "成功"
+
+msgid "Settings saved successfully."
+msgstr "設定を保存しました。"
+
+msgid "Copy All"
+msgstr "すべてコピー"
+
+msgid "Choose your theme:"
+msgstr "テーマを選択："
+
+msgid "Gradient"
+msgstr "グラデーション"
+
+msgid "Plain"
+msgstr "シンプル"
+
+msgid "API Base URL"
+msgstr "API Base URL"
+
+msgid "API Model"
+msgstr "APIModel"
+
+msgid "Time to keep the model loaded in memory in minutes"
+msgstr "Modelをメモリに保持する時間（分）"
+
+msgid "API Organisation"
+msgstr "API Organization"
+
+msgid "API Project"
+msgstr "API Project"
+
+msgid "Paste your Anthropic API key here"
+msgstr "AnthropicのAPI Keyをここに貼り付け"
+
+msgid "Paste your Mistral API key here"
+msgstr "MistralのAPI Keyをここに貼り付け"
+
+msgid "Paste your OpenRouter API key here"
+msgstr "OpenRouterのAPI Keyをここに貼り付け"
+
+msgid "Paste your Gemini API key here"
+msgstr "GeminiのAPI Keyをここに貼り付け"
+
+msgid "API key for the OpenAI-compatible API."
+msgstr "OpenAI互換APIのAPI Key。"
+
+msgid "Leave blank if not applicable."
+msgstr "該当しない場合は空白のまま。"

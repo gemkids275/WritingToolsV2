@@ -23,16 +23,6 @@ msgid "About Writing Tools"
 msgstr "Informazioni su Writing Tools"
 
 #: ui/AboutWindow.py:49
-msgid ""
-"Writing Tools is a free & lightweight tool that helps you improve your "
-"writing with AI, similar to Apple's new Apple Intelligence feature. It works "
-"with an extensive range of AI LLMs, both online and locally run."
-msgstr ""
-"Writing Tools è un'app gratuita e leggera per aiutarti nella scrittura "
-"utilizzando l'IA, simile alla nuova feature di Apple. Funziona utilizzando "
-"un'ampia gamma di LLM, sia online che localmente."
-
-#: ui/AboutWindow.py:54
 msgid "Created with care by Jesai, a high school student."
 msgstr "Creata con cura da Jesai, uno studente delle superiori."
 
@@ -49,41 +39,6 @@ msgid "Contact me"
 msgstr "Contattami"
 
 #: ui/AboutWindow.py:60
-msgid ""
-"Writing Tools would not be where it is today without its <u>amazing</u> "
-"contributors"
-msgstr ""
-"Writing Tools non sarebbe qui oggi senza i suoi <u>fantastici</u> "
-"collaboratori"
-
-#: ui/AboutWindow.py:62
-msgid ""
-"Extensively refactored Writing Tools and added OpenAI Compatible API "
-"support, streamed responses, and the text generation mode when no text is "
-"selected."
-msgstr ""
-"Refactor estensivo di Writing Tools, e ha aggiunto il supporto alle API "
-"OpenAI-compatibili, risposte in streaming e generazione di testo senza testo "
-"selezionato."
-
-#: ui/AboutWindow.py:64
-msgid ""
-"Added Linux support, switched to the pynput API to improve Windows "
-"stability. Added Ollama API support, custom options and localization. Fixed "
-"misc. bugs and added graceful termination support by handling SIGINT signal."
-msgstr ""
-"Aggiunto supporto per Linux, passaggio alle API di pynput per migliorare "
-"stabilità su Windows. Aggiunto supporto alle api di Ollama, opzioni "
-"personalizzabili e traduzioni. Fix di bug vari e aggiunta chiusura dell'app "
-"con segnale di SIGINT."
-
-#: ui/AboutWindow.py:66
-msgid ""
-"Helped add dark mode, the plain theme, tray menu fixes, and UI improvements."
-msgstr ""
-"Aiutato con tema scuro, tema piatto, menu da icona e altre migliorie alla UI."
-
-#: ui/AboutWindow.py:68
 msgid "Helped improve the reliability of text selection."
 msgstr "Aiutato a migliorare la leggibilità della selezione del testo."
 
@@ -92,24 +47,16 @@ msgid "Made the rounded corners anti-aliased & prettier."
 msgstr "Ha reso i bordi stondati e più carini con l'anti-alias."
 
 #: ui/AboutWindow.py:72
-msgid ""
-"Significantly improved the About window, making it scrollable and cleaning "
-"things up. Also improved our .gitignore & requirements.txt."
-msgstr ""
-"Migliorato notevolmente la schermata di informazioni, rendendola scorrevole "
-"e ripulendola. Migliorato .gitignore e requirements.txt."
-
-#: ui/AboutWindow.py:74
 msgid "Helped add the start-on-boot setting."
 msgstr "Aiutato nell'aggiunta dell'impostazione di auto-avvio."
 
 #: ui/CustomPopupWindow.py:75 ui/CustomPopupWindow.py:74
 msgid "Describe your change..."
-msgstr "Descrivi la tua modifica..."
+msgstr "Describe your change..."
 
 #: ui/CustomPopupWindow.py:75 ui/CustomPopupWindow.py:74
 msgid "Ask your AI..."
-msgstr "Chiedi alla tua IA..."
+msgstr "Ask your AI..."
 
 #: ui/CustomPopupWindow.py:109
 msgid "Proofread"
@@ -149,35 +96,6 @@ msgid "Welcome to Writing Tools"
 msgstr "Benvenuto in Writing Tools"
 
 #: ui/OnboardingWindow.py:45 ui/OnboardingWindow.py:47
-msgid ""
-"Instantly optimize your writing with AI by selecting your text and invoking "
-"Writing Tools with \"ctrl+space\", anywhere."
-msgstr ""
-"Ottimizza istantaneamente la tua scrittura con l'IA, seleziona del testo e "
-"attivando Writing Tools, ovunque."
-
-#: ui/OnboardingWindow.py:47 ui/OnboardingWindow.py:49
-msgid ""
-"Get a summary you can chat with of articles, YouTube videos, or documents by "
-"select all text with \"ctrl+a\""
-msgstr ""
-"Ottieni un riassunto di documenti, articoli, video YouTube e altro "
-"selezionando tutto il testo con \"ctrl+a\""
-
-#: ui/OnboardingWindow.py:48 ui/OnboardingWindow.py:50
-msgid ""
-"(or select the YouTube transcript from its description), invoking Writing "
-"Tools, and choosing Summary."
-msgstr ""
-"(o seleziona la trascrizione di YouTube dalla descrizione del video), "
-"invocando Writing Tools e selezionando \"Riassunto\"."
-
-#: ui/OnboardingWindow.py:50 ui/OnboardingWindow.py:52
-msgid ""
-"Chat with AI anytime by invoking Writing Tools without selecting any text."
-msgstr "Chatta con l'IA in qualsiasi momento, non selezionando del testo."
-
-#: ui/OnboardingWindow.py:52 ui/OnboardingWindow.py:54
 msgid "Supports an extensive range of AI models:"
 msgstr "Supporto a vasta gamma di modelli di AI, come:"
 
@@ -225,12 +143,12 @@ msgstr "Copia come Markdown"
 #: ui/ResponseWindow.py:513 ui/ResponseWindow.py:515 ui/ResponseWindow.py:522
 #: ui/ResponseWindow.py:526
 msgid "Thinking"
-msgstr "Sto pensando"
+msgstr "L'IA sta pensando..."
 
 #: ui/ResponseWindow.py:429 ui/ResponseWindow.py:530 ui/ResponseWindow.py:435
 #: ui/ResponseWindow.py:536
 msgid "Ask a follow-up question"
-msgstr "Chiedi una domanda a seguire"
+msgstr "Fai una domanda di approfondimento"
 
 #: ui/SettingsWindow.py:32 ui/SettingsWindow.py:151 ui/SettingsWindow.py:205
 #: WritingToolApp.py:568 ui/SettingsWindow.py:37 ui/SettingsWindow.py:156
@@ -244,7 +162,7 @@ msgstr "Avvia all'accensione"
 
 #: ui/SettingsWindow.py:218 ui/SettingsWindow.py:223
 msgid "Shortcut Key:"
-msgstr "Scorciatoia da tastiera:"
+msgstr "Hotkey:"
 
 #: ui/SettingsWindow.py:233 ui/SettingsWindow.py:238
 msgid "Background Theme:"
@@ -277,3 +195,336 @@ msgstr "Informazioni"
 #: WritingToolApp.py:574 WritingToolApp.py:575
 msgid "Exit"
 msgstr "Esci"
+
+msgid "Select Icon"
+msgstr "Seleziona icona"
+
+msgid "Search icons..."
+msgstr "Search Icons..."
+
+msgid "Edit Command"
+msgstr "Modifica comando"
+
+msgid "Add New Command"
+msgstr "Aggiungi nuovo comando"
+
+msgid "e.g., Proofread"
+msgstr "es. Correggi bozze"
+
+msgid "Command Name"
+msgstr "Nome comando"
+
+msgid "Change Icon"
+msgstr "Cambia icona"
+
+msgid "Icon:"
+msgstr "Icona:"
+
+msgid "e.g., Proofread this:\n\n"
+msgstr "es. Correggi questo testo:\n\n"
+
+msgid "Prefix Text:"
+msgstr "Testo prefisso:"
+
+msgid "System Prompt / Instruction"
+msgstr "Prompt di sistema / Istruzione"
+
+msgid "Describe how the AI should behave..."
+msgstr "Descrivi come dovrebbe comportarsi l'AI..."
+
+msgid "Open in a separate pop-up window"
+msgstr "Apri in una finestra pop-up separata"
+
+msgid "Keyboard Shortcut:"
+msgstr "Shortcut da tastiera:"
+
+msgid "AI Override (Optional)"
+msgstr "Sostituzione AI (Opzionale)"
+
+msgid "Use custom AI provider for this command"
+msgstr "Usa un provider AI personalizzato per questo comando"
+
+msgid "Provider:"
+msgstr "Provider:"
+
+msgid "Leave blank for default"
+msgstr "Lascia vuoto per il default"
+
+msgid "Model:"
+msgstr "Model:"
+
+msgid "Leave blank to use global key"
+msgstr "Lascia vuoto per usare la chiave globale"
+
+msgid "Show"
+msgstr "Mostra"
+
+msgid "Hide"
+msgstr "Nascondi"
+
+msgid "API Key:"
+msgstr "API Key:"
+
+msgid "Base URL:"
+msgstr "Base URL:"
+
+msgid "Cancel"
+msgstr "Annulla"
+
+msgid "•••• Saved •••• (re-enter to change)"
+msgstr "•••• Salvato •••• (reinserisci per modificare)"
+
+msgid "E.g. llama3.1:8b"
+msgstr "Es. llama3.1:8b"
+
+msgid "E.g. gpt-4o"
+msgstr "Es. gpt-4o"
+
+msgid "⚠ Already used by \"{name}\""
+msgstr "⚠ Già usato da \"{name}\""
+
+msgid "Required Field"
+msgstr "Campo obbligatorio"
+
+msgid "Please enter a Command Name."
+msgstr "Inserisci un nome per il comando."
+
+msgid "Please enter the System Prompt / Instruction."
+msgstr "Inserisci il prompt di sistema / l'istruzione."
+
+msgid "• Connect to an Ollama server (local LLM)."
+msgstr "• Connettiti a un server Ollama (LLM locale)."
+
+msgid "Ollama Set-up Instructions"
+msgstr "Istruzioni per la configurazione di Ollama"
+
+msgid "Pause"
+msgstr "Pausa"
+
+msgid "Resume"
+msgstr "Riprendi"
+
+msgid "About AI Shortcuts"
+msgstr "Informazioni su AI Shortcuts"
+
+msgid "AI Shortcuts is a free, lightweight utility that enhances your writing with AI."
+msgstr "AI Shortcuts è uno strumento gratuito e leggero che potenzia la scrittura con l'IA."
+
+msgid "Version & Updates"
+msgstr "Versione e Aggiornamenti"
+
+msgid "Version: {0}"
+msgstr "Versione: {0}"
+
+msgid "Check for Updates"
+msgstr "Verifica aggiornamenti"
+
+msgid "Not checked yet."
+msgstr "Non ancora verificato."
+
+msgid "There's an update! :D Download now."
+msgstr "C'è un aggiornamento! :D Scarica ora."
+
+msgid "View Releases"
+msgstr "Visualizza release"
+
+msgid "Creators"
+msgstr "Creatori"
+
+msgid "Original Developers"
+msgstr "Sviluppatori originali"
+
+msgid "A technology enthusiast"
+msgstr "Un appassionato di tecnologia"
+
+msgid "Customized version & Forked by Nam Trần"
+msgstr "Versione personalizzata & Fork di Nam Trần"
+
+msgid "Welcome to AI Shortcuts"
+msgstr "Benvenuto in AI Shortcuts"
+
+msgid "Commands Management"
+msgstr "Gestione comandi"
+
+msgid "Add New..."
+msgstr "Aggiungi nuovo..."
+
+msgid "Add, edit, or remove AI shortcuts and system prompts."
+msgstr "Aggiungi, modifica o rimuovi scorciatoie AI e prompt di sistema."
+
+msgid "Edit..."
+msgstr "Modifica..."
+
+msgid "Delete"
+msgstr "Elimina"
+
+msgid "Drag to rearrange"
+msgstr "Trascina per riorganizzare"
+
+msgid "Confirm Delete?"
+msgstr "Conferma eliminazione?"
+
+msgid "Are you sure you want to delete the '{0}' button?"
+msgstr "Sei sicuro di voler eliminare il pulsante '{0}'?"
+
+msgid "Export Command"
+msgstr "Esporta comando"
+
+msgid "Export Selected..."
+msgstr "Esporta selezionati..."
+
+msgid "Import Command"
+msgstr "Importa comando"
+
+msgid "Import Command..."
+msgstr "Importa comando..."
+
+msgid "Command exported successfully."
+msgstr "Comando esportato con successo."
+
+msgid "Config exported successfully."
+msgstr "Configurazione esportata con successo."
+
+msgid "Invalid file: {0}"
+msgstr "File non valido: {0}"
+
+msgid "No commands found in this file."
+msgstr "Nessun comando trovato in questo file."
+
+msgid "{0} command(s) imported."
+msgstr "{0} comando/i importato/i."
+
+msgid "Backup All Config..."
+msgstr "Backup di tutta la configurazione..."
+
+msgid "Restore Full Config..."
+msgstr "Ripristina configurazione completa..."
+
+msgid "Export All Config"
+msgstr "Esporta tutta la configurazione"
+
+msgid "Restore Config"
+msgstr "Ripristina configurazione"
+
+msgid "Restore Defaults"
+msgstr "Ripristina predefiniti"
+
+msgid "Empty Backup"
+msgstr "Backup vuoto"
+
+msgid "Select Active Provider:"
+msgstr "Seleziona provider attivo:"
+
+msgid "Get OpenAI API Key"
+msgstr "Get API Key OpenAI"
+
+msgid "{0} API key is not configured. Please set your API key in Settings → AI Providers."
+msgstr "API Key {0} non configurata. Impostala in Impostazioni → Provider AI."
+
+msgid "Error"
+msgstr "Errore"
+
+msgid "Success"
+msgstr "Successo"
+
+msgid "Settings saved successfully."
+msgstr "Impostazioni salvate con successo."
+
+msgid "Copy All"
+msgstr "Copia tutto"
+
+msgid "+ Add New"
+msgstr "+ Aggiungi nuovo"
+
+msgid "AI Providers"
+msgstr "Provider AI"
+
+msgid "Attach File"
+msgstr "Allega file"
+
+msgid "Attach file"
+msgstr "Allega file"
+
+msgid "Background Appearance:"
+msgstr "Aspetto dello sfondo:"
+
+msgid "Commands"
+msgstr "Comandi"
+
+msgid "Copied!"
+msgstr "Copiato!"
+
+msgid "Copy"
+msgstr "Copia"
+
+msgid "Enable Real-time Streaming (Recommended)"
+msgstr "Abilita streaming in tempo reale (Consigliato)"
+
+msgid "General"
+msgstr "Generale"
+
+msgid "General Settings"
+msgstr "Impostazioni generali"
+
+msgid "Get API Key"
+msgstr "Get API Key"
+
+msgid "Global Shortcut Key:"
+msgstr "Tasto di scelta rapida globale:"
+
+msgid "Interface Language:"
+msgstr "Lingua dell'interfaccia:"
+
+msgid "Launch Writing Tools on system startup"
+msgstr "Avvia Writing Tools all'avvio del sistema"
+
+msgid "Minimal Plain"
+msgstr "Minimale semplice"
+
+msgid "Save Settings"
+msgstr "Salva impostazioni"
+
+msgid "Vibrant Gradient"
+msgstr "Gradiente vivace"
+
+msgid "Zoom:"
+msgstr "Zoom:"
+
+msgid "API Key"
+msgstr "API Key"
+
+msgid "API Base URL"
+msgstr "Base URL API"
+
+msgid "API Model"
+msgstr "Model API"
+
+msgid "Time to keep the model loaded in memory in minutes"
+msgstr "Tempo di mantenimento del modello in memoria (minuti)"
+
+msgid "Model"
+msgstr "Model"
+
+msgid "API Organisation"
+msgstr "API Organization"
+
+msgid "API Project"
+msgstr "API Project"
+
+msgid "Paste your Anthropic API key here"
+msgstr "Incolla qui la tua API key Anthropic"
+
+msgid "Paste your Mistral API key here"
+msgstr "Incolla qui la tua API key Mistral"
+
+msgid "Paste your OpenRouter API key here"
+msgstr "Incolla qui la tua API key OpenRouter"
+
+msgid "Paste your Gemini API key here"
+msgstr "Incolla qui la tua API key Gemini"
+
+msgid "API key for the OpenAI-compatible API."
+msgstr "API key per l'API compatibile OpenAI."
+
+msgid "Leave blank if not applicable."
+msgstr "Lascia vuoto se non applicabile."

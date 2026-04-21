@@ -8,6 +8,17 @@ Windows_and_Linux/config.json
 **/*.mo
 **/pot_files
 
+# PyInstaller artifacts
+*.spec
+dist/
+build/
+
+# Runtime user data
+Windows_and_Linux/commands.json
+
+# Claude Code
+.claude/
+
 # Xcode user-specific data
 **/xcuserdata/
 **/project.xcworkspace/xcuserdata/

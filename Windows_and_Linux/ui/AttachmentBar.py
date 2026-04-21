@@ -8,6 +8,7 @@ from PySide6.QtWidgets import QHBoxLayout, QLabel, QPushButton, QScrollArea, QWi
 
 from models.attachment import Attachment, AttachmentType
 from ui.UIUtils import colorMode
+from ui.ImagePreview import show_image_preview
 
 
 class AttachmentThumbnail(QWidget):
@@ -46,6 +47,8 @@ class AttachmentThumbnail(QWidget):
             img_label.setPixmap(scaled)
             img_label.setAlignment(Qt.AlignmentFlag.AlignCenter)
             img_label.setGeometry(4, 4, 56, 56)
+            img_label.setCursor(Qt.CursorShape.PointingHandCursor)
+            img_label.mousePressEvent = lambda e: show_image_preview(pixmap, self.window())
         else:
             # Text file — icon + tên ngắn
             name_label = QLabel(container)

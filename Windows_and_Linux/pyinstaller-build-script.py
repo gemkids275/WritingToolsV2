@@ -9,7 +9,7 @@ def run_pyinstaller_build():
         "--onefile",
         "--windowed",
         "--icon=icons/app_icon.ico",
-        "--name=Writing Tools",
+        "--name=AI Shortcuts",
         "--clean",
         "--noconfirm",
         # Exclude unnecessary modules
@@ -18,7 +18,6 @@ def run_pyinstaller_build():
         "--exclude-module", "IPython",
         "--exclude-module", "jedi",
         "--exclude-module", "email_validator",
-        "--exclude-module", "cryptography",
         "--exclude-module", "psutil",
         "--exclude-module", "pyzmq",
         "--exclude-module", "tornado",
@@ -70,6 +69,13 @@ def run_pyinstaller_build():
         "--exclude-module", "PySide6.Qt3DLogic",
         "--exclude-module", "PySide6.Qt3DAnimation",
         "--exclude-module", "PySide6.Qt3DExtras",
+        "--add-data", "icons;icons",
+        "--add-data", "locales;locales",
+        "--add-data", "background.png;.",
+        "--add-data", "background_dark.png;.",
+        "--add-data", "background_popup.png;.",
+        "--add-data", "background_popup_dark.png;.",
+        "--add-data", "Latest_Version_for_Update_Check.txt;.",
         "main.py"
     ]
 

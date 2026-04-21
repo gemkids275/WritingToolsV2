@@ -115,7 +115,7 @@ class TextSetting(AIProviderSetting):
 
     def render_to_layout(self, layout: QVBoxLayout):
         row_layout = QtWidgets.QHBoxLayout()
-        label = QtWidgets.QLabel(self.display_name)
+        label = QtWidgets.QLabel(_(self.display_name))
         label.setStyleSheet(f"font-size: 16px; color: {'#ffffff' if colorMode=='dark' else '#333333'};")
         row_layout.addWidget(label)
         self.input = QtWidgets.QLineEdit(self.internal_value or "")
@@ -287,10 +287,18 @@ class AIProvider(ABC):
         self.provider_name = provider_name
         self.settings = settings
         self.app = app
-        self.description = description if description else "An unfinished AI provider!"
+        self._description_key = description if description else "An unfinished AI provider!"
         self.logo = logo
-        self.button_text = button_text
+        self._button_text_key = button_text
         self.button_action = button_action
+
+    @property
+    def description(self):
+        return _(self._description_key)
+
+    @property
+    def button_text(self):
+        return _(self._button_text_key)
 
     @abstractmethod
     def get_response(self, system_instruction: str, prompt: str, images: list = None, return_response: bool = False) -> str:
@@ -584,7 +592,7 @@ class OpenRouterProvider(AIProvider):
                 api_key=self.api_key,
                 default_headers={
                     "HTTP-Referer": "https://github.com/gemkids275/WritingToolsV2",
-                    "X-Title": "Writing Tools V2",
+                    "X-Title": "AI Shortcuts",
                 }
             )
 
@@ -906,8 +914,8 @@ class OllamaProvider(AIProvider):
             TextSetting("keep_alive", "Time to keep the model loaded in memory in minutes", "5", "E.g. 5")
         ]
         super().__init__(app, "Ollama (For Experts)", settings,
-            "• Connect to an Ollama server (local LLM).",
-            "ollama", "Ollama Set-up Instructions",
+            _("• Connect to an Ollama server (local LLM)."),
+            "ollama", _("Ollama Set-up Instructions"),
             lambda: webbrowser.open("https://github.com/theJayTea/WritingTools?tab=readme-ov-file#-optional-ollama-local-llm-instructions-for-windows-v7-onwards"))
 
     def get_response(self, system_instruction: str, prompt: str, images: list = None, return_response: bool = False) -> str:

@@ -22,11 +22,11 @@ msgstr "Cài đặt chung"
 
 #: ui/SettingsWindow.py:68
 msgid "AI Providers"
-msgstr "Nhà cung cấp AI"
+msgstr "AI Providers"
 
 #: ui/SettingsWindow.py:69
 msgid "Commands"
-msgstr "Quản lý lệnh"
+msgstr "Quản lý Command"
 
 #: ui/SettingsWindow.py:70 WritingToolApp.py:571 WritingToolApp.py:756
 msgid "About"
@@ -38,7 +38,7 @@ msgstr "Cài đặt chung"
 
 #: ui/SettingsWindow.py:159
 msgid "Global Shortcut Key:"
-msgstr "Phím tắt hệ thống:"
+msgstr "Global Shortcut:"
 
 #: ui/SettingsWindow.py:175
 msgid "Launch Writing Tools on system startup"
@@ -50,19 +50,19 @@ msgstr "Giao diện nền:"
 
 #: ui/SettingsWindow.py:190
 msgid "Vibrant Gradient"
-msgstr "Màu chuyển sắc"
+msgstr "Gradient rực rỡ"
 
 #: ui/SettingsWindow.py:191
 msgid "Minimal Plain"
-msgstr "Tối giản"
+msgstr "Tối giản (Plain)"
 
 #: ui/SettingsWindow.py:205
 msgid "Enable Real-time Streaming (Recommended)"
-msgstr "Phản hồi thời gian thực (Khuyên dùng)"
+msgstr "Enable Streaming (Khuyên dùng)"
 
 #: ui/SettingsWindow.py:213
 msgid "Save Settings"
-msgstr "Lưu cài đặt"
+msgstr "Save Settings"
 
 #: ui/SettingsWindow.py:238
 msgid "Interface Language:"
@@ -70,11 +70,11 @@ msgstr "Ngôn ngữ giao diện:"
 
 #: ui/SettingsWindow.py:229
 msgid "Select Active Provider:"
-msgstr "Chọn nhà cung cấp:"
+msgstr "Select AI Provider:"
 
 #: ui/SettingsWindow.py:575 ui/SettingsWindow.py:615 ui/SettingsWindow.py:633
 msgid "Success"
-msgstr "Thành công"
+msgstr "Success"
 
 #: ui/SettingsWindow.py:1025
 msgid "Settings saved successfully."
@@ -204,13 +204,13 @@ msgid "Chat"
 msgstr "Trò chuyện"
 
 msgid "Describe your change..."
-msgstr "Mô tả yêu cầu thay đổi..."
+msgstr "Describe your change..."
 
 msgid "Ask your AI..."
-msgstr "Hỏi AI của bạn..."
+msgstr "Ask your AI..."
 
 msgid "There's an update! :D Download now."
-msgstr "Đã có bản cập nhật mới! Tải về ngay."
+msgstr "Đã có bản cập nhật mới cực hot! 🔥 Tải về ngay."
 
 msgid "Drag to rearrange"
 msgstr "Kéo để sắp xếp"
@@ -240,28 +240,28 @@ msgid "OpenRouter"
 msgstr "OpenRouter"
 
 msgid "OpenAI Compatible (For Experts)"
-msgstr "Tương thích OpenAI (Dành cho chuyên gia)"
+msgstr "OpenAI Compatible (Dành cho chuyên gia)"
 
 msgid "Get API Key"
-msgstr "Lấy mã API"
+msgstr "Get API Key"
 
 msgid "Show"
-msgstr "Hiện"
+msgstr "Show"
 
 msgid "Hide"
-msgstr "Ẩn"
+msgstr "Hide"
 
 msgid "Model"
-msgstr "Mẫu Model"
+msgstr "Model"
 
 msgid "API Key"
-msgstr "Mã API"
+msgstr "API Key"
 
 msgid "🔧 Custom"
 msgstr "🔧 Tùy chỉnh"
 
 msgid "• Google’s Gemini 1.5 & 2.0 (Gemma) are multimodal models with world-class performance.\n• Offers extremely fast inference and massive context windows (up to 1M+ tokens).\n• Get a free API key to start using Gemini Flash and Pro models."
-msgstr "• Google Gemini 1.5 & 2.0 (Gemma) là các model đa phương thức với hiệu suất đẳng cấp thế giới.\n• Cung cấp tốc độ suy luận cực nhanh và cửa sổ ngữ cảnh khổng lồ (lên đến hơn 1 triệu token).\n• Nhận mã API miễn phí để bắt đầu sử dụng các mẫu Gemini Flash và Pro."
+msgstr "• Google Gemini 1.5 & 2.0 (Gemma) là các model đa phương thức với hiệu suất đẳng cấp thế giới.\n• Cung cấp tốc độ suy luận cực nhanh và cửa sổ ngữ cảnh khổng lồ (lên đến hơn 1 triệu token).\n• Nhận API Key miễn phí để bắt đầu sử dụng các mẫu Gemini Flash và Pro."
 
 msgid "• Anthropic's Claude is renowned for high-quality writing, safe reasoning, and large context windows.\n• Ideal for complex analysis and creative writing tasks.\n• Supports Claude 3.5 Sonnet, Haiku, and Opus models."
 msgstr "• Claude của Anthropic nổi tiếng với khả năng viết lách chất lượng cao, lập luận an toàn và cửa sổ ngữ cảnh lớn.\n• Lý tưởng cho các phân tích phức tạp và tác vụ viết sáng tạo.\n• Hỗ trợ các mẫu Claude 3.5 Sonnet, Haiku và Opus."
@@ -333,7 +333,7 @@ msgid "Response"
 msgstr "Kết quả"
 
 msgid "Chat Result"
-msgstr "Kết quả Chat"
+msgstr "Chat Result"
 
 msgid "Copy as Markdown"
 msgstr "Sao chép dạng Markdown"
@@ -348,4 +348,136 @@ msgid "Attach file"
 msgstr "Đính kèm tệp"
 
 msgid "Thinking"
-msgstr "Đang suy nghĩ"
+msgstr "AI đang suy nghĩ..."
+
+msgid "Select Icon"
+msgstr "Chọn biểu tượng"
+
+msgid "Search icons..."
+msgstr "Search Icons..."
+
+msgid "Edit Command"
+msgstr "Chỉnh sửa lệnh"
+
+msgid "Add New Command"
+msgstr "Thêm lệnh mới"
+
+msgid "e.g., Proofread"
+msgstr "VD: Kiểm tra lỗi"
+
+msgid "Command Name"
+msgstr "Tên lệnh"
+
+msgid "Change Icon"
+msgstr "Đổi biểu tượng"
+
+msgid "Icon:"
+msgstr "Biểu tượng:"
+
+msgid "e.g., Proofread this:\n\n"
+msgstr "VD: Kiểm tra văn bản này:\n\n"
+
+msgid "Prefix Text:"
+msgstr "Văn bản mở đầu:"
+
+msgid "System Prompt / Instruction"
+msgstr "Hướng dẫn / Yêu cầu cho AI"
+
+msgid "Describe how the AI should behave..."
+msgstr "Mô tả cách AI xử lý..."
+
+msgid "Open in a separate pop-up window"
+msgstr "Mở trong cửa sổ bật lên riêng"
+
+msgid "Keyboard Shortcut:"
+msgstr "Shortcut:"
+
+msgid "AI Override (Optional)"
+msgstr "Ghi đè AI (Tuỳ chọn)"
+
+msgid "Use custom AI provider for this command"
+msgstr "Dùng nhà cung cấp AI riêng cho lệnh này"
+
+msgid "Provider:"
+msgstr "Provider:"
+
+msgid "Leave blank for default"
+msgstr "Để trống để dùng mặc định"
+
+msgid "Model:"
+msgstr "Model:"
+
+msgid "Leave blank to use global key"
+msgstr "Để trống để dùng khoá toàn cục"
+
+msgid "API Key:"
+msgstr "API Key:"
+
+msgid "Base URL:"
+msgstr "URL gốc:"
+
+msgid "Save"
+msgstr "Lưu"
+
+msgid "Cancel"
+msgstr "Huỷ"
+
+msgid "•••• Saved •••• (re-enter to change)"
+msgstr "•••• Đã lưu •••• (nhập lại để thay đổi)"
+
+msgid "E.g. llama3.1:8b"
+msgstr "VD: llama3.1:8b"
+
+msgid "E.g. gpt-4o"
+msgstr "VD: gpt-4o"
+
+msgid "⚠ Already used by \"{name}\""
+msgstr "⚠ Đã được dùng bởi \"{name}\""
+
+msgid "Required Field"
+msgstr "Trường bắt buộc"
+
+msgid "Please enter a Command Name."
+msgstr "Vui lòng nhập tên lệnh."
+
+msgid "Please enter the System Prompt / Instruction."
+msgstr "Vui lòng nhập hướng dẫn / yêu cầu cho AI."
+
+msgid "• Connect to an Ollama server (local LLM)."
+msgstr "• Kết nối đến máy chủ Ollama (LLM cục bộ)."
+
+msgid "Ollama Set-up Instructions"
+msgstr "Hướng dẫn cài đặt Ollama"
+
+msgid "API Base URL"
+msgstr "API Base URL"
+
+msgid "API Model"
+msgstr "Model API"
+
+msgid "Time to keep the model loaded in memory in minutes"
+msgstr "Thời gian giữ mô hình trong bộ nhớ (phút)"
+
+msgid "API Organisation"
+msgstr "API Organization"
+
+msgid "API Project"
+msgstr "API Project"
+
+msgid "Paste your Anthropic API key here"
+msgstr "Paste your Anthropic API Key here"
+
+msgid "Paste your Mistral API key here"
+msgstr "Paste your Mistral API Key here"
+
+msgid "Paste your OpenRouter API key here"
+msgstr "Paste your OpenRouter API Key here"
+
+msgid "Paste your Gemini API key here"
+msgstr "Paste your Gemini API Key here"
+
+msgid "API key for the OpenAI-compatible API."
+msgstr "API Key for OpenAI Compatible API."
+
+msgid "Leave blank if not applicable."
+msgstr "Để trống nếu không áp dụng."

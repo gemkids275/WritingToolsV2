@@ -36,6 +36,7 @@ class SettingsWindow(QtWidgets.QWidget):
         self.app = app
         self.providers_only = providers_only
         self.initial_tab = initial_tab
+        self._saved = False
         
         # UI Elements
         self.sidebar = None
@@ -178,7 +179,7 @@ class SettingsWindow(QtWidgets.QWidget):
         
         # Autostart
         if AutostartManager.get_startup_path():
-            self.autostart_checkbox = QtWidgets.QCheckBox(self.app._("Launch Writing Tools on system startup"))
+            self.autostart_checkbox = QtWidgets.QCheckBox(self.app._("Launch AI Shortcuts on system startup"))
             self.autostart_checkbox.setStyleSheet(f"font-size: 15px; color: {'#ffffff' if colorMode == 'dark' else '#333333'};")
             self.autostart_checkbox.setChecked(AutostartManager.check_autostart())
             layout.addWidget(self.autostart_checkbox)
@@ -1021,16 +1022,19 @@ class SettingsWindow(QtWidgets.QWidget):
         # 4. Refresh global state
         self.app.register_hotkey()
         self.app.save_config(self.app.config) # Save to config.json
-        
+        if self.providers_only and not self.app.tray_icon:
+            self.app.create_tray_icon()
+
         # Trigger language change if changed
         if new_locale != old_locale:
             self.app.change_language(new_locale)
-            
+
+        self._saved = True
         QtWidgets.QMessageBox.information(self, self.app._("Success"), self.app._("Settings saved successfully."))
         self.close()
 
     def closeEvent(self, event):
-        if self.providers_only:
+        if self.providers_only and not self._saved:
             self.close_signal.emit()
         super().closeEvent(event)
 

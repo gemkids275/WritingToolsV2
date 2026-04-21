@@ -1,20 +1,21 @@
 import os
-import sys
 from PySide6 import QtCore, QtGui, QtWidgets
-from ui.UIUtils import colorMode
+from ui.UIUtils import UIUtils, colorMode
 from ui.ShortcutEditWidget import ShortcutEditWidget
 from models.command import Command
 from models.shortcut_conflict import check_conflict
 
+_ = lambda x: x  # Will be overridden by WritingToolApp
+
 
 def _icon_path(base: str) -> str:
     suffix = '_dark' if colorMode == 'dark' else '_light'
-    return os.path.join(os.path.dirname(sys.argv[0]), f"{base}{suffix}.png")
+    return UIUtils.get_resource_path(f"{base}{suffix}.png")
 
 
 def _available_icons() -> list[str]:
     """Trả về danh sách base path (VD: 'icons/pencil') có đủ cả _dark và _light."""
-    icons_dir = os.path.join(os.path.dirname(sys.argv[0]), 'icons')
+    icons_dir = UIUtils.get_resource_path('icons')
     if not os.path.isdir(icons_dir):
         return []
     seen: set[str] = set()
@@ -41,7 +42,7 @@ def _available_icons() -> list[str]:
 class IconPickerDialog(QtWidgets.QDialog):
     def __init__(self, current_icon: str = "", parent=None):
         super().__init__(parent)
-        self.setWindowTitle("Select Icon")
+        self.setWindowTitle(_("Select Icon"))
         self.setMinimumWidth(380)
         self.selected_icon = current_icon
         self._all_icons = _available_icons()
@@ -56,7 +57,7 @@ class IconPickerDialog(QtWidgets.QDialog):
 
         # Search bar
         self.search = QtWidgets.QLineEdit()
-        self.search.setPlaceholderText("Search icons...")
+        self.search.setPlaceholderText(_("Search icons..."))
         self.search.setStyleSheet(f"""
             QLineEdit {{
                 background: {'#333' if colorMode == 'dark' else '#fff'};
@@ -84,7 +85,7 @@ class IconPickerDialog(QtWidgets.QDialog):
         # Buttons
         btn_row = QtWidgets.QHBoxLayout()
         btn_row.addStretch()
-        cancel = QtWidgets.QPushButton("Cancel")
+        cancel = QtWidgets.QPushButton(_("Cancel"))
         cancel.setStyleSheet(self._btn_style())
         cancel.clicked.connect(self.reject)
         btn_row.addWidget(cancel)
@@ -159,7 +160,7 @@ class CommandEditorDialog(QtWidgets.QDialog):
         while p and not hasattr(p, 'app'):
             p = p.parent() if hasattr(p, 'parent') else None
         self._app = getattr(p, 'app', None)
-        self.setWindowTitle("Edit Command" if command else "Add New Command")
+        self.setWindowTitle(_("Edit Command") if command else _("Add New Command"))
         self.setMinimumWidth(500)
         self.setMinimumHeight(600)
         self.init_ui()
@@ -177,27 +178,27 @@ class CommandEditorDialog(QtWidgets.QDialog):
 
         # Name
         self.name_input = QtWidgets.QLineEdit()
-        self.name_input.setPlaceholderText("e.g., Proofread")
+        self.name_input.setPlaceholderText(_("e.g., Proofread"))
         if self.command:
             self.name_input.setText(self.command.name)
         name_label = QtWidgets.QLabel()
-        name_label.setText('Command Name <span style="color:red;">*</span>:')
+        name_label.setText(_('Command Name') + ' <span style="color:red;">*</span>:')
         form.addRow(name_label, self.name_input)
 
         # Icon picker button
-        self.icon_btn = QtWidgets.QPushButton("Change Icon")
+        self.icon_btn = QtWidgets.QPushButton(_("Change Icon"))
         self.icon_btn.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
         self.icon_btn.setIconSize(QtCore.QSize(20, 20))
         self.icon_btn.clicked.connect(self._open_icon_picker)
         self._refresh_icon_preview()
-        form.addRow(QtWidgets.QLabel("Icon:"), self.icon_btn)
+        form.addRow(QtWidgets.QLabel(_("Icon:")), self.icon_btn)
 
         # Prefix
         self.prefix_input = QtWidgets.QLineEdit()
-        self.prefix_input.setPlaceholderText("e.g., Proofread this:\\n\\n")
+        self.prefix_input.setPlaceholderText(_("e.g., Proofread this:\\n\\n"))
         if self.command:
             self.prefix_input.setText(self.command.prefix)
-        form.addRow(QtWidgets.QLabel("Prefix Text:"), self.prefix_input)
+        form.addRow(QtWidgets.QLabel(_("Prefix Text:")), self.prefix_input)
 
         input_style = f"""
             QLineEdit, QPlainTextEdit {{
@@ -231,25 +232,25 @@ class CommandEditorDialog(QtWidgets.QDialog):
 
         # Prompt
         prompt_label = QtWidgets.QLabel()
-        prompt_label.setText('System Prompt / Instruction <span style="color:red;">*</span>:')
+        prompt_label.setText(_('System Prompt / Instruction') + ' <span style="color:red;">*</span>:')
         prompt_label.setStyleSheet(label_style)
         layout.addWidget(prompt_label)
         self.prompt_input = QtWidgets.QPlainTextEdit()
-        self.prompt_input.setPlaceholderText("Describe how the AI should behave...")
+        self.prompt_input.setPlaceholderText(_("Describe how the AI should behave..."))
         if self.command:
             self.prompt_input.setPlainText(self.command.prompt)
         self.prompt_input.setStyleSheet(input_style)
         layout.addWidget(self.prompt_input)
 
         # Options
-        self.window_checkbox = QtWidgets.QCheckBox("Open in a separate pop-up window")
+        self.window_checkbox = QtWidgets.QCheckBox(_("Open in a separate pop-up window"))
         self.window_checkbox.setStyleSheet(f"color: {'#fff' if colorMode == 'dark' else '#333'};")
         if self.command:
             self.window_checkbox.setChecked(self.command.use_response_window)
         layout.addWidget(self.window_checkbox)
 
         # Keyboard Shortcut
-        shortcut_label = QtWidgets.QLabel("Keyboard Shortcut:")
+        shortcut_label = QtWidgets.QLabel(_("Keyboard Shortcut:"))
         shortcut_label.setStyleSheet(label_style)
         layout.addWidget(shortcut_label)
 
@@ -266,7 +267,7 @@ class CommandEditorDialog(QtWidgets.QDialog):
 
         # AI Override Section (Phase 6)
         layout.addSpacing(10)
-        self.override_group = QtWidgets.QGroupBox("AI Override (Optional)")
+        self.override_group = QtWidgets.QGroupBox(_("AI Override (Optional)"))
         self.override_group.setStyleSheet(f"""
             QGroupBox {{
                 color: {'#fff' if colorMode == 'dark' else '#333'};
@@ -285,7 +286,7 @@ class CommandEditorDialog(QtWidgets.QDialog):
         over_layout = QtWidgets.QVBoxLayout(self.override_group)
         over_layout.setSpacing(10)
 
-        self.override_checkbox = QtWidgets.QCheckBox("Use custom AI provider for this command")
+        self.override_checkbox = QtWidgets.QCheckBox(_("Use custom AI provider for this command"))
         self.override_checkbox.setStyleSheet(f"color: {'#fff' if colorMode == 'dark' else '#333'}; font-weight: normal;")
         self.override_checkbox.toggled.connect(self._on_override_toggled)
         over_layout.addWidget(self.override_checkbox)
@@ -300,27 +301,27 @@ class CommandEditorDialog(QtWidgets.QDialog):
             self.provider_combo.addItems(providers)
         self.provider_combo.addItem("Custom OpenAI-compatible")
         self.provider_combo.currentTextChanged.connect(self._on_provider_changed)
-        over_form.addRow(QtWidgets.QLabel("Provider:"), self.provider_combo)
+        over_form.addRow(QtWidgets.QLabel(_("Provider:")), self.provider_combo)
 
         # Model input
         self.model_input = QtWidgets.QLineEdit()
-        self.model_input.setPlaceholderText("Leave blank for default")
-        over_form.addRow(QtWidgets.QLabel("Model:"), self.model_input)
+        self.model_input.setPlaceholderText(_("Leave blank for default"))
+        over_form.addRow(QtWidgets.QLabel(_("Model:")), self.model_input)
 
         # API Key input
         key_layout = QtWidgets.QHBoxLayout()
         self.api_key_input = QtWidgets.QLineEdit()
         self.api_key_input.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
-        self.api_key_input.setPlaceholderText("Leave blank to use global key")
-        self.show_key_btn = QtWidgets.QPushButton("Show")
+        self.api_key_input.setPlaceholderText(_("Leave blank to use global key"))
+        self.show_key_btn = QtWidgets.QPushButton(_("Show"))
         self.show_key_btn.setFixedWidth(50)
         self.show_key_btn.clicked.connect(self._toggle_key_visibility)
         key_layout.addWidget(self.api_key_input)
         key_layout.addWidget(self.show_key_btn)
-        over_form.addRow(QtWidgets.QLabel("API Key:"), key_layout)
+        over_form.addRow(QtWidgets.QLabel(_("API Key:")), key_layout)
 
         # Base URL (for custom)
-        self.base_url_label = QtWidgets.QLabel("Base URL:")
+        self.base_url_label = QtWidgets.QLabel(_("Base URL:"))
         self.base_url_input = QtWidgets.QLineEdit()
         self.base_url_input.setPlaceholderText("https://api.example.com/v1")
         over_form.addRow(self.base_url_label, self.base_url_input)
@@ -361,11 +362,11 @@ class CommandEditorDialog(QtWidgets.QDialog):
             }}
             QPushButton:hover {{ background-color: {'#555' if colorMode == 'dark' else '#ddd'}; }}
         """
-        cancel_btn = QtWidgets.QPushButton("Cancel")
+        cancel_btn = QtWidgets.QPushButton(_("Cancel"))
         cancel_btn.setStyleSheet(btn_style)
         cancel_btn.clicked.connect(self.reject)
 
-        self.save_btn = QtWidgets.QPushButton("Save")
+        self.save_btn = QtWidgets.QPushButton(_("Save"))
         self.save_btn.setStyleSheet(btn_style + """
             QPushButton { font-weight: bold; background-color: #2e7d32; color: white; border: none; }
             QPushButton:hover { background-color: #1b5e20; }
@@ -413,9 +414,9 @@ class CommandEditorDialog(QtWidgets.QDialog):
         if self._app:
             existing_key = self._app.command_manager.get_command_api_key(self.command.id)
             if existing_key:
-                self.api_key_input.setPlaceholderText("•••• Saved •••• (re-enter to change)")
+                self.api_key_input.setPlaceholderText(_("•••• Saved •••• (re-enter to change)"))
             else:
-                self.api_key_input.setPlaceholderText("Leave blank to use global key")
+                self.api_key_input.setPlaceholderText(_("Leave blank to use global key"))
 
     def _on_override_toggled(self, checked: bool):
         for w in [self.provider_combo, self.model_input, self.api_key_input, self.show_key_btn, self.base_url_input]:
@@ -436,12 +437,12 @@ class CommandEditorDialog(QtWidgets.QDialog):
         self.base_url_input.setVisible(has_base_url)
         if name == "Ollama (For Experts)":
             self.base_url_input.setPlaceholderText("http://localhost:11434")
-            self.model_input.setPlaceholderText("E.g. llama3.1:8b")
+            self.model_input.setPlaceholderText(_("E.g. llama3.1:8b"))
         elif is_custom or name == "OpenAI Compatible (For Experts)":
             self.base_url_input.setPlaceholderText("https://api.example.com/v1")
-            self.model_input.setPlaceholderText("E.g. gpt-4o")
+            self.model_input.setPlaceholderText(_("E.g. gpt-4o"))
         else:
-            self.model_input.setPlaceholderText("Leave blank for default")
+            self.model_input.setPlaceholderText(_("Leave blank for default"))
 
         # Pre-fill base URL from global provider config when field is empty
         if has_base_url and not self.base_url_input.text().strip() and self._app:
@@ -453,10 +454,10 @@ class CommandEditorDialog(QtWidgets.QDialog):
     def _toggle_key_visibility(self):
         if self.api_key_input.echoMode() == QtWidgets.QLineEdit.EchoMode.Password:
             self.api_key_input.setEchoMode(QtWidgets.QLineEdit.EchoMode.Normal)
-            self.show_key_btn.setText("Hide")
+            self.show_key_btn.setText(_("Hide"))
         else:
             self.api_key_input.setEchoMode(QtWidgets.QLineEdit.EchoMode.Password)
-            self.show_key_btn.setText("Show")
+            self.show_key_btn.setText(_("Show"))
 
     def _refresh_icon_preview(self):
         if self._selected_icon:
@@ -466,7 +467,7 @@ class CommandEditorDialog(QtWidgets.QDialog):
                 self.icon_btn.setText(f"  {self._selected_icon.split('/')[-1]}")
                 return
         self.icon_btn.setIcon(QtGui.QIcon())
-        self.icon_btn.setText("Change Icon")
+        self.icon_btn.setText(_("Change Icon"))
 
     def _on_shortcut_changed(self, shortcut: str):
         if not shortcut or not self._app:
@@ -490,7 +491,7 @@ class CommandEditorDialog(QtWidgets.QDialog):
                 cmd = self._app.command_manager.get_command(result.conflict_name)
                 if cmd:
                     name = cmd.name
-            self.conflict_label.setText(f'⚠ Already used by "{name}"')
+            self.conflict_label.setText(_('⚠ Already used by "{name}"').format(name=name))
             self.conflict_label.show()
         else:
             self.conflict_label.hide()
@@ -504,11 +505,11 @@ class CommandEditorDialog(QtWidgets.QDialog):
 
     def accept(self):
         if not self.name_input.text().strip():
-            QtWidgets.QMessageBox.warning(self, "Required Field", "Please enter a Command Name.")
+            QtWidgets.QMessageBox.warning(self, _("Required Field"), _("Please enter a Command Name."))
             self.name_input.setFocus()
             return
         if not self.prompt_input.toPlainText().strip():
-            QtWidgets.QMessageBox.warning(self, "Required Field", "Please enter the System Prompt / Instruction.")
+            QtWidgets.QMessageBox.warning(self, _("Required Field"), _("Please enter the System Prompt / Instruction."))
             self.prompt_input.setFocus()
             return
         super().accept()

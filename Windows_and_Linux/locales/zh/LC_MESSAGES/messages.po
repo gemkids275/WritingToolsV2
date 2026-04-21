@@ -22,7 +22,7 @@ msgstr "常规"
 
 #: ui/SettingsWindow.py:69 ui/SettingsWindow.py:264
 msgid "AI Providers"
-msgstr "AI 供应商"
+msgstr "AI Providers"
 
 #: ui/SettingsWindow.py:70
 msgid "Commands"
@@ -38,7 +38,7 @@ msgstr "常规设置"
 
 #: ui/SettingsWindow.py:165
 msgid "Global Shortcut Key:"
-msgstr "全局快捷键:"
+msgstr "全局Shortcut:"
 
 #: ui/SettingsWindow.py:181
 msgid "Launch Writing Tools on system startup"
@@ -100,13 +100,13 @@ msgid "Chat"
 msgstr "聊天 (Chat)"
 
 msgid "Describe your change..."
-msgstr "描述您的更改... (Describe your change...)"
+msgstr "Describe your change..."
 
 msgid "Ask your AI..."
-msgstr "询问您的 AI... (Ask your AI...)"
+msgstr "Ask your AI... (Ask your AI...)"
 
 msgid "There's an update! :D Download now."
-msgstr "有新更新！ 立即下载。 (There's an update! :D Download now.)"
+msgstr "There's an update! 🚀 Download now."
 
 msgid "Drag to rearrange"
 msgstr "拖动以重新排序"
@@ -136,10 +136,10 @@ msgid "OpenRouter"
 msgstr "OpenRouter"
 
 msgid "OpenAI Compatible (For Experts)"
-msgstr "OpenAI 兼容 (专家模式)"
+msgstr "OpenAI Compatible (专家模式)"
 
 msgid "Get API Key"
-msgstr "获取 API 密钥"
+msgstr "获取 API Key"
 
 msgid "Show"
 msgstr "显示"
@@ -148,28 +148,28 @@ msgid "Hide"
 msgstr "隐藏"
 
 msgid "Model"
-msgstr "模型"
+msgstr "Model"
 
 msgid "API Key"
-msgstr "API 密钥"
+msgstr "API Key"
 
 msgid "🔧 Custom"
 msgstr "🔧 自定义"
 
 msgid "• Google’s Gemini 1.5 & 2.0 (Gemma) are multimodal models with world-class performance.\n• Offers extremely fast inference and massive context windows (up to 1M+ tokens).\n• Get a free API key to start using Gemini Flash and Pro models."
-msgstr "• Google 的 Gemini 1.5 和 2.0 (Gemma) 是具有世界级性能的多模态模型。\n• 提供极快的推理速度和海量的上下文窗口 (高达 100 万+ token)。\n• 获取免费 API 密钥以开始使用 Gemini Flash 和 Pro 模型。"
+msgstr "• Google 的 Gemini 1.5 和 2.0 (Gemma) 是具有世界级性能的多模态模型。\n• 提供极快的推理速度和海量的上下文窗口 (高达 100 万+ token)。\n• 获取免费 API Key以开始使用 Gemini Flash 和 Pro Model。"
 
 msgid "• Anthropic's Claude is renowned for high-quality writing, safe reasoning, and large context windows.\n• Ideal for complex analysis and creative writing tasks.\n• Supports Claude 3.5 Sonnet, Haiku, and Opus models."
-msgstr "• Anthropic 的 Claude 以高质量写作、安全推理和大上下文窗口而闻名。\n• 非常适合复杂的分析和创意写作任务。\n• 支持 Claude 3.5 Sonnet、Haiku 和 Opus 模型。"
+msgstr "• Anthropic 的 Claude 以高质量写作、安全推理和大上下文窗口而闻名。\n• 非常适合复杂的分析和创意写作任务。\n• 支持 Claude 3.5 Sonnet、Haiku 和 Opus Model。"
 
 msgid "• Mistral AI offers state-of-the-art open models with high efficiency.\n• Great performance in both European languages and coding.\n• Supports Mistral Large, Small, and vision-capable Pixtral."
-msgstr "• Mistral AI 提供具有高效率的最先进开源模型。\n• 在欧洲语言和编程方面均表现出色。\n• 支持 Mistral Large、Small 和具有视觉能力的 Pixtral。"
+msgstr "• Mistral AI 提供具有高效率的最先进开源Model。\n• 在欧洲语言和编程方面均表现出色。\n• 支持 Mistral Large、Small 和具有视觉能力的 Pixtral。"
 
 msgid "• OpenRouter provides unified access to over 100+ AI models (Claude, Llama, GPT, etc.).\n• Offers the most competitive pricing and many free-tier models.\n• Best for power users who want to switch models frequently."
-msgstr "• OpenRouter 提供对 100 多种 AI 模型 (Claude、Llama、GPT 等) 的统一访问。\n• 提供最具竞争力的价格和许多免费层级模型。\n• 最适合希望频繁切换模型的重度用户。"
+msgstr "• OpenRouter 提供对 100 多种 AI 模型 (Claude、Llama、GPT 等) 的统一访问。\n• 提供最具竞争力的价格和许多免费层级模型。\n• 最适合希望频繁切换Model的重度用户。"
 
 msgid "• Connect to ANY OpenAI-compatible service (e.g. OpenAI, Groq, Together AI, Perplexity).\n• Supports custom Base URLs, Organizations, and Project IDs.\n• Perfect for local LLM servers (LM Studio, LocalAI) or specialized providers."
-msgstr "• 连接到任何兼容 OpenAI 的服务 (例如 OpenAI、Groq、Together AI、Perplexity)。\n• 支持自定义基准 URL、组织和项目 ID。\n• 非常适合本地 LLM 服务器 (LM Studio、LocalAI) 或专业供应商。"
+msgstr "• 连接到任何兼容 OpenAI 的服务 (例如 OpenAI、Groq、Together AI、Perplexity)。\n• 支持自定义Base URL、Organization和Project ID。\n• 非常适合本地 LLM 服务器 (LM Studio、LocalAI) 或专业Provider。"
 
 msgid "⭐ Gemma 3 27B (very intelligent | unlimited usage)"
 msgstr "⭐ Gemma 3 27B (非常智力 | 无限制使用)"
@@ -229,7 +229,7 @@ msgid "Response"
 msgstr "响应"
 
 msgid "Chat Result"
-msgstr "聊天结果"
+msgstr "生成结果"
 
 msgid "Copy as Markdown"
 msgstr "复制为 Markdown"
@@ -244,4 +244,268 @@ msgid "Attach file"
 msgstr "附加文件"
 
 msgid "Thinking"
-msgstr "思考中"
+msgstr "AI 正在思考..."
+
+msgid "Select Icon"
+msgstr "选择图标"
+
+msgid "Search icons..."
+msgstr "Search Icons..."
+
+msgid "Edit Command"
+msgstr "编辑命令"
+
+msgid "Add New Command"
+msgstr "添加新命令"
+
+msgid "e.g., Proofread"
+msgstr "例如：校对"
+
+msgid "Command Name"
+msgstr "命令名称"
+
+msgid "Change Icon"
+msgstr "更改图标"
+
+msgid "Icon:"
+msgstr "图标："
+
+msgid "e.g., Proofread this:\n\n"
+msgstr "例如：校对此文本:\n\n"
+
+msgid "Prefix Text:"
+msgstr "前缀文本："
+
+msgid "System Prompt / Instruction"
+msgstr "系统提示 / 指令"
+
+msgid "Describe how the AI should behave..."
+msgstr "描述AI应如何行为..."
+
+msgid "Open in a separate pop-up window"
+msgstr "在单独的弹出窗口中打开"
+
+msgid "Keyboard Shortcut:"
+msgstr "键盘Shortcut："
+
+msgid "AI Override (Optional)"
+msgstr "AI覆盖（可选）"
+
+msgid "Use custom AI provider for this command"
+msgstr "为此命令使用自定义AI提供商"
+
+msgid "Provider:"
+msgstr "提供商："
+
+msgid "Leave blank for default"
+msgstr "留空使用默认值"
+
+msgid "Model:"
+msgstr "Model："
+
+msgid "Leave blank to use global key"
+msgstr "留空使用全局密钥"
+
+msgid "API Key:"
+msgstr "API Key："
+
+msgid "Base URL:"
+msgstr "基础URL："
+
+msgid "Save"
+msgstr "保存"
+
+msgid "Cancel"
+msgstr "取消"
+
+msgid "•••• Saved •••• (re-enter to change)"
+msgstr "•••• 已保存 •••• (重新输入以更改)"
+
+msgid "E.g. llama3.1:8b"
+msgstr "例：llama3.1:8b"
+
+msgid "E.g. gpt-4o"
+msgstr "例：gpt-4o"
+
+msgid "⚠ Already used by \"{name}\""
+msgstr "⚠ 已被\"{name}\"使用"
+
+msgid "Required Field"
+msgstr "必填项"
+
+msgid "Please enter a Command Name."
+msgstr "请输入命令名称。"
+
+msgid "Please enter the System Prompt / Instruction."
+msgstr "请输入系统提示 / 指令。"
+
+msgid "• Connect to an Ollama server (local LLM)."
+msgstr "• 连接到Ollama服务器（本地LLM）。"
+
+msgid "Ollama Set-up Instructions"
+msgstr "Ollama设置说明"
+
+msgid "Pause"
+msgstr "暂停"
+
+msgid "Resume"
+msgstr "恢复"
+
+msgid "About AI Shortcuts"
+msgstr "关于AI Shortcuts"
+
+msgid "AI Shortcuts is a free, lightweight utility that enhances your writing with AI."
+msgstr "AI Shortcuts是一款免费、轻量级的AI写作增强工具。"
+
+msgid "Version & Updates"
+msgstr "版本与更新"
+
+msgid "Version: {0}"
+msgstr "版本：{0}"
+
+msgid "Check for Updates"
+msgstr "检查更新"
+
+msgid "Not checked yet."
+msgstr "尚未检查。"
+
+msgid "View Releases"
+msgstr "查看发布"
+
+msgid "Creators"
+msgstr "创作者"
+
+msgid "Original Developers"
+msgstr "原始开发者"
+
+msgid "A technology enthusiast"
+msgstr "技术爱好者"
+
+msgid "Customized version & Forked by Nam Trần"
+msgstr "由Nam Trần定制 & Fork版本"
+
+msgid "Welcome to AI Shortcuts"
+msgstr "欢迎使用AI Shortcuts"
+
+msgid "Commands Management"
+msgstr "命令管理"
+
+msgid "Add New..."
+msgstr "添加新..."
+
+msgid "Add, edit, or remove AI shortcuts and system prompts."
+msgstr "添加、编辑或删除AI快捷方式和系统提示。"
+
+msgid "Edit..."
+msgstr "编辑..."
+
+msgid "Delete"
+msgstr "删除"
+
+msgid "Export Command"
+msgstr "导出命令"
+
+msgid "Export Selected..."
+msgstr "导出所选..."
+
+msgid "Import Command"
+msgstr "导入命令"
+
+msgid "Import Command..."
+msgstr "导入命令..."
+
+msgid "Command exported successfully."
+msgstr "命令导出成功。"
+
+msgid "Config exported successfully."
+msgstr "配置导出成功。"
+
+msgid "Invalid file: {0}"
+msgstr "无效文件：{0}"
+
+msgid "No commands found in this file."
+msgstr "此文件中未找到命令。"
+
+msgid "{0} command(s) imported."
+msgstr "已导入{0}个命令。"
+
+msgid "Backup All Config..."
+msgstr "备份所有配置..."
+
+msgid "Restore Full Config..."
+msgstr "恢复完整配置..."
+
+msgid "Export All Config"
+msgstr "导出所有配置"
+
+msgid "Restore Config"
+msgstr "恢复配置"
+
+msgid "Restore Defaults"
+msgstr "恢复默认值"
+
+msgid "Empty Backup"
+msgstr "备份为空"
+
+msgid "Select Active Provider:"
+msgstr "选择活动提供商："
+
+msgid "Get OpenAI API Key"
+msgstr "获取OpenAI API Key"
+
+msgid "{0} API key is not configured. Please set your API key in Settings → AI Providers."
+msgstr "{0} API Key未配置。请在设置 → AI提供商中设置您的API Key。"
+
+msgid "Error"
+msgstr "错误"
+
+msgid "Success"
+msgstr "成功"
+
+msgid "Settings saved successfully."
+msgstr "设置保存成功。"
+
+msgid "Copy All"
+msgstr "复制全部"
+
+msgid "Choose your theme:"
+msgstr "选择主题："
+
+msgid "Gradient"
+msgstr "渐变"
+
+msgid "Plain"
+msgstr "纯色"
+
+msgid "API Base URL"
+msgstr "API基础URL"
+
+msgid "API Model"
+msgstr "APIModel"
+
+msgid "Time to keep the model loaded in memory in minutes"
+msgstr "Model在内存中保留的时间（分钟）"
+
+msgid "API Organisation"
+msgstr "APIOrganization"
+
+msgid "API Project"
+msgstr "API项目"
+
+msgid "Paste your Anthropic API key here"
+msgstr "在此粘贴您的Anthropic API Key"
+
+msgid "Paste your Mistral API key here"
+msgstr "在此粘贴您的Mistral API Key"
+
+msgid "Paste your OpenRouter API key here"
+msgstr "在此粘贴您的OpenRouter API Key"
+
+msgid "Paste your Gemini API key here"
+msgstr "在此粘贴您的Gemini API Key"
+
+msgid "API key for the OpenAI-compatible API."
+msgstr "OpenAI兼容API的API Key。"
+
+msgid "Leave blank if not applicable."
+msgstr "如不适用请留空。"

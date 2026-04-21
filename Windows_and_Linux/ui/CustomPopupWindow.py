@@ -21,133 +21,26 @@ from PySide6.QtWidgets import (
 )
 
 from ui.AttachmentBar import AttachmentBar, attachment_from_file, attachment_from_qimage
-from ui.UIUtils import ThemeBackground, colorMode
+from ui.UIUtils import UIUtils, colorMode, ThemeBackground
+from ui.BaseTextEditor import BaseAITextEdit
 from update_checker import UPDATE_DOWNLOAD_URL
 
 _ = lambda x: x  # Will be overridden by WritingToolApp
 
 
-class PopupTextEdit(QtWidgets.QTextEdit):
-    """Auto-resize text input cho popup window, hỗ trợ paste ảnh và drop file."""
-    submit_requested = QtCore.Signal()
-
-    MIN_HEIGHT = 80
-    MAX_HEIGHT = 120
-
-    def __init__(self, attachment_bar: AttachmentBar, parent=None):
-        super().__init__(parent)
-        self._attachment_bar = attachment_bar
-        self.setMinimumHeight(self.MIN_HEIGHT)
-        self.setMaximumHeight(self.MAX_HEIGHT)
-        self.setFixedHeight(self.MIN_HEIGHT)
+class PopupTextEdit(BaseAITextEdit):
+    """Auto-resize text input cho custom instructions, hỗ trợ paste ảnh và drop file."""
+    def __init__(self, attachment_bar: 'AttachmentBar', parent=None):
+        super().__init__(attachment_bar, parent)
+        self.setFixedHeight(72)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
-        self.setAcceptDrops(True)
-        self.document().contentsChanged.connect(self._adjust_height)
-
-    def _adjust_height(self):
-        doc_h = int(self.document().size().height()) + 12
-        self.setFixedHeight(min(max(self.MIN_HEIGHT, doc_h), self.MAX_HEIGHT))
 
     def keyPressEvent(self, event):
-        if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
-            if event.modifiers() & (Qt.KeyboardModifier.ShiftModifier | Qt.KeyboardModifier.AltModifier):
-                self.textCursor().insertText("\n")
-                return
+        # Trigger submit on Enter (unless Shift/Alt is held)
+        if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter) and not (event.modifiers() & (Qt.KeyboardModifier.ShiftModifier | Qt.KeyboardModifier.AltModifier)):
             self.submit_requested.emit()
             return
-
-        if event.matches(QKeySequence.StandardKey.Paste):
-            mime = QApplication.clipboard().mimeData()
-            if mime.hasImage():
-                self._handle_image_mime(mime)
-                return
-            if mime.hasUrls():
-                if self._handle_url_mime(mime.urls()):
-                    return
-
         super().keyPressEvent(event)
-
-    def dragEnterEvent(self, event):
-        if event.mimeData().hasUrls() or event.mimeData().hasImage():
-            event.acceptProposedAction()
-        else:
-            super().dragEnterEvent(event)
-
-    def dragMoveEvent(self, event):
-        if event.mimeData().hasUrls() or event.mimeData().hasImage():
-            event.acceptProposedAction()
-        else:
-            super().dragMoveEvent(event)
-
-    def dropEvent(self, event):
-        mime = event.mimeData()
-        if mime.hasImage():
-            self._handle_image_mime(mime)
-            event.acceptProposedAction()
-            return
-        if mime.hasUrls():
-            if self._handle_url_mime(mime.urls()):
-                event.acceptProposedAction()
-                return
-        super().dropEvent(event)
-
-    def _handle_image_mime(self, mime):
-        qimage = mime.imageData()
-        if not isinstance(qimage, QtGui.QImage) or qimage.isNull():
-            qimage = QApplication.clipboard().image()
-        if qimage and not qimage.isNull():
-            att = attachment_from_qimage(qimage)
-            if att:
-                self._attachment_bar.add_attachment(att)
-
-    def insertFromMimeData(self, source):
-        """Override để bắt paste ảnh từ right-click menu và Ctrl+V."""
-        if source.hasImage():
-            self._handle_image_mime(source)
-            return
-        # Windows right-click paste: source.hasImage() may be False even when clipboard has image
-        clipboard_image = QApplication.clipboard().image()
-        if not clipboard_image.isNull():
-            att = attachment_from_qimage(clipboard_image)
-            if att:
-                self._attachment_bar.add_attachment(att)
-            return
-        if source.hasUrls():
-            if self._handle_url_mime(source.urls()):
-                return
-        super().insertFromMimeData(source)
-
-    def contextMenuEvent(self, event):
-        """Override context menu để xử lý Paste ảnh đúng trên Windows."""
-        menu = self.createStandardContextMenu()
-        clipboard_image = QApplication.clipboard().image()
-        if not clipboard_image.isNull():
-            for action in menu.actions():
-                if 'paste' in action.text().lower() or 'dán' in action.text().lower():
-                    try:
-                        action.triggered.disconnect()
-                    except Exception:
-                        pass
-                    action.triggered.connect(lambda: self._paste_image_direct())
-                    break
-        menu.exec(event.globalPos())
-
-    def _paste_image_direct(self):
-        clipboard_image = QApplication.clipboard().image()
-        if not clipboard_image.isNull():
-            att = attachment_from_qimage(clipboard_image)
-            if att:
-                self._attachment_bar.add_attachment(att)
-
-    def _handle_url_mime(self, urls) -> bool:
-        added = False
-        for url in urls:
-            if url.isLocalFile():
-                att = attachment_from_file(url.toLocalFile())
-                if att:
-                    self._attachment_bar.add_attachment(att)
-                    added = True
-        return added
 
 
 class ButtonEditDialog(QDialog):
@@ -423,7 +316,7 @@ class CustomPopupWindow(QtWidgets.QWidget):
         logging.debug('Setting up CustomPopupWindow UI')
         self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.FramelessWindowHint)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
-        self.setWindowTitle("Writing Tools")
+        self.setWindowTitle("AI Shortcuts")
         
         main_layout = QtWidgets.QVBoxLayout(self)
         main_layout.setContentsMargins(0,0,0,0)
@@ -612,10 +505,19 @@ class CustomPopupWindow(QtWidgets.QWidget):
         if self.app.config.get("update_available", False):
             update_label = QLabel()
             update_label.setOpenExternalLinks(True)
-            # Translated update notification
-            update_text = f'<a href="{UPDATE_DOWNLOAD_URL}" style="color:rgb(255, 0, 0); text-decoration: underline; font-weight: bold;">{_("There\'s an update! :D Download now.")}</a>'
+            # Modern update notification banner
+            update_text = f'<a href="{UPDATE_DOWNLOAD_URL}" style="color: white; text-decoration: none; font-weight: bold;">✨ {_("There\'s an update! :D Download now.")}</a>'
             update_label.setText(update_text)
-            update_label.setStyleSheet("margin-top: 10px;")
+            update_label.setStyleSheet(f"""
+                QLabel {{
+                    background-color: {'#1d4ed8' if colorMode == 'dark' else '#2563eb'};
+                    color: white;
+                    padding: 8px 20px;
+                    border-radius: 20px;
+                    margin-top: 12px;
+                    border: 1px solid rgba(255, 255, 255, 0.2);
+                }}
+            """)
             content_layout.addWidget(update_label, alignment=QtCore.Qt.AlignCenter)
         
         logging.debug('CustomPopupWindow UI setup complete')

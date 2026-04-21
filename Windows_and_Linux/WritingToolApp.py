@@ -10,10 +10,13 @@ import time
 
 import darkdetect
 import pyperclip
+import aiprovider as _aiprovider_module
+import ui.CommandEditorDialog
 import ui.CustomPopupWindow
 import ui.OnboardingWindow
 import ui.ResponseWindow
 import ui.SettingsWindow
+import ui.UIUtils
 from aiprovider import (AnthropicProvider, GeminiProvider, MistralProvider,
                         OllamaProvider, OpenAICompatibleProvider,
                         OpenRouterProvider, obfuscate_api_key)
@@ -142,15 +145,17 @@ class WritingToolApp(QtWidgets.QApplication):
         try:
             translation = gettext.translation(
                 'messages',
-                localedir=os.path.join(os.path.dirname(__file__), 'locales'),
+                localedir=ui.UIUtils.UIUtils.get_resource_path('locales'),
                 languages=[lang]
             )
-        except FileNotFoundError:
+        except (FileNotFoundError, Exception):
             translation = gettext.NullTranslations()
 
         translation.install()
         # Update the translation function for all UI components.
         self._ = translation.gettext
+        _aiprovider_module._ = self._
+        ui.CommandEditorDialog._ = self._
         ui.SettingsWindow._ = self._
         ui.ResponseWindow._ = self._
         ui.OnboardingWindow._ = self._
@@ -329,7 +334,7 @@ class WritingToolApp(QtWidgets.QApplication):
             self.popup_window = ui.CustomPopupWindow.CustomPopupWindow(self, selected_text)
 
             # Set the window icon
-            icon_path = os.path.join(os.path.dirname(sys.argv[0]), 'icons', 'app_icon.png')
+            icon_path = ui.UIUtils.UIUtils.get_resource_path(os.path.join('icons', 'app_icon.png'))
             if os.path.exists(icon_path): self.setWindowIcon(QtGui.QIcon(icon_path))
             # Get the screen containing the cursor
             cursor_pos = QCursor.pos()
@@ -590,9 +595,22 @@ class WritingToolApp(QtWidgets.QApplication):
                     if self.config.get('streaming', True):  # Default to True for better UX
                         logging.debug('Using streaming response')
                         full_response = ""
+                        watchdog = None
+                        def on_timeout():
+                            logging.error("Streaming watchdog timed out")
+                            active_provider.cancel()
+                        
+                        def reset_watchdog():
+                            nonlocal watchdog
+                            if watchdog: watchdog.cancel()
+                            watchdog = threading.Timer(30, on_timeout)
+                            watchdog.start()
+
                         try:
+                            reset_watchdog()
                             for chunk in active_provider.get_response_stream(system_instruction, prompt, images=img_arg):
                                 if chunk:
+                                    reset_watchdog()
                                     full_response += chunk
                                     # noinspection PyTypeChecker
                                     QtCore.QMetaObject.invokeMethod(
@@ -607,6 +625,8 @@ class WritingToolApp(QtWidgets.QApplication):
                                 response = active_provider.get_response(system_instruction, prompt, images=img_arg, return_response=True)
                             except Exception as e2:
                                 response = str(e2)
+                        finally:
+                            if watchdog: watchdog.cancel()
                     else:
                         try:
                             response = active_provider.get_response(system_instruction, prompt, images=img_arg, return_response=True)
@@ -744,7 +764,7 @@ class WritingToolApp(QtWidgets.QApplication):
             return
 
         logging.debug('Creating system tray icon')
-        icon_path = os.path.join(os.path.dirname(sys.argv[0]), 'icons', 'app_icon.png')
+        icon_path = ui.UIUtils.UIUtils.get_resource_path(os.path.join('icons', 'app_icon.png'))
         if not os.path.exists(icon_path):
             logging.warning(f'Tray icon not found at {icon_path}')
             # Use a default icon if not found
@@ -869,6 +889,7 @@ class WritingToolApp(QtWidgets.QApplication):
                 if not response_window.chat_history:
                     logging.error("No chat history found")
                     self.show_message_signal.emit('Error', 'Chat history not found')
+                    self.followup_response_signal.emit("Error: Chat history not found")
                     return
 
                 # Extract images và text context từ attachments
@@ -900,6 +921,7 @@ class WritingToolApp(QtWidgets.QApplication):
                     active_provider = self._resolve_provider(command)
                 except ValueError as e:
                     self.show_message_signal.emit("Provider Error", str(e))
+                    self.followup_response_signal.emit(f"Provider Error: {e}")
                     return
 
                 logging.debug('Sending request to AI provider')
@@ -908,9 +930,22 @@ class WritingToolApp(QtWidgets.QApplication):
                 if self.config.get('streaming', True):
                     logging.debug('Using streaming for follow-up')
                     full_response = ""
+                    watchdog = None
+                    def on_timeout():
+                        logging.error("Follow-up watchdog timed out")
+                        active_provider.cancel()
+                    
+                    def reset_watchdog():
+                        nonlocal watchdog
+                        if watchdog: watchdog.cancel()
+                        watchdog = threading.Timer(30, on_timeout)
+                        watchdog.start()
+
                     try:
+                        reset_watchdog()
                         for chunk in active_provider.get_response_stream(system_instruction, full_question, images=images or None):
                             if chunk:
+                                reset_watchdog()
                                 full_response += chunk
                                 # noinspection PyTypeChecker
                                 QtCore.QMetaObject.invokeMethod(
@@ -922,6 +957,8 @@ class WritingToolApp(QtWidgets.QApplication):
                     except Exception as e:
                         logging.error(f"Streaming follow-up error: {e}")
                         response_text = active_provider.get_response(system_instruction, full_question, images=images or None, return_response=True)
+                    finally:
+                        if watchdog: watchdog.cancel()
                 else:
                     response_text = active_provider.get_response(system_instruction, full_question, images=images or None, return_response=True)
 

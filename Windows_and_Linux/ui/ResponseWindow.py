@@ -11,123 +11,41 @@ from PySide6.QtWidgets import QApplication, QFileDialog, QScrollArea
 from models.attachment import AttachmentType
 from ui.AttachmentBar import AttachmentBar, attachment_from_file, attachment_from_qimage
 from ui.UIUtils import UIUtils, colorMode
+from ui.ImagePreview import show_image_preview
+from ui.BaseTextEditor import BaseAITextEdit
 
 _ = lambda x: x
 
 
-class FollowUpTextEdit(QtWidgets.QTextEdit):
-    """Auto-resize text input cho follow-up questions, hỗ trợ paste ảnh và drop file."""
-    submit_requested = QtCore.Signal()
+class ClickableLabel(QtWidgets.QLabel):
+    """QLabel có thể click để phát tín hiệu."""
+    clicked = QtCore.Signal(QtGui.QPixmap)
 
-    def __init__(self, attachment_bar: 'AttachmentBar', parent=None):
+    def __init__(self, display_pixmap, original_pixmap, parent=None):
         super().__init__(parent)
-        self._attachment_bar = attachment_bar
+        self.setPixmap(display_pixmap)
+        self.original_pixmap = original_pixmap
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            self.clicked.emit(self.original_pixmap)
+
+
+class FollowUpTextEdit(BaseAITextEdit):
+    """Auto-resize text input cho follow-up questions, hỗ trợ paste ảnh và drop file."""
+    def __init__(self, attachment_bar: 'AttachmentBar', parent=None):
+        super().__init__(attachment_bar, parent)
         self.setFixedHeight(72)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
-        self.setAcceptDrops(True)
 
     def keyPressEvent(self, event):
-        if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter):
-            if event.modifiers() & (Qt.KeyboardModifier.ShiftModifier | Qt.KeyboardModifier.AltModifier):
-                cursor = self.textCursor()
-                cursor.insertText("\n")
-                return
+        # Override to ensure height doesn't change if specialized behavior is needed,
+        # but here we mostly just want to trigger submit on Enter.
+        if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter) and not (event.modifiers() & (Qt.KeyboardModifier.ShiftModifier | Qt.KeyboardModifier.AltModifier)):
             self.submit_requested.emit()
             return
-
-        if event.matches(QKeySequence.StandardKey.Paste):
-            mime = QApplication.clipboard().mimeData()
-            if mime.hasImage():
-                self._handle_image_mime(mime)
-                return
-            if mime.hasUrls():
-                if self._handle_url_mime(mime.urls()):
-                    return
-
         super().keyPressEvent(event)
-
-    def dragEnterEvent(self, event):
-        if event.mimeData().hasUrls() or event.mimeData().hasImage():
-            event.acceptProposedAction()
-        else:
-            super().dragEnterEvent(event)
-
-    def dragMoveEvent(self, event):
-        if event.mimeData().hasUrls() or event.mimeData().hasImage():
-            event.acceptProposedAction()
-        else:
-            super().dragMoveEvent(event)
-
-    def dropEvent(self, event):
-        mime = event.mimeData()
-        if mime.hasImage():
-            self._handle_image_mime(mime)
-            event.acceptProposedAction()
-            return
-        if mime.hasUrls():
-            if self._handle_url_mime(mime.urls()):
-                event.acceptProposedAction()
-                return
-        super().dropEvent(event)
-
-    def _handle_image_mime(self, mime):
-        qimage = mime.imageData()
-        # imageData() on Windows may return None or an invalid QImage — fallback to clipboard directly
-        if not isinstance(qimage, QtGui.QImage) or qimage.isNull():
-            qimage = QApplication.clipboard().image()
-        if qimage and not qimage.isNull():
-            att = attachment_from_qimage(qimage)
-            if att:
-                self._attachment_bar.add_attachment(att)
-
-    def insertFromMimeData(self, source):
-        """Override để bắt paste ảnh từ right-click menu và Ctrl+V."""
-        if source.hasImage():
-            self._handle_image_mime(source)
-            return
-        # Windows right-click paste: source.hasImage() may be False even when clipboard has image
-        clipboard_image = QApplication.clipboard().image()
-        if not clipboard_image.isNull():
-            att = attachment_from_qimage(clipboard_image)
-            if att:
-                self._attachment_bar.add_attachment(att)
-            return
-        if source.hasUrls():
-            if self._handle_url_mime(source.urls()):
-                return
-        super().insertFromMimeData(source)
-
-    def contextMenuEvent(self, event):
-        """Override context menu để xử lý Paste ảnh đúng trên Windows."""
-        menu = self.createStandardContextMenu()
-        clipboard_image = QApplication.clipboard().image()
-        if not clipboard_image.isNull():
-            for action in menu.actions():
-                if 'paste' in action.text().lower() or 'dán' in action.text().lower():
-                    try:
-                        action.triggered.disconnect()
-                    except Exception:
-                        pass
-                    action.triggered.connect(lambda: self._paste_image_direct())
-                    break
-        menu.exec(event.globalPos())
-
-    def _paste_image_direct(self):
-        clipboard_image = QApplication.clipboard().image()
-        if not clipboard_image.isNull():
-            att = attachment_from_qimage(clipboard_image)
-            if att:
-                self._attachment_bar.add_attachment(att)
-
-    def _handle_url_mime(self, urls) -> bool:
-        added = False
-        for url in urls:
-            if url.isLocalFile():
-                att = attachment_from_file(url.toLocalFile())
-                if att:
-                    self._attachment_bar.add_attachment(att)
-                    added = True
-        return added
 
 
 class MarkdownTextBrowser(QtWidgets.QTextBrowser):
@@ -349,12 +267,13 @@ class ChatContentScrollArea(QScrollArea):
                     pixmap.loadFromData(att.data)
                     if not pixmap.isNull():
                         max_w, max_h = 220, 160
+                        display_pixmap = pixmap
                         if pixmap.width() > max_w or pixmap.height() > max_h:
-                            pixmap = pixmap.scaled(max_w, max_h, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
-                        img_label = QtWidgets.QLabel()
-                        img_label.setPixmap(pixmap)
-                        img_label.setFixedSize(pixmap.size())
+                            display_pixmap = pixmap.scaled(max_w, max_h, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+                        
+                        img_label = ClickableLabel(display_pixmap, pixmap)
                         img_label.setStyleSheet("border-radius: 6px; margin-bottom: 2px;")
+                        img_label.clicked.connect(lambda p: show_image_preview(p, self.window()))
                         msg_layout.addWidget(img_label)
 
         # Create text display with updated width
@@ -488,6 +407,7 @@ class ResponseWindow(QtWidgets.QWidget):
         self.current_streaming_display = None
         self.current_streaming_text = ""
         self._ignore_tokens = False
+        self._streaming_active = False # New guard
 
         # Setup thinking animation with full range of dots
         self.thinking_timer = QtCore.QTimer(self)
@@ -856,7 +776,7 @@ class ResponseWindow(QtWidgets.QWidget):
     @Slot(str)
     def append_token(self, token):
         """Append a token to the current streaming message display"""
-        if not token or self._ignore_tokens:
+        if not token or self._ignore_tokens or not self._streaming_active:
             return
             
         if self.current_streaming_display is None:
@@ -915,9 +835,12 @@ class ResponseWindow(QtWidgets.QWidget):
     @Slot(str)
     def handle_followup_response(self, response_text):
         """Handle the follow-up response from the AI with improved layout handling"""
+        self._streaming_active = False # Immediately stop accepting tokens
+        self._ignore_tokens = True
+        
         streaming_display = self.current_streaming_display
         was_streaming = streaming_display is not None
-        self._ignore_tokens = True
+        
         self.current_streaming_display = None
         self.current_streaming_text = ""
 
@@ -957,6 +880,7 @@ class ResponseWindow(QtWidgets.QWidget):
         self.input_field.clear()
         self.attachment_bar.clear()
         self._ignore_tokens = False
+        self._streaming_active = True # Allow tokens
 
         # Build display text cho user bubble
         if attachments:
