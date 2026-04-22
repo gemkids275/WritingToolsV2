@@ -1,109 +1,84 @@
 import os
+import shutil
 import subprocess
 import sys
 
+IS_WINDOWS = sys.platform == 'win32'
+
+# --add-data separator: ';' on Windows, ':' on Linux/macOS
+SEP = ';' if IS_WINDOWS else ':'
+
+def D(src, dest):
+    """Tạo argument --add-data cross-platform."""
+    return f"{src}{SEP}{dest}"
+
 
 def run_pyinstaller_build():
+    icon = 'icons/app_icon.ico' if IS_WINDOWS else 'icons/app_icon.png'
+
+    excludes = [
+        "tkinter", "unittest", "IPython", "jedi", "email_validator",
+        "psutil", "pyzmq", "tornado",
+        "PySide6.QtNetwork", "PySide6.QtXml", "PySide6.QtQml",
+        "PySide6.QtQuick", "PySide6.QtQuickWidgets", "PySide6.QtPrintSupport",
+        "PySide6.QtSql", "PySide6.QtTest", "PySide6.QtSvg", "PySide6.QtSvgWidgets",
+        "PySide6.QtHelp", "PySide6.QtMultimedia", "PySide6.QtMultimediaWidgets",
+        "PySide6.QtOpenGL", "PySide6.QtOpenGLWidgets", "PySide6.QtPositioning",
+        "PySide6.QtLocation", "PySide6.QtSerialPort", "PySide6.QtWebChannel",
+        "PySide6.QtWebSockets", "PySide6.QtNetworkAuth", "PySide6.QtRemoteObjects",
+        "PySide6.QtTextToSpeech", "PySide6.QtWebEngineCore", "PySide6.QtWebEngineWidgets",
+        "PySide6.QtWebEngine", "PySide6.QtBluetooth", "PySide6.QtNfc",
+        "PySide6.QtWebView", "PySide6.QtCharts", "PySide6.QtDataVisualization",
+        "PySide6.QtPdf", "PySide6.QtPdfWidgets", "PySide6.QtQuick3D",
+        "PySide6.QtQuickControls2", "PySide6.QtQuickParticles", "PySide6.QtQuickTest",
+        "PySide6.QtSensors", "PySide6.QtStateMachine",
+        "PySide6.Qt3DCore", "PySide6.Qt3DRender", "PySide6.Qt3DInput",
+        "PySide6.Qt3DLogic", "PySide6.Qt3DAnimation", "PySide6.Qt3DExtras",
+    ]
+
+    # PySide6.QtWinExtras chỉ tồn tại trên Windows
+    if IS_WINDOWS:
+        excludes.append("PySide6.QtWinExtras")
+
+    exclude_args = []
+    for mod in excludes:
+        exclude_args += ["--exclude-module", mod]
+
     pyinstaller_command = [
         "pyinstaller",
         "--onefile",
         "--windowed",
-        "--icon=icons/app_icon.ico",
+        f"--icon={icon}",
         "--name=AI Shortcuts",
         "--clean",
         "--noconfirm",
-        # Exclude unnecessary modules
-        "--exclude-module", "tkinter",
-        "--exclude-module", "unittest",
-        "--exclude-module", "IPython",
-        "--exclude-module", "jedi",
-        "--exclude-module", "email_validator",
-        "--exclude-module", "psutil",
-        "--exclude-module", "pyzmq",
-        "--exclude-module", "tornado",
-        # Exclude modules related to PySide6 that are not used
-        "--exclude-module", "PySide6.QtNetwork",
-        "--exclude-module", "PySide6.QtXml",
-        "--exclude-module", "PySide6.QtQml",
-        "--exclude-module", "PySide6.QtQuick",
-        "--exclude-module", "PySide6.QtQuickWidgets",
-        "--exclude-module", "PySide6.QtPrintSupport",
-        "--exclude-module", "PySide6.QtSql",
-        "--exclude-module", "PySide6.QtTest",
-        "--exclude-module", "PySide6.QtSvg",
-        "--exclude-module", "PySide6.QtSvgWidgets",
-        "--exclude-module", "PySide6.QtHelp",
-        "--exclude-module", "PySide6.QtMultimedia",
-        "--exclude-module", "PySide6.QtMultimediaWidgets",
-        "--exclude-module", "PySide6.QtOpenGL",
-        "--exclude-module", "PySide6.QtOpenGLWidgets",
-        "--exclude-module", "PySide6.QtPositioning",
-        "--exclude-module", "PySide6.QtLocation",
-        "--exclude-module", "PySide6.QtSerialPort",
-        "--exclude-module", "PySide6.QtWebChannel",
-        "--exclude-module", "PySide6.QtWebSockets",
-        "--exclude-module", "PySide6.QtWinExtras",
-        "--exclude-module", "PySide6.QtNetworkAuth",
-        "--exclude-module", "PySide6.QtRemoteObjects",
-        "--exclude-module", "PySide6.QtTextToSpeech",
-        "--exclude-module", "PySide6.QtWebEngineCore",
-        "--exclude-module", "PySide6.QtWebEngineWidgets",
-        "--exclude-module", "PySide6.QtWebEngine",
-        "--exclude-module", "PySide6.QtBluetooth",
-        "--exclude-module", "PySide6.QtNfc",
-        "--exclude-module", "PySide6.QtWebView",
-        "--exclude-module", "PySide6.QtCharts",
-        "--exclude-module", "PySide6.QtDataVisualization",
-        "--exclude-module", "PySide6.QtPdf",
-        "--exclude-module", "PySide6.QtPdfWidgets",
-        "--exclude-module", "PySide6.QtQuick3D",
-        "--exclude-module", "PySide6.QtQuickControls2",
-        "--exclude-module", "PySide6.QtQuickParticles",
-        "--exclude-module", "PySide6.QtQuickTest",
-        "--exclude-module", "PySide6.QtQuickWidgets",
-        "--exclude-module", "PySide6.QtSensors",
-        "--exclude-module", "PySide6.QtStateMachine",
-        "--exclude-module", "PySide6.Qt3DCore",
-        "--exclude-module", "PySide6.Qt3DRender",
-        "--exclude-module", "PySide6.Qt3DInput",
-        "--exclude-module", "PySide6.Qt3DLogic",
-        "--exclude-module", "PySide6.Qt3DAnimation",
-        "--exclude-module", "PySide6.Qt3DExtras",
-        "--add-data", "icons;icons",
-        "--add-data", "locales;locales",
-        "--add-data", "background.png;.",
-        "--add-data", "background_dark.png;.",
-        "--add-data", "background_popup.png;.",
-        "--add-data", "background_popup_dark.png;.",
-        "--add-data", "Latest_Version_for_Update_Check.txt;.",
+        *exclude_args,
+        "--add-data", D("icons", "icons"),
+        "--add-data", D("locales", "locales"),
+        "--add-data", D("background.png", "."),
+        "--add-data", D("background_dark.png", "."),
+        "--add-data", D("background_popup.png", "."),
+        "--add-data", D("background_popup_dark.png", "."),
+        "--add-data", D("Latest_Version_for_Update_Check.txt", "."),
         "main.py"
     ]
 
     try:
-        # Remove previous build directories
-        if os.path.exists('dist'):
-            os.system("rmdir /s /q dist")
-        if os.path.exists('build'):
-            os.system("rmdir /s /q build")
-        if os.path.exists('__pycache__'):
-            os.system("rmdir /s /q __pycache__")
+        for d in ['dist', 'build', '__pycache__']:
+            if os.path.exists(d):
+                shutil.rmtree(d)
 
-        # Run PyInstaller
         subprocess.run(pyinstaller_command, check=True)
         print("Build completed successfully!")
 
-        # Clean up unnecessary files
-        if os.path.exists('build'):
-            os.system("rmdir /s /q build")
-        if os.path.exists('__pycache__'):
-            os.system("rmdir /s /q __pycache__")
-
-        # No need to copy data files manually since they are included
-        # in the executable using --add-data
+        for d in ['build', '__pycache__']:
+            if os.path.exists(d):
+                shutil.rmtree(d)
 
     except subprocess.CalledProcessError as e:
         print(f"Build failed with error: {e}")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     run_pyinstaller_build()

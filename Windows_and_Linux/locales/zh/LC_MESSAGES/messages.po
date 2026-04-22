@@ -509,3 +509,6 @@ msgstr "OpenAI兼容API的API Key。"
 
 msgid "Leave blank if not applicable."
 msgstr "如不适用请留空。"
+
+msgid "Launch AI Shortcuts on system startup"
+msgstr "在系统启动时启动AI Shortcuts"

@@ -58,6 +58,19 @@ class WritingToolApp(QtWidgets.QApplication):
 
     def __init__(self, argv):
         super().__init__(argv)
+
+        # Single instance check — must happen before any UI is created
+        self._lock_file = QtCore.QLockFile(
+            os.path.join(QtCore.QDir.tempPath(), "ais_shortcuts_v2.lock")
+        )
+        if not self._lock_file.tryLock(100):
+            QtWidgets.QMessageBox.warning(
+                None,
+                "AI Shortcuts",
+                "AI Shortcuts is already running.\nCheck your system tray."
+            )
+            sys.exit(0)
+
         self.current_response_window = None
         logging.debug('Initializing WritingToolApp')
         self.output_ready_signal.connect(self.replace_text)
@@ -767,14 +780,20 @@ class WritingToolApp(QtWidgets.QApplication):
         icon_path = ui.UIUtils.UIUtils.get_resource_path(os.path.join('icons', 'app_icon.png'))
         if not os.path.exists(icon_path):
             logging.warning(f'Tray icon not found at {icon_path}')
-            # Use a default icon if not found
-            self.tray_icon = QtWidgets.QSystemTrayIcon(self)
+            app_icon = QtGui.QIcon()
         else:
-            self.tray_icon = QtWidgets.QSystemTrayIcon(QtGui.QIcon(icon_path), self)
+            app_icon = QtGui.QIcon(icon_path)
+
+        # Set icon ở cấp QApplication — áp dụng cho taskbar và tất cả windows
+        self.setWindowIcon(app_icon)
+        self.tray_icon = QtWidgets.QSystemTrayIcon(app_icon, self)
         # Set the tooltip (hover name) for the tray icon
         self.tray_icon.setToolTip("AI Shortcuts")
         self.tray_menu = QtWidgets.QMenu()
-        self.tray_icon.setContextMenu(self.tray_menu)
+
+        # Không dùng setContextMenu vì có bug trên Windows (menu không nhận focus).
+        # Thay vào đó xử lý thủ công qua activated signal.
+        self.tray_icon.activated.connect(self._on_tray_activated)
 
         self.update_tray_menu()
         self.tray_icon.show()
@@ -806,6 +825,12 @@ class WritingToolApp(QtWidgets.QApplication):
         exit_action = self.tray_menu.addAction(self._('Exit'))
         exit_action.triggered.connect(self.exit_app)
         
+    def _on_tray_activated(self, reason):
+        if reason == QtWidgets.QSystemTrayIcon.ActivationReason.Context:
+            # Dùng popup() thay exec() — exec() yêu cầu app có foreground window,
+            # gây ra menu flash/đóng ngay khi không có window nào đang mở.
+            self.tray_menu.popup(QtGui.QCursor.pos())
+
     def toggle_paused(self):
         """Toggle the paused state of the application."""
         logging.debug('Toggle paused state')

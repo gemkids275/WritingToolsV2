@@ -1,6 +1,7 @@
 import logging
 import sys
-
+import os
+from PySide6 import QtCore, QtWidgets
 from WritingToolApp import WritingToolApp
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')

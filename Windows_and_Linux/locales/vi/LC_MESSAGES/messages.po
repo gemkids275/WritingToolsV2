@@ -481,3 +481,6 @@ msgstr "API Key for OpenAI Compatible API."
 
 msgid "Leave blank if not applicable."
 msgstr "Để trống nếu không áp dụng."
+
+msgid "Launch AI Shortcuts on system startup"
+msgstr "Khởi động AI Shortcuts cùng hệ thống"

@@ -526,3 +526,6 @@ msgstr "API key for the OpenAI-compatible API."
 
 msgid "Leave blank if not applicable."
 msgstr "Leave blank if not applicable."
+
+msgid "Launch AI Shortcuts on system startup"
+msgstr "Launch AI Shortcuts on system startup"

@@ -1,11 +1,9 @@
 import logging
 import os
-import sys
 import threading
 import uuid
 import json
 
-from aiprovider import AIProvider
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Signal, Slot
 from PySide6.QtGui import QImage
@@ -479,7 +477,7 @@ class SettingsWindow(QtWidgets.QWidget):
             item.setData(QtCore.Qt.UserRole, cmd.id)
             if cmd.icon:
                 suffix = '_dark' if colorMode == 'dark' else '_light'
-                icon_path = os.path.join(os.path.dirname(sys.argv[0]), f"{cmd.icon}{suffix}.png")
+                icon_path = UIUtils.get_resource_path(f"{cmd.icon}{suffix}.png")
                 if os.path.exists(icon_path):
                     item.setIcon(QtGui.QIcon(icon_path))
             self.commands_list_widget.addItem(item)
@@ -718,7 +716,7 @@ class SettingsWindow(QtWidgets.QWidget):
         # Header (Logo + Name)
         header_layout = QHBoxLayout()
         if provider.logo:
-            logo_path = os.path.join(os.path.dirname(sys.argv[0]), 'icons', f"provider_{provider.logo}.png")
+            logo_path = UIUtils.get_resource_path(os.path.join('icons', f"provider_{provider.logo}.png"))
             if os.path.exists(logo_path):
                 pixmap = UIUtils.resize_and_round_image(QImage(logo_path), 40, 20)
                 lbl_logo = QtWidgets.QLabel()
@@ -770,7 +768,7 @@ class SettingsWindow(QtWidgets.QWidget):
         is_dark = colorMode == 'dark'
 
         # Icon
-        icon_path = os.path.join(os.path.dirname(sys.argv[0]), 'icons', 'app_icon.png')
+        icon_path = UIUtils.get_resource_path(os.path.join('icons', 'app_icon.png'))
         if os.path.exists(icon_path):
             lbl_icon = QtWidgets.QLabel()
             lbl_icon.setPixmap(QtGui.QPixmap(icon_path).scaled(96, 96, QtCore.Qt.AspectRatioMode.KeepAspectRatio, QtCore.Qt.TransformationMode.SmoothTransformation))
@@ -998,7 +996,7 @@ class SettingsWindow(QtWidgets.QWidget):
         
         # Update Language
         new_locale = self.language_dropdown.currentData()
-        old_locale = self.app.config.get('locale', 'vi')
+        old_locale = self.app.config.get('locale')  # None nếu chưa từng lưu
         self.app.config['locale'] = new_locale
         
         if self.autostart_checkbox:

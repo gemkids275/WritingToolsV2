@@ -509,3 +509,6 @@ msgstr "OpenAI互換APIのAPI Key。"
 
 msgid "Leave blank if not applicable."
 msgstr "該当しない場合は空白のまま。"
+
+msgid "Launch AI Shortcuts on system startup"
+msgstr "システム起動時にAI Shortcutsを起動する"
