@@ -44,6 +44,11 @@ def run_pyinstaller_build():
     for mod in excludes:
         exclude_args += ["--exclude-module", mod]
 
+    version_file = 'Windows_and_Linux/version_info.txt'
+    version_args = []
+    if IS_WINDOWS and os.path.exists(version_file):
+        version_args = [f"--version-file={version_file}"]
+
     pyinstaller_command = [
         "pyinstaller",
         "--onefile",
@@ -53,6 +58,7 @@ def run_pyinstaller_build():
         "--clean",
         "--noconfirm",
         *exclude_args,
+        *version_args,
         "--add-data", D("icons", "icons"),
         "--add-data", D("locales", "locales"),
         "--add-data", D("background.png", "."),
