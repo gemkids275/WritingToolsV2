@@ -18,37 +18,37 @@ struct AIProviderSettingsPane<SaveButton: View, CompleteSetupButton: View>: View
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
-            Text("AI Provider Settings")
+            Text(String(localized: "AI Provider Settings"))
                 .font(.headline)
                 .accessibilityAddTraits(.isHeader)
 
             VStack(alignment: .leading, spacing: 12) {
-                Text("Select AI Service")
+                Text(String(localized: "Select AI Service"))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
 
-                Picker("Provider", selection: $settings.currentProvider) {
+                Picker(String(localized: "Provider"), selection: $settings.currentProvider) {
                     if LocalModelProvider.isAppleSilicon {
-                        Text("Local LLM").tag("local")
+                        Text(String(localized: "Local LLM")).tag("local")
                     }
-                    Text("Gemini AI").tag("gemini")
-                    Text("OpenAI").tag("openai")
-                    Text("Anthropic").tag("anthropic")
-                    Text("Mistral AI").tag("mistral")
-                    Text("Ollama").tag("ollama")
-                    Text("OpenRouter").tag("openrouter")
+                    Text(String(localized: "Gemini AI")).tag("gemini")
+                    Text(String(localized: "OpenAI")).tag("openai")
+                    Text(String(localized: "Anthropic")).tag("anthropic")
+                    Text(String(localized: "Mistral AI")).tag("mistral")
+                    Text(String(localized: "Ollama")).tag("ollama")
+                    Text(String(localized: "OpenRouter")).tag("openrouter")
                 }
                 .pickerStyle(.menu)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .accessibilityLabel("AI Provider")
-                .accessibilityHint("Select which AI service to use for processing.")
+                .accessibilityLabel(String(localized: "AI Provider"))
+                .accessibilityHint(String(localized: "Select which AI service to use for processing."))
                 .onChange(of: settings.currentProvider) { _, newValue in
                     if newValue == "local" && !LocalModelProvider.isAppleSilicon {
                         settings.currentProvider = "gemini"
                     }
                     needsSaving = true
                 }
-                .help("Select which AI service to use for processing.")
+                .help(String(localized: "Select which AI service to use for processing."))
             }
 
             Divider()
@@ -74,7 +74,7 @@ struct AIProviderSettingsPane<SaveButton: View, CompleteSetupButton: View>: View
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
-            .accessibilityLabel("Provider settings")
+            .accessibilityLabel(String(localized: "Provider settings"))
 
             if !showOnlyApiSetup {
                 saveButton

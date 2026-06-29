@@ -20,6 +20,341 @@ msgstr ""
 "#-#-#-#-#  CustomPopupWindow.pot (PACKAGE VERSION)  #-#-#-#-#\n"
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-20 23:45+0700\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"#-#-#-#-#  OnboardingWindow.pot (PACKAGE VERSION)  #-#-#-#-#\n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-20 23:45+0700\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"#-#-#-#-#  ResponseWindow.pot (PACKAGE VERSION)  #-#-#-#-#\n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-20 23:45+0700\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"#-#-#-#-#  SettingsWindow.pot (PACKAGE VERSION)  #-#-#-#-#\n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-20 23:45+0700\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"#-#-#-#-#  WritingToolApp.pot (PACKAGE VERSION)  #-#-#-#-#\n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-20 23:45+0700\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"#-#-#-#-#  merged.pot (PACKAGE VERSION)  #-#-#-#-#\n"
+"#-#-#-#-#  AboutWindow.pot (PACKAGE VERSION)  #-#-#-#-#\n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-01-28 19:47+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"#-#-#-#-#  CustomPopupWindow.pot (PACKAGE VERSION)  #-#-#-#-#\n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-20 23:39+0700\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"#-#-#-#-#  OnboardingWindow.pot (PACKAGE VERSION)  #-#-#-#-#\n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-20 23:39+0700\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"#-#-#-#-#  ResponseWindow.pot (PACKAGE VERSION)  #-#-#-#-#\n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-20 23:39+0700\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"#-#-#-#-#  SettingsWindow.pot (PACKAGE VERSION)  #-#-#-#-#\n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-20 23:39+0700\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"#-#-#-#-#  WritingToolApp.pot (PACKAGE VERSION)  #-#-#-#-#\n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-20 23:39+0700\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"#-#-#-#-#  merged.pot (PACKAGE VERSION)  #-#-#-#-#\n"
+"#-#-#-#-#  AboutWindow.pot (PACKAGE VERSION)  #-#-#-#-#\n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-01-28 19:47+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"#-#-#-#-#  CustomPopupWindow.pot (PACKAGE VERSION)  #-#-#-#-#\n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-20 23:31+0700\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"#-#-#-#-#  OnboardingWindow.pot (PACKAGE VERSION)  #-#-#-#-#\n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-20 23:31+0700\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"#-#-#-#-#  ResponseWindow.pot (PACKAGE VERSION)  #-#-#-#-#\n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-20 23:31+0700\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"#-#-#-#-#  SettingsWindow.pot (PACKAGE VERSION)  #-#-#-#-#\n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-20 23:31+0700\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"#-#-#-#-#  WritingToolApp.pot (PACKAGE VERSION)  #-#-#-#-#\n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-20 23:31+0700\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"#-#-#-#-#  merged.pot (PACKAGE VERSION)  #-#-#-#-#\n"
+"#-#-#-#-#  AboutWindow.pot (PACKAGE VERSION)  #-#-#-#-#\n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-01-28 19:47+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"#-#-#-#-#  CustomPopupWindow.pot (PACKAGE VERSION)  #-#-#-#-#\n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-19 19:10+0700\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"#-#-#-#-#  OnboardingWindow.pot (PACKAGE VERSION)  #-#-#-#-#\n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-19 19:10+0700\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"#-#-#-#-#  ResponseWindow.pot (PACKAGE VERSION)  #-#-#-#-#\n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-19 19:10+0700\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"#-#-#-#-#  SettingsWindow.pot (PACKAGE VERSION)  #-#-#-#-#\n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-19 19:10+0700\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"#-#-#-#-#  WritingToolApp.pot (PACKAGE VERSION)  #-#-#-#-#\n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-19 19:10+0700\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"#-#-#-#-#  merged.pot (PACKAGE VERSION)  #-#-#-#-#\n"
+"#-#-#-#-#  AboutWindow.pot (PACKAGE VERSION)  #-#-#-#-#\n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-01-28 19:47+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"#-#-#-#-#  CustomPopupWindow.pot (PACKAGE VERSION)  #-#-#-#-#\n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-01-28 19:47+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"#-#-#-#-#  OnboardingWindow.pot (PACKAGE VERSION)  #-#-#-#-#\n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-01-28 19:47+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"#-#-#-#-#  ResponseWindow.pot (PACKAGE VERSION)  #-#-#-#-#\n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-19 19:08+0700\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"#-#-#-#-#  SettingsWindow.pot (PACKAGE VERSION)  #-#-#-#-#\n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-01-28 19:47+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"#-#-#-#-#  WritingToolApp.pot (PACKAGE VERSION)  #-#-#-#-#\n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-01-28 19:47+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"#-#-#-#-#  merged.pot (PACKAGE VERSION)  #-#-#-#-#\n"
+"#-#-#-#-#  AboutWindow.pot (PACKAGE VERSION)  #-#-#-#-#\n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2025-01-28 19:47+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"#-#-#-#-#  CustomPopupWindow.pot (PACKAGE VERSION)  #-#-#-#-#\n"
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2025-01-28 19:47+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
@@ -355,12 +690,358 @@ msgstr ""
 msgid "Helped add the start-on-boot setting."
 msgstr ""
 
+#: ui/CustomPopupWindow.py:452 ui/CustomPopupWindow.py:445
+#: ui/CustomPopupWindow.py:443
+msgid "Drag to rearrange"
+msgstr ""
+
+#: ui/CustomPopupWindow.py:519 ui/CustomPopupWindow.py:512
+#: ui/CustomPopupWindow.py:510 ui/CustomPopupWindow.py:406
 #: ui/CustomPopupWindow.py:75 ui/CustomPopupWindow.py:74
 msgid "Describe your change..."
 msgstr ""
 
+#: ui/CustomPopupWindow.py:519 ui/CustomPopupWindow.py:512
+#: ui/CustomPopupWindow.py:510 ui/CustomPopupWindow.py:406
 #: ui/CustomPopupWindow.py:75 ui/CustomPopupWindow.py:74
 msgid "Ask your AI..."
+msgstr ""
+
+#: ui/CustomPopupWindow.py:553 ui/ResponseWindow.py:640
+#: ui/CustomPopupWindow.py:546 ui/ResponseWindow.py:629
+#: ui/CustomPopupWindow.py:544 ui/ResponseWindow.py:626
+msgid "Attach file"
+msgstr ""
+
+#: ui/CustomPopupWindow.py:668 ui/CustomPopupWindow.py:661
+#: ui/CustomPopupWindow.py:659
+msgid "+ Add New"
+msgstr ""
+
+#: ui/CustomPopupWindow.py:862 ui/CustomPopupWindow.py:855
+#: ui/CustomPopupWindow.py:853
+msgid "Confirm Delete?"
+msgstr ""
+
+#: ui/CustomPopupWindow.py:863 ui/CustomPopupWindow.py:856
+#: ui/CustomPopupWindow.py:854
+#, python-brace-format
+msgid "Are you sure you want to delete the '{0}' button?"
+msgstr ""
+
+#: ui/CustomPopupWindow.py:883 ui/ResponseWindow.py:739
+#: ui/CustomPopupWindow.py:876 ui/ResponseWindow.py:724
+#: ui/CustomPopupWindow.py:874 ui/ResponseWindow.py:721
+msgid "Attach File"
+msgstr ""
+
+#: ui/OnboardingWindow.py:26 ui/OnboardingWindow.py:42
+msgid "Welcome to AI Shortcuts"
+msgstr ""
+
+#: ui/OnboardingWindow.py:76 ui/OnboardingWindow.py:77
+#: ui/OnboardingWindow.py:75
+msgid "Choose your theme:"
+msgstr ""
+
+#: ui/OnboardingWindow.py:81 ui/OnboardingWindow.py:82
+#: ui/OnboardingWindow.py:80
+msgid "Gradient"
+msgstr ""
+
+#: ui/OnboardingWindow.py:82 ui/OnboardingWindow.py:83 ui/SettingsWindow.py:244
+#: ui/OnboardingWindow.py:81 ui/SettingsWindow.py:239
+msgid "Plain"
+msgstr ""
+
+#: ui/OnboardingWindow.py:91 ui/OnboardingWindow.py:92
+#: ui/OnboardingWindow.py:90
+msgid "Next"
+msgstr ""
+
+#: ui/ResponseWindow.py:362 ui/ResponseWindow.py:388 ui/ResponseWindow.py:355
+#: ui/ResponseWindow.py:381
+msgid "Copy"
+msgstr ""
+
+#: ui/ResponseWindow.py:387 ui/ResponseWindow.py:693 ui/ResponseWindow.py:380
+#: ui/ResponseWindow.py:678
+msgid "Copied!"
+msgstr ""
+
+#: ui/ResponseWindow.py:458 ui/ResponseWindow.py:451 ui/ResponseWindow.py:448
+#: ui/ResponseWindow.py:340 ui/ResponseWindow.py:301 ui/ResponseWindow.py:303
+msgid "Response"
+msgstr ""
+
+#: ui/ResponseWindow.py:516 ui/ResponseWindow.py:509
+msgid "Zoom:"
+msgstr ""
+
+#: ui/ResponseWindow.py:526 ui/ResponseWindow.py:519
+msgid "Zoom In"
+msgstr ""
+
+#: ui/ResponseWindow.py:527 ui/ResponseWindow.py:520
+msgid "Zoom Out"
+msgstr ""
+
+#: ui/ResponseWindow.py:528 ui/ResponseWindow.py:521
+msgid "Reset Zoom"
+msgstr ""
+
+#: ui/ResponseWindow.py:544 ui/ResponseWindow.py:537 ui/ResponseWindow.py:534
+#: ui/ResponseWindow.py:426 ui/ResponseWindow.py:379 ui/ResponseWindow.py:385
+msgid "Select to copy with formatting"
+msgstr ""
+
+#: ui/ResponseWindow.py:549 ui/ResponseWindow.py:542 ui/ResponseWindow.py:539
+#: ui/ResponseWindow.py:431
+msgid "Copy All"
+msgstr ""
+
+#: ui/ResponseWindow.py:560 ui/ResponseWindow.py:717 ui/ResponseWindow.py:719
+#: ui/ResponseWindow.py:726 ui/ResponseWindow.py:730 ui/ResponseWindow.py:553
+#: ui/ResponseWindow.py:702 ui/ResponseWindow.py:704 ui/ResponseWindow.py:711
+#: ui/ResponseWindow.py:715 ui/ResponseWindow.py:550 ui/ResponseWindow.py:699
+#: ui/ResponseWindow.py:701 ui/ResponseWindow.py:708 ui/ResponseWindow.py:712
+#: ui/ResponseWindow.py:442 ui/ResponseWindow.py:558 ui/ResponseWindow.py:567
+#: ui/ResponseWindow.py:571 ui/ResponseWindow.py:395 ui/ResponseWindow.py:507
+#: ui/ResponseWindow.py:509 ui/ResponseWindow.py:516 ui/ResponseWindow.py:520
+#: ui/ResponseWindow.py:401 ui/ResponseWindow.py:513 ui/ResponseWindow.py:515
+#: ui/ResponseWindow.py:522 ui/ResponseWindow.py:526
+msgid "Thinking"
+msgstr ""
+
+#: ui/ResponseWindow.py:606 ui/ResponseWindow.py:755 ui/ResponseWindow.py:595
+#: ui/ResponseWindow.py:740 ui/ResponseWindow.py:592 ui/ResponseWindow.py:737
+#: ui/ResponseWindow.py:476 ui/ResponseWindow.py:581 ui/ResponseWindow.py:429
+#: ui/ResponseWindow.py:530 ui/ResponseWindow.py:435 ui/ResponseWindow.py:536
+msgid "Ask a follow-up question"
+msgstr ""
+
+#: ui/ResponseWindow.py:694 ui/ResponseWindow.py:679 ui/ResponseWindow.py:676
+#: ui/ResponseWindow.py:535 ui/ResponseWindow.py:384 ui/ResponseWindow.py:390
+msgid "Copy as Markdown"
+msgstr ""
+
+#: ui/SettingsWindow.py:65 WritingToolApp.py:774 WritingToolApp.py:759
+#: ui/SettingsWindow.py:37 ui/SettingsWindow.py:156 ui/SettingsWindow.py:210
+#: WritingToolApp.py:569 ui/SettingsWindow.py:32 ui/SettingsWindow.py:151
+#: ui/SettingsWindow.py:205 WritingToolApp.py:568
+msgid "Settings"
+msgstr ""
+
+#: ui/SettingsWindow.py:68
+msgid "General"
+msgstr ""
+
+#: ui/SettingsWindow.py:69 ui/SettingsWindow.py:266 ui/SettingsWindow.py:264
+msgid "AI Providers"
+msgstr ""
+
+#: ui/SettingsWindow.py:70
+msgid "Commands"
+msgstr ""
+
+#: ui/SettingsWindow.py:71 WritingToolApp.py:782 WritingToolApp.py:767
+#: WritingToolApp.py:572 WritingToolApp.py:571
+msgid "About"
+msgstr ""
+
+#: ui/SettingsWindow.py:156
+msgid "General Settings"
+msgstr ""
+
+#: ui/SettingsWindow.py:165
+msgid "Global Shortcut Key:"
+msgstr ""
+
+#: ui/SettingsWindow.py:181
+msgid "Launch Writing Tools on system startup"
+msgstr ""
+
+#: ui/SettingsWindow.py:191
+msgid "Background Appearance:"
+msgstr ""
+
+#: ui/SettingsWindow.py:196
+msgid "Vibrant Gradient"
+msgstr ""
+
+#: ui/SettingsWindow.py:197
+msgid "Minimal Plain"
+msgstr ""
+
+#: ui/SettingsWindow.py:215
+msgid "Interface Language:"
+msgstr ""
+
+#: ui/SettingsWindow.py:242 ui/SettingsWindow.py:240
+msgid "Enable Real-time Streaming (Recommended)"
+msgstr ""
+
+#: ui/SettingsWindow.py:250 ui/SettingsWindow.py:323 ui/SettingsWindow.py:248
+#: ui/SettingsWindow.py:321
+msgid "Save Settings"
+msgstr ""
+
+#: ui/SettingsWindow.py:275 ui/SettingsWindow.py:273
+msgid "Select Active Provider:"
+msgstr ""
+
+#: ui/SettingsWindow.py:339 ui/SettingsWindow.py:337
+msgid "Commands Management"
+msgstr ""
+
+#: ui/SettingsWindow.py:343 ui/SettingsWindow.py:341
+msgid "Add, edit, or remove AI shortcuts and system prompts."
+msgstr ""
+
+#: ui/SettingsWindow.py:396 ui/SettingsWindow.py:394
+msgid "Add New..."
+msgstr ""
+
+#: ui/SettingsWindow.py:400 ui/SettingsWindow.py:398
+msgid "Edit..."
+msgstr ""
+
+#: ui/SettingsWindow.py:404 ui/SettingsWindow.py:402
+msgid "Delete"
+msgstr ""
+
+#: ui/SettingsWindow.py:414 ui/SettingsWindow.py:412
+msgid "Export Selected..."
+msgstr ""
+
+#: ui/SettingsWindow.py:418 ui/SettingsWindow.py:416
+msgid "Import Command..."
+msgstr ""
+
+#: ui/SettingsWindow.py:426 ui/SettingsWindow.py:424
+msgid "Restore Defaults"
+msgstr ""
+
+#: ui/SettingsWindow.py:438 ui/SettingsWindow.py:436
+msgid "Backup All Config..."
+msgstr ""
+
+#: ui/SettingsWindow.py:442 ui/SettingsWindow.py:440
+msgid "Restore Full Config..."
+msgstr ""
+
+#: ui/SettingsWindow.py:601 ui/SettingsWindow.py:599
+msgid "Export Command"
+msgstr ""
+
+#: ui/SettingsWindow.py:612 ui/SettingsWindow.py:657 ui/SettingsWindow.py:673
+#: ui/SettingsWindow.py:1029 ui/SettingsWindow.py:610 ui/SettingsWindow.py:655
+#: ui/SettingsWindow.py:671 ui/SettingsWindow.py:1027
+msgid "Success"
+msgstr ""
+
+#: ui/SettingsWindow.py:612 ui/SettingsWindow.py:610
+msgid "Command exported successfully."
+msgstr ""
+
+#: ui/SettingsWindow.py:614 ui/SettingsWindow.py:630 ui/SettingsWindow.py:675
+#: ui/SettingsWindow.py:691 ui/SettingsWindow.py:612 ui/SettingsWindow.py:628
+#: ui/SettingsWindow.py:673 ui/SettingsWindow.py:689
+msgid "Error"
+msgstr ""
+
+#: ui/SettingsWindow.py:618 ui/SettingsWindow.py:616
+msgid "Import Command"
+msgstr ""
+
+#: ui/SettingsWindow.py:657 ui/SettingsWindow.py:655
+#, python-brace-format
+msgid "{0} command(s) imported."
+msgstr ""
+
+#: ui/SettingsWindow.py:661 ui/SettingsWindow.py:659
+msgid "Export All Config"
+msgstr ""
+
+#: ui/SettingsWindow.py:673 ui/SettingsWindow.py:671
+msgid "Config exported successfully."
+msgstr ""
+
+#: ui/SettingsWindow.py:679 ui/SettingsWindow.py:677
+msgid "Restore Config"
+msgstr ""
+
+#: ui/SettingsWindow.py:691 ui/SettingsWindow.py:689
+#, python-brace-format
+msgid "Invalid file: {0}"
+msgstr ""
+
+#: ui/SettingsWindow.py:695 ui/SettingsWindow.py:693
+msgid "Empty Backup"
+msgstr ""
+
+#: ui/SettingsWindow.py:695 ui/SettingsWindow.py:693
+msgid "No commands found in this file."
+msgstr ""
+
+#: ui/SettingsWindow.py:779 ui/SettingsWindow.py:777
+msgid "About AI Shortcuts"
+msgstr ""
+
+#: ui/SettingsWindow.py:784 ui/SettingsWindow.py:782
+msgid ""
+"AI Shortcuts is a free, lightweight utility that enhances your writing with "
+"AI."
+msgstr ""
+
+#: ui/SettingsWindow.py:797 ui/SettingsWindow.py:795
+msgid "Creators"
+msgstr ""
+
+#: ui/SettingsWindow.py:823 ui/SettingsWindow.py:821
+msgid "Customized version & Forked by Nam Trần"
+msgstr ""
+
+#: ui/SettingsWindow.py:828 ui/SettingsWindow.py:826
+msgid "A technology enthusiast"
+msgstr ""
+
+#: ui/SettingsWindow.py:851 ui/SettingsWindow.py:849
+msgid "Original Developers"
+msgstr ""
+
+#: ui/SettingsWindow.py:893 ui/SettingsWindow.py:891
+msgid "Version & Updates"
+msgstr ""
+
+#: ui/SettingsWindow.py:903 ui/SettingsWindow.py:901
+#, python-brace-format
+msgid "Version: {0}"
+msgstr ""
+
+#: ui/SettingsWindow.py:907 ui/SettingsWindow.py:905
+msgid "Not checked yet."
+msgstr ""
+
+#: ui/SettingsWindow.py:912 ui/SettingsWindow.py:910
+msgid "Check for Updates"
+msgstr ""
+
+#: ui/SettingsWindow.py:1029 ui/SettingsWindow.py:1027
+msgid "Settings saved successfully."
+msgstr ""
+
+#: WritingToolApp.py:778 WritingToolApp.py:793 WritingToolApp.py:763
+msgid "Resume"
+msgstr ""
+
+#: WritingToolApp.py:778 WritingToolApp.py:793 WritingToolApp.py:763
+msgid "Pause"
+msgstr ""
+
+#: WritingToolApp.py:786 WritingToolApp.py:771 WritingToolApp.py:575
+#: WritingToolApp.py:574
+msgid "Exit"
 msgstr ""
 
 #: ui/CustomPopupWindow.py:109
@@ -395,129 +1076,74 @@ msgstr ""
 msgid "Table"
 msgstr ""
 
-#: ui/OnboardingWindow.py:24 ui/OnboardingWindow.py:40
 #: ui/OnboardingWindow.py:26 ui/OnboardingWindow.py:42
+#: ui/OnboardingWindow.py:24 ui/OnboardingWindow.py:40
 msgid "Welcome to Writing Tools"
 msgstr ""
 
-#: ui/OnboardingWindow.py:45 ui/OnboardingWindow.py:47
+#: ui/OnboardingWindow.py:47 ui/OnboardingWindow.py:45
 msgid ""
 "Instantly optimize your writing with AI by selecting your text and invoking "
 "Writing Tools with \"ctrl+space\", anywhere."
 msgstr ""
 
-#: ui/OnboardingWindow.py:47 ui/OnboardingWindow.py:49
+#: ui/OnboardingWindow.py:49 ui/OnboardingWindow.py:47
 msgid ""
 "Get a summary you can chat with of articles, YouTube videos, or documents by "
 "select all text with \"ctrl+a\""
 msgstr ""
 
-#: ui/OnboardingWindow.py:48 ui/OnboardingWindow.py:50
+#: ui/OnboardingWindow.py:50 ui/OnboardingWindow.py:48
 msgid ""
 "(or select the YouTube transcript from its description), invoking Writing "
 "Tools, and choosing Summary."
 msgstr ""
 
-#: ui/OnboardingWindow.py:50 ui/OnboardingWindow.py:52
+#: ui/OnboardingWindow.py:52 ui/OnboardingWindow.py:50
 msgid ""
 "Chat with AI anytime by invoking Writing Tools without selecting any text."
 msgstr ""
 
-#: ui/OnboardingWindow.py:52 ui/OnboardingWindow.py:54
+#: ui/OnboardingWindow.py:54 ui/OnboardingWindow.py:52
 msgid "Supports an extensive range of AI models:"
 msgstr ""
 
-#: ui/OnboardingWindow.py:53 ui/OnboardingWindow.py:55
+#: ui/OnboardingWindow.py:55 ui/OnboardingWindow.py:53
 msgid "Gemini 2.0"
 msgstr ""
 
-#: ui/OnboardingWindow.py:54 ui/OnboardingWindow.py:56
+#: ui/OnboardingWindow.py:56 ui/OnboardingWindow.py:54
 msgid "ANY OpenAI Compatible API — including local LLMs!"
 msgstr ""
 
-#: ui/OnboardingWindow.py:75 ui/OnboardingWindow.py:77
-msgid "Choose your theme:"
-msgstr ""
-
-#: ui/OnboardingWindow.py:80 ui/OnboardingWindow.py:82
-msgid "Gradient"
-msgstr ""
-
-#: ui/OnboardingWindow.py:81 ui/SettingsWindow.py:239 ui/OnboardingWindow.py:83
-#: ui/SettingsWindow.py:244
-msgid "Plain"
-msgstr ""
-
-#: ui/OnboardingWindow.py:90 ui/OnboardingWindow.py:92
-msgid "Next"
-msgstr ""
-
-#: ui/ResponseWindow.py:301 ui/ResponseWindow.py:303
-msgid "Response"
-msgstr ""
-
-#: ui/ResponseWindow.py:379 ui/ResponseWindow.py:385
-msgid "Select to copy with formatting"
-msgstr ""
-
-#: ui/ResponseWindow.py:384 ui/ResponseWindow.py:390
-msgid "Copy as Markdown"
-msgstr ""
-
-#: ui/ResponseWindow.py:395 ui/ResponseWindow.py:507 ui/ResponseWindow.py:509
-#: ui/ResponseWindow.py:516 ui/ResponseWindow.py:520 ui/ResponseWindow.py:401
-#: ui/ResponseWindow.py:513 ui/ResponseWindow.py:515 ui/ResponseWindow.py:522
-#: ui/ResponseWindow.py:526
-msgid "Thinking"
-msgstr ""
-
-#: ui/ResponseWindow.py:429 ui/ResponseWindow.py:530 ui/ResponseWindow.py:435
-#: ui/ResponseWindow.py:536
-msgid "Ask a follow-up question"
-msgstr ""
-
-#: ui/SettingsWindow.py:32 ui/SettingsWindow.py:151 ui/SettingsWindow.py:205
-#: WritingToolApp.py:568 ui/SettingsWindow.py:37 ui/SettingsWindow.py:156
-#: ui/SettingsWindow.py:210 WritingToolApp.py:569
-msgid "Settings"
-msgstr ""
-
-#: ui/SettingsWindow.py:211 ui/SettingsWindow.py:216
+#: ui/SettingsWindow.py:216 ui/SettingsWindow.py:211
 msgid "Start on Boot"
 msgstr ""
 
-#: ui/SettingsWindow.py:218 ui/SettingsWindow.py:223
+#: ui/SettingsWindow.py:223 ui/SettingsWindow.py:218
 msgid "Shortcut Key:"
 msgstr ""
 
-#: ui/SettingsWindow.py:233 ui/SettingsWindow.py:238
+#: ui/SettingsWindow.py:238 ui/SettingsWindow.py:233
 msgid "Background Theme:"
 msgstr ""
 
-#: ui/SettingsWindow.py:238 ui/SettingsWindow.py:243
+#: ui/SettingsWindow.py:243 ui/SettingsWindow.py:238
 msgid "Blurry Gradient"
 msgstr ""
 
-#: ui/SettingsWindow.py:250 ui/SettingsWindow.py:255
+#: ui/SettingsWindow.py:255 ui/SettingsWindow.py:250
 msgid "Choose AI Provider:"
 msgstr ""
 
-#: ui/SettingsWindow.py:307 ui/SettingsWindow.py:312
+#: ui/SettingsWindow.py:312 ui/SettingsWindow.py:307
 msgid "Finish AI Setup"
 msgstr ""
 
-#: ui/SettingsWindow.py:307 ui/SettingsWindow.py:312
+#: ui/SettingsWindow.py:312 ui/SettingsWindow.py:307
 msgid "Save"
 msgstr ""
 
-#: ui/SettingsWindow.py:326 ui/SettingsWindow.py:331
+#: ui/SettingsWindow.py:331 ui/SettingsWindow.py:326
 msgid "Please restart Writing Tools for changes to take effect."
-msgstr ""
-
-#: WritingToolApp.py:571 WritingToolApp.py:572
-msgid "About"
-msgstr ""
-
-#: WritingToolApp.py:574 WritingToolApp.py:575
-msgid "Exit"
 msgstr ""

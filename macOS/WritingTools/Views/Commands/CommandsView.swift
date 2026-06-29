@@ -45,7 +45,7 @@ struct CommandsView: View {
             
             // Command list with section header
             VStack(alignment: .leading, spacing: 8) {
-                Text(selectedTab == 0 ? "Built-in Commands" : "Custom Commands")
+                Text(selectedTab == 0 ? LocalizedStringKey("Built-in Commands") : LocalizedStringKey("Custom Commands"))
                     .font(.subheadline)
                     .foregroundStyle(.secondary)
                     .padding(.horizontal)
@@ -209,8 +209,8 @@ struct CommandsView: View {
         savePanel.allowedContentTypes = [.json]
         savePanel.canCreateDirectories = true
         savePanel.isExtensionHidden = false
-        savePanel.title = "Export Command"
-        savePanel.message = "Save this command configuration to a file."
+        savePanel.title = String(localized: "Export Command")
+        savePanel.message = String(localized: "Save this command configuration to a file.")
         savePanel.nameFieldStringValue = "\(command.name.replacingOccurrences(of: " ", with: "_")).json"
 
         if savePanel.runModal() == .OK {
@@ -219,18 +219,18 @@ struct CommandsView: View {
                     do {
                         try data.write(to: url)
                         let alert = NSAlert()
-                        alert.messageText = "Command Exported"
-                        alert.informativeText = "Command \"\(command.name)\" has been saved to \(url.lastPathComponent)."
+                        alert.messageText = String(localized: "Command Exported")
+                        alert.informativeText = String(localized: "Command \"\(command.name)\" has been saved to \(url.lastPathComponent).")
                         alert.alertStyle = .informational
-                        alert.addButton(withTitle: "OK")
+                        alert.addButton(withTitle: String(localized: "OK"))
                         alert.runModal()
                     } catch {
                         AppLogger.logger("Export").error("Failed to write command to \(url): \(error.localizedDescription)")
                         let alert = NSAlert()
-                        alert.messageText = "Export Failed"
+                        alert.messageText = String(localized: "Export Failed")
                         alert.informativeText = error.localizedDescription
                         alert.alertStyle = .critical
-                        alert.addButton(withTitle: "OK")
+                        alert.addButton(withTitle: String(localized: "OK"))
                         alert.runModal()
                     }
                 }
@@ -243,8 +243,8 @@ struct CommandsView: View {
         openPanel.allowedContentTypes = [.json]
         openPanel.allowsMultipleSelection = false
         openPanel.canChooseFiles = true
-        openPanel.title = "Import Command"
-        openPanel.message = "Select a command configuration file to import."
+        openPanel.title = String(localized: "Import Command")
+        openPanel.message = String(localized: "Select a command configuration file to import.")
 
         if openPanel.runModal() == .OK {
             if let url = openPanel.url {
@@ -278,19 +278,19 @@ struct CommandsView: View {
                         }
                         
                         let alert = NSAlert()
-                        alert.messageText = "Command Imported"
-                        alert.informativeText = "Command \"\(firstCommand.name)\" has been successfully added."
+                        alert.messageText = String(localized: "Command Imported")
+                        alert.informativeText = String(localized: "Command \"\(firstCommand.name)\" has been successfully added.")
                         alert.alertStyle = .informational
-                        alert.addButton(withTitle: "OK")
+                        alert.addButton(withTitle: String(localized: "OK"))
                         alert.runModal()
                     }
                 } catch {
                     AppLogger.logger("Import").error("Failed to import command: \(error.localizedDescription)")
                     let alert = NSAlert()
-                    alert.messageText = "Import Failed"
-                    alert.informativeText = "Could not import command: \(error.localizedDescription)"
+                    alert.messageText = String(localized: "Import Failed")
+                    alert.informativeText = String(localized: "Could not import command: \(error.localizedDescription)")
                     alert.alertStyle = .critical
-                    alert.addButton(withTitle: "OK")
+                    alert.addButton(withTitle: String(localized: "OK"))
                     alert.runModal()
                 }
             }
@@ -323,7 +323,7 @@ struct CommandRow: View {
                 Text(command.name)
                     .font(.headline)
                 
-                Text(command.isBuiltIn ? "Built-in" : "Custom")
+                Text(command.isBuiltIn ? LocalizedStringKey("Built-in") : LocalizedStringKey("Custom"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
                     .padding(.vertical, 2)

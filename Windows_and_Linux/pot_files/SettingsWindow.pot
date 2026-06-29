@@ -8,51 +8,210 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-01-28 19:47+0100\n"
+"POT-Creation-Date: 2026-04-20 23:45+0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=CHARSET\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ui/SettingsWindow.py:37 ui/SettingsWindow.py:156 ui/SettingsWindow.py:210
+#: ui/SettingsWindow.py:65
 msgid "Settings"
 msgstr ""
 
-#: ui/SettingsWindow.py:216
-msgid "Start on Boot"
+#: ui/SettingsWindow.py:68
+msgid "General"
 msgstr ""
 
-#: ui/SettingsWindow.py:223
-msgid "Shortcut Key:"
+#: ui/SettingsWindow.py:69 ui/SettingsWindow.py:266
+msgid "AI Providers"
 msgstr ""
 
-#: ui/SettingsWindow.py:238
-msgid "Background Theme:"
+#: ui/SettingsWindow.py:70
+msgid "Commands"
 msgstr ""
 
-#: ui/SettingsWindow.py:243
-msgid "Blurry Gradient"
+#: ui/SettingsWindow.py:71
+msgid "About"
 msgstr ""
 
-#: ui/SettingsWindow.py:244
-msgid "Plain"
+#: ui/SettingsWindow.py:156
+msgid "General Settings"
 msgstr ""
 
-#: ui/SettingsWindow.py:255
-msgid "Choose AI Provider:"
+#: ui/SettingsWindow.py:165
+msgid "Global Shortcut Key:"
 msgstr ""
 
-#: ui/SettingsWindow.py:312
-msgid "Finish AI Setup"
+#: ui/SettingsWindow.py:181
+msgid "Launch Writing Tools on system startup"
 msgstr ""
 
-#: ui/SettingsWindow.py:312
-msgid "Save"
+#: ui/SettingsWindow.py:191
+msgid "Background Appearance:"
 msgstr ""
 
-#: ui/SettingsWindow.py:331
-msgid "Please restart Writing Tools for changes to take effect."
+#: ui/SettingsWindow.py:196
+msgid "Vibrant Gradient"
+msgstr ""
+
+#: ui/SettingsWindow.py:197
+msgid "Minimal Plain"
+msgstr ""
+
+#: ui/SettingsWindow.py:215
+msgid "Interface Language:"
+msgstr ""
+
+#: ui/SettingsWindow.py:242
+msgid "Enable Real-time Streaming (Recommended)"
+msgstr ""
+
+#: ui/SettingsWindow.py:250 ui/SettingsWindow.py:323
+msgid "Save Settings"
+msgstr ""
+
+#: ui/SettingsWindow.py:275
+msgid "Select Active Provider:"
+msgstr ""
+
+#: ui/SettingsWindow.py:339
+msgid "Commands Management"
+msgstr ""
+
+#: ui/SettingsWindow.py:343
+msgid "Add, edit, or remove AI shortcuts and system prompts."
+msgstr ""
+
+#: ui/SettingsWindow.py:396
+msgid "Add New..."
+msgstr ""
+
+#: ui/SettingsWindow.py:400
+msgid "Edit..."
+msgstr ""
+
+#: ui/SettingsWindow.py:404
+msgid "Delete"
+msgstr ""
+
+#: ui/SettingsWindow.py:414
+msgid "Export Selected..."
+msgstr ""
+
+#: ui/SettingsWindow.py:418
+msgid "Import Command..."
+msgstr ""
+
+#: ui/SettingsWindow.py:426
+msgid "Restore Defaults"
+msgstr ""
+
+#: ui/SettingsWindow.py:438
+msgid "Backup All Config..."
+msgstr ""
+
+#: ui/SettingsWindow.py:442
+msgid "Restore Full Config..."
+msgstr ""
+
+#: ui/SettingsWindow.py:601
+msgid "Export Command"
+msgstr ""
+
+#: ui/SettingsWindow.py:612 ui/SettingsWindow.py:657 ui/SettingsWindow.py:673
+#: ui/SettingsWindow.py:1029
+msgid "Success"
+msgstr ""
+
+#: ui/SettingsWindow.py:612
+msgid "Command exported successfully."
+msgstr ""
+
+#: ui/SettingsWindow.py:614 ui/SettingsWindow.py:630 ui/SettingsWindow.py:675
+#: ui/SettingsWindow.py:691
+msgid "Error"
+msgstr ""
+
+#: ui/SettingsWindow.py:618
+msgid "Import Command"
+msgstr ""
+
+#: ui/SettingsWindow.py:657
+#, python-brace-format
+msgid "{0} command(s) imported."
+msgstr ""
+
+#: ui/SettingsWindow.py:661
+msgid "Export All Config"
+msgstr ""
+
+#: ui/SettingsWindow.py:673
+msgid "Config exported successfully."
+msgstr ""
+
+#: ui/SettingsWindow.py:679
+msgid "Restore Config"
+msgstr ""
+
+#: ui/SettingsWindow.py:691
+#, python-brace-format
+msgid "Invalid file: {0}"
+msgstr ""
+
+#: ui/SettingsWindow.py:695
+msgid "Empty Backup"
+msgstr ""
+
+#: ui/SettingsWindow.py:695
+msgid "No commands found in this file."
+msgstr ""
+
+#: ui/SettingsWindow.py:779
+msgid "About AI Shortcuts"
+msgstr ""
+
+#: ui/SettingsWindow.py:784
+msgid ""
+"AI Shortcuts is a free, lightweight utility that enhances your writing with "
+"AI."
+msgstr ""
+
+#: ui/SettingsWindow.py:797
+msgid "Creators"
+msgstr ""
+
+#: ui/SettingsWindow.py:823
+msgid "Customized version & Forked by Nam Trần"
+msgstr ""
+
+#: ui/SettingsWindow.py:828
+msgid "A technology enthusiast"
+msgstr ""
+
+#: ui/SettingsWindow.py:851
+msgid "Original Developers"
+msgstr ""
+
+#: ui/SettingsWindow.py:893
+msgid "Version & Updates"
+msgstr ""
+
+#: ui/SettingsWindow.py:903
+#, python-brace-format
+msgid "Version: {0}"
+msgstr ""
+
+#: ui/SettingsWindow.py:907
+msgid "Not checked yet."
+msgstr ""
+
+#: ui/SettingsWindow.py:912
+msgid "Check for Updates"
+msgstr ""
+
+#: ui/SettingsWindow.py:1029
+msgid "Settings saved successfully."
 msgstr ""

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-01-28 19:47+0100\n"
+"POT-Creation-Date: 2026-04-20 23:45+0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,23 +17,59 @@ msgstr ""
 "Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: ui/ResponseWindow.py:303
+#: ui/ResponseWindow.py:362 ui/ResponseWindow.py:388
+msgid "Copy"
+msgstr ""
+
+#: ui/ResponseWindow.py:387 ui/ResponseWindow.py:693
+msgid "Copied!"
+msgstr ""
+
+#: ui/ResponseWindow.py:458
 msgid "Response"
 msgstr ""
 
-#: ui/ResponseWindow.py:385
+#: ui/ResponseWindow.py:516
+msgid "Zoom:"
+msgstr ""
+
+#: ui/ResponseWindow.py:526
+msgid "Zoom In"
+msgstr ""
+
+#: ui/ResponseWindow.py:527
+msgid "Zoom Out"
+msgstr ""
+
+#: ui/ResponseWindow.py:528
+msgid "Reset Zoom"
+msgstr ""
+
+#: ui/ResponseWindow.py:544
 msgid "Select to copy with formatting"
 msgstr ""
 
-#: ui/ResponseWindow.py:390
-msgid "Copy as Markdown"
+#: ui/ResponseWindow.py:549
+msgid "Copy All"
 msgstr ""
 
-#: ui/ResponseWindow.py:401 ui/ResponseWindow.py:513 ui/ResponseWindow.py:515
-#: ui/ResponseWindow.py:522 ui/ResponseWindow.py:526
+#: ui/ResponseWindow.py:560 ui/ResponseWindow.py:717 ui/ResponseWindow.py:719
+#: ui/ResponseWindow.py:726 ui/ResponseWindow.py:730
 msgid "Thinking"
 msgstr ""
 
-#: ui/ResponseWindow.py:435 ui/ResponseWindow.py:536
+#: ui/ResponseWindow.py:606 ui/ResponseWindow.py:755
 msgid "Ask a follow-up question"
+msgstr ""
+
+#: ui/ResponseWindow.py:640
+msgid "Attach file"
+msgstr ""
+
+#: ui/ResponseWindow.py:694
+msgid "Copy as Markdown"
+msgstr ""
+
+#: ui/ResponseWindow.py:739
+msgid "Attach File"
 msgstr ""

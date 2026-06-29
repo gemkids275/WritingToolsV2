@@ -1,15 +1,51 @@
 import logging
 import os
-import sys
 
 import markdown2
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Qt, Slot
-from PySide6.QtWidgets import QScrollArea
+from PySide6.QtGui import QKeySequence
+from PySide6.QtWidgets import QApplication, QFileDialog, QScrollArea
 
+from models.attachment import AttachmentType
+from ui.AttachmentBar import AttachmentBar, attachment_from_file, attachment_from_qimage
 from ui.UIUtils import UIUtils, colorMode
+from ui.ImagePreview import show_image_preview
+from ui.BaseTextEditor import BaseAITextEdit
 
 _ = lambda x: x
+
+
+class ClickableLabel(QtWidgets.QLabel):
+    """QLabel có thể click để phát tín hiệu."""
+    clicked = QtCore.Signal(QtGui.QPixmap)
+
+    def __init__(self, display_pixmap, original_pixmap, parent=None):
+        super().__init__(parent)
+        self.setPixmap(display_pixmap)
+        self.original_pixmap = original_pixmap
+        self.setCursor(Qt.CursorShape.PointingHandCursor)
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            self.clicked.emit(self.original_pixmap)
+
+
+class FollowUpTextEdit(BaseAITextEdit):
+    """Auto-resize text input cho follow-up questions, hỗ trợ paste ảnh và drop file."""
+    def __init__(self, attachment_bar: 'AttachmentBar', parent=None):
+        super().__init__(attachment_bar, parent)
+        self.setFixedHeight(72)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+
+    def keyPressEvent(self, event):
+        # Override to ensure height doesn't change if specialized behavior is needed,
+        # but here we mostly just want to trigger submit on Enter.
+        if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter) and not (event.modifiers() & (Qt.KeyboardModifier.ShiftModifier | Qt.KeyboardModifier.AltModifier)):
+            self.submit_requested.emit()
+            return
+        super().keyPressEvent(event)
+
 
 class MarkdownTextBrowser(QtWidgets.QTextBrowser):
     """Enhanced text browser for displaying Markdown content with improved sizing"""
@@ -206,44 +242,98 @@ class ChatContentScrollArea(QScrollArea):
             }
         """)
 
-    def add_message(self, text, is_user=False):
+    def add_message(self, text, is_user=False, attachments=None):
         # Remove bottom stretch
         self.layout.takeAt(self.layout.count() - 1)
-        
+
         # Create message container with improved width
         msg_container = QtWidgets.QWidget()
         msg_container.setSizePolicy(
             QtWidgets.QSizePolicy.Policy.Expanding,
             QtWidgets.QSizePolicy.Policy.Minimum
         )
-        
+
         # Message layout with minimal margins
         msg_layout = QtWidgets.QVBoxLayout(msg_container)
         msg_layout.setContentsMargins(0, 0, 0, 0)
-        msg_layout.setSpacing(0)
-        
+        msg_layout.setSpacing(4)
+
+        # Render image attachments inline (user messages only)
+        if attachments:
+            for att in attachments:
+                if att.type == AttachmentType.IMAGE and att.data:
+                    pixmap = QtGui.QPixmap()
+                    pixmap.loadFromData(att.data)
+                    if not pixmap.isNull():
+                        max_w, max_h = 220, 160
+                        display_pixmap = pixmap
+                        if pixmap.width() > max_w or pixmap.height() > max_h:
+                            display_pixmap = pixmap.scaled(max_w, max_h, Qt.AspectRatioMode.KeepAspectRatio, Qt.TransformationMode.SmoothTransformation)
+                        
+                        img_label = ClickableLabel(display_pixmap, pixmap)
+                        img_label.setStyleSheet("border-radius: 6px; margin-bottom: 2px;")
+                        img_label.clicked.connect(lambda p: show_image_preview(p, self.window()))
+                        msg_layout.addWidget(img_label)
+
         # Create text display with updated width
         text_display = MarkdownTextBrowser(is_user_message=is_user)
-        
+        text_display.markdown_text = text
+
         # Enable tables extension in markdown2
         html = markdown2.markdown(text, extras=['tables', 'strike'])
         text_display.setHtml(html)
-        
+
         # Calculate proper text display size using full width
         text_display.document().setTextWidth(self.width() - 20)
         doc_size = text_display.document().size()
         text_display.setMinimumHeight(int(doc_size.height() + 16))
-        
+
         msg_layout.addWidget(text_display)
-        
+
+        # Copy button row (aligned right)
+        btn_row = QtWidgets.QHBoxLayout()
+        btn_row.setContentsMargins(0, 0, 0, 0)
+        btn_row.addStretch()
+        copy_btn = QtWidgets.QPushButton(_("Copy"))
+        copy_btn.setFixedHeight(22)
+        copy_btn.setStyleSheet(f"""
+            QPushButton {{
+                background: transparent;
+                color: {'#888' if colorMode == 'dark' else '#999'};
+                border: none;
+                font-size: 11px;
+                padding: 0 4px;
+            }}
+            QPushButton:hover {{
+                color: {'#ccc' if colorMode == 'dark' else '#333'};
+            }}
+        """)
+        copy_btn.setCursor(QtCore.Qt.CursorShape.PointingHandCursor)
+
+        _icon_suffix = '_dark' if colorMode == 'dark' else '_light'
+        _copy_icon = QtGui.QIcon(UIUtils.get_resource_path(os.path.join('icons', f'copy{_icon_suffix}.png')))
+        _check_icon = QtGui.QIcon(UIUtils.get_resource_path(os.path.join('icons', f'check{_icon_suffix}.png')))
+        copy_btn.setIcon(_copy_icon)
+        copy_btn.setIconSize(QtCore.QSize(12, 12))
+
+        def _copy(checked=False, btn=copy_btn, td=text_display, ci=_copy_icon, ki=_check_icon):
+            QtWidgets.QApplication.clipboard().setText(td.markdown_text)
+            btn.setIcon(ki)
+            btn.setText(_("Copied!"))
+            QtCore.QTimer.singleShot(1500, lambda: (btn.setIcon(ci), btn.setText(_("Copy"))))
+
+        copy_btn.clicked.connect(_copy)
+        btn_row.addWidget(copy_btn)
+        msg_layout.addLayout(btn_row)
+
         self.layout.addWidget(msg_container)
         self.layout.addStretch()
-        
+
         if hasattr(self.parent(), 'current_text_display'):
             self.parent().current_text_display = text_display
-            
+
         QtCore.QTimer.singleShot(50, self.post_message_updates)
-        
+
         return text_display
 
     def post_message_updates(self):
@@ -300,9 +390,10 @@ class ChatContentScrollArea(QScrollArea):
 class ResponseWindow(QtWidgets.QWidget):
     """Enhanced response window with improved sizing and zoom handling"""
     
-    def __init__(self, app, title=_("Response"), parent=None):
+    def __init__(self, app, title=_("Response"), command_id=None, parent=None):
         super().__init__(parent)
         self.app = app
+        self.command_id = command_id
         self.original_title = title
         self.setWindowTitle(title)
         self.option = title.replace(" Result", "")
@@ -312,6 +403,10 @@ class ResponseWindow(QtWidgets.QWidget):
         self.loading_container = None
         self.chat_area = None
         self.chat_history = []
+        self.current_streaming_display = None
+        self.current_streaming_text = ""
+        self._ignore_tokens = False
+        self._streaming_active = False # New guard
 
         # Setup thinking animation with full range of dots
         self.thinking_timer = QtCore.QTimer(self)
@@ -323,11 +418,12 @@ class ResponseWindow(QtWidgets.QWidget):
         self.init_ui()
         logging.debug('Connecting response signals')
         self.app.followup_response_signal.connect(self.handle_followup_response)
+        self.app.streaming_token_signal.connect(self.append_token)
         logging.debug('Response signals connected')
 
         # Set initial size for "Thinking..." state
         initial_width = 500
-        initial_height = 250
+        initial_height = 350
         self.resize(initial_width, initial_height)
                 
     def init_ui(self):
@@ -336,7 +432,7 @@ class ResponseWindow(QtWidgets.QWidget):
                           QtCore.Qt.WindowType.WindowCloseButtonHint | 
                           QtCore.Qt.WindowType.WindowMinimizeButtonHint |
                           QtCore.Qt.WindowType.WindowMaximizeButtonHint)
-        self.setMinimumSize(600, 400)
+        self.setMinimumSize(600, 600)
         
         # Main layout setup
         UIUtils.setup_window_and_layout(self)
@@ -347,14 +443,14 @@ class ResponseWindow(QtWidgets.QWidget):
         # Top bar with zoom controls
         top_bar = QtWidgets.QHBoxLayout()
         
-        title_label = QtWidgets.QLabel(self.option)
+        title_label = QtWidgets.QLabel(_(self.option))
         title_label.setStyleSheet(f"font-size: 20px; font-weight: bold; color: {'#ffffff' if colorMode == 'dark' else '#333333'};")
         top_bar.addWidget(title_label)
         
         top_bar.addStretch()
 
         # Zoom label with matched size
-        zoom_label = QtWidgets.QLabel("Zoom:")
+        zoom_label = QtWidgets.QLabel(_("Zoom:"))
         zoom_label.setStyleSheet(f"""
             color: {'#aaaaaa' if colorMode == 'dark' else '#666666'};
             font-size: 14px;
@@ -364,14 +460,16 @@ class ResponseWindow(QtWidgets.QWidget):
         
         # Enhanced zoom controls with swapped order
         zoom_controls = [
-            ('plus', 'Zoom In', lambda: self.zoom_all_messages('in')),
-            ('minus', 'Zoom Out', lambda: self.zoom_all_messages('out')),
-            ('reset', 'Reset Zoom', lambda: self.zoom_all_messages('reset'))
+            ('plus', _('Zoom In'), lambda: self.zoom_all_messages('in')),
+            ('minus', _('Zoom Out'), lambda: self.zoom_all_messages('out')),
+            ('reset', _('Reset Zoom'), lambda: self.zoom_all_messages('reset'))
         ]
             
         for icon, tooltip, action in zoom_controls:
             btn = QtWidgets.QPushButton()
-            btn.setIcon(QtGui.QIcon(os.path.join(os.path.dirname(sys.argv[0]), 'icons', icon + ('_dark' if colorMode == 'dark' else '_light') + '.png')))
+            icon_file = icon + ('_dark' if colorMode == 'dark' else '_light') + '.png'
+            icon_path = UIUtils.get_resource_path(os.path.join('icons', icon_file))
+            btn.setIcon(QtGui.QIcon(icon_path))
             btn.setStyleSheet(self.get_button_style())
             btn.setToolTip(tooltip)
             btn.clicked.connect(action)
@@ -387,10 +485,10 @@ class ResponseWindow(QtWidgets.QWidget):
         copy_bar.addWidget(copy_hint)
         copy_bar.addStretch()
         
-        copy_md_btn = QtWidgets.QPushButton(_("Copy as Markdown"))
-        copy_md_btn.setStyleSheet(self.get_button_style())
-        copy_md_btn.clicked.connect(self.copy_first_response)  # Updated to only copy first response
-        copy_bar.addWidget(copy_md_btn)
+        self.copy_md_btn = QtWidgets.QPushButton(_("Copy All"))
+        self.copy_md_btn.setStyleSheet(self.get_button_style())
+        self.copy_md_btn.clicked.connect(self.copy_first_response)
+        copy_bar.addWidget(self.copy_md_btn)
         content_layout.addLayout(copy_bar)
 
         # Loading indicator
@@ -426,15 +524,28 @@ class ResponseWindow(QtWidgets.QWidget):
         
         # Enhanced chat area with full width
         self.chat_area = ChatContentScrollArea()
-        content_layout.addWidget(self.chat_area)
-        
-        # Input area with enhanced styling
-        bottom_bar = QtWidgets.QHBoxLayout()
-        
-        self.input_field = QtWidgets.QLineEdit()
-        self.input_field.setPlaceholderText(_("Ask a follow-up question")+'...')
+        self.chat_area.setSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Expanding,
+        )
+        self.chat_area.setMinimumHeight(280)
+        content_layout.addWidget(self.chat_area, stretch=1)
+
+        # Input area
+        input_wrapper = QtWidgets.QWidget()
+        input_wrapper_layout = QtWidgets.QVBoxLayout(input_wrapper)
+        input_wrapper_layout.setContentsMargins(0, 0, 0, 0)
+        input_wrapper_layout.setSpacing(4)
+
+        # Attachment bar (ẩn khi trống)
+        self.attachment_bar = AttachmentBar()
+        input_wrapper_layout.addWidget(self.attachment_bar)
+
+        # Textarea full-width
+        self.input_field = FollowUpTextEdit(self.attachment_bar)
+        self.input_field.setPlaceholderText(_("Ask a follow-up question") + '...')
         self.input_field.setStyleSheet(f"""
-            QLineEdit {{
+            QTextEdit {{
                 padding: 8px;
                 border: 1px solid {'#777' if colorMode == 'dark' else '#ccc'};
                 border-radius: 8px;
@@ -443,27 +554,58 @@ class ResponseWindow(QtWidgets.QWidget):
                 font-size: 14px;
             }}
         """)
-        self.input_field.returnPressed.connect(self.send_message)
-        bottom_bar.addWidget(self.input_field)
-        
+        self.input_field.submit_requested.connect(self.send_message)
+        input_wrapper_layout.addWidget(self.input_field)
+
+        # Buttons căn phải phía dưới textarea
+        btn_row = QtWidgets.QHBoxLayout()
+        btn_row.setSpacing(6)
+        btn_row.addStretch()
+
+        btn_size = 32
+        attach_button = QtWidgets.QPushButton("📎")
+        attach_button.setFixedSize(btn_size, btn_size)
+        attach_button.setStyleSheet(f"""
+            QPushButton {{
+                background-color: {'#444' if colorMode == 'dark' else '#f0f0f0'};
+                border: 1px solid {'#666' if colorMode == 'dark' else '#ccc'};
+                border-radius: 6px;
+                font-size: 15px;
+                padding: 0px;
+            }}
+            QPushButton:hover {{
+                background-color: {'#555' if colorMode == 'dark' else '#e0e0e0'};
+            }}
+        """)
+        attach_button.setToolTip(_("Attach file"))
+        attach_button.clicked.connect(self._open_file_dialog)
+        btn_row.addWidget(attach_button)
+
         send_button = QtWidgets.QPushButton()
-        send_button.setIcon(QtGui.QIcon(os.path.join(os.path.dirname(sys.argv[0]), 'icons', 'send' + ('_dark' if colorMode == 'dark' else '_light') + '.png')))
+        icon_file = 'send' + ('_dark' if colorMode == 'dark' else '_light') + '.png'
+        icon_path = UIUtils.get_resource_path(os.path.join('icons', icon_file))
+        send_button.setIcon(QtGui.QIcon(icon_path))
+        send_button.setFixedSize(btn_size, btn_size)
         send_button.setStyleSheet(f"""
             QPushButton {{
                 background-color: {'#2e7d32' if colorMode == 'dark' else '#4CAF50'};
                 border: none;
-                border-radius: 8px;
+                border-radius: 6px;
                 padding: 5px;
             }}
             QPushButton:hover {{
                 background-color: {'#1b5e20' if colorMode == 'dark' else '#45a049'};
             }}
         """)
-        send_button.setFixedSize(self.input_field.sizeHint().height(), self.input_field.sizeHint().height())
         send_button.clicked.connect(self.send_message)
-        bottom_bar.addWidget(send_button)
-        
-        content_layout.addLayout(bottom_bar)
+        btn_row.addWidget(send_button)
+
+        input_wrapper_layout.addLayout(btn_row)
+        input_wrapper.setSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Expanding,
+            QtWidgets.QSizePolicy.Policy.Minimum,
+        )
+        content_layout.addWidget(input_wrapper, stretch=0)
 
     # Method to get first response text
     def get_first_response_text(self):
@@ -484,10 +626,14 @@ class ResponseWindow(QtWidgets.QWidget):
             return None
 
     def copy_first_response(self):
-        """Copy only the first model response as Markdown"""
-        response_text = self.get_first_response_text()
-        if response_text:
-            QtWidgets.QApplication.clipboard().setText(response_text)
+        """Copy all assistant responses as Markdown"""
+        all_responses = "\n\n".join(
+            msg["content"] for msg in self.chat_history if msg["role"] == "assistant"
+        )
+        if all_responses:
+            QtWidgets.QApplication.clipboard().setText(all_responses)
+            self.copy_md_btn.setText(_("Copied!"))
+            QtCore.QTimer.singleShot(1500, lambda: self.copy_md_btn.setText(_("Copy as Markdown")))
 
     def get_button_style(self):
         return f"""
@@ -527,6 +673,21 @@ class ResponseWindow(QtWidgets.QWidget):
             self.loading_container.setVisible(False)
             
         self.thinking_timer.start()
+
+    def _open_file_dialog(self):
+        """Mở file dialog để chọn ảnh hoặc text file đính kèm."""
+        files, _selected_filter = QFileDialog.getOpenFileNames(
+            self,
+            _("Attach File"),
+            "",
+            "Images (*.png *.jpg *.jpeg *.gif *.webp *.bmp *.tiff);;"
+            "Text Files (*.txt *.md *.csv *.json *.xml *.py *.js *.ts *.html *.css *.yaml *.yml *.toml *.ini *.log);;"
+            "All Files (*)"
+        )
+        for path in files:
+            att = attachment_from_file(path)
+            if att:
+                self.attachment_bar.add_attachment(att)
 
     def stop_thinking_animation(self):
         """Stop the thinking animation"""
@@ -592,8 +753,8 @@ class ResponseWindow(QtWidgets.QWidget):
                 max_height
             )
                 
-            # Set reasonable minimum height - increased by 10%
-            final_height = max(600, desired_total_height)  # Increased from 540
+            # Set reasonable minimum height
+            final_height = max(750, desired_total_height)
                 
             # Set width to 600px
             final_width = 600
@@ -612,13 +773,50 @@ class ResponseWindow(QtWidgets.QWidget):
                 
         except Exception as e:
             logging.error(f"Error adjusting window height: {e}")
-            self.resize(600, 600)  # Updated fallback size
+            self.resize(600, 750)  # fallback size
             self._size_initialized = True
+
+    @Slot(str)
+    def append_token(self, token):
+        """Append a token to the current streaming message display"""
+        if not token or self._ignore_tokens or not self._streaming_active:
+            return
+            
+        if self.current_streaming_display is None:
+            self.stop_thinking_animation()
+            # Start a new message for streaming
+            self.current_streaming_text = token
+            self.current_streaming_display = self.chat_area.add_message(self.current_streaming_text)
+            
+            # Maintain consistent zoom level
+            if hasattr(self, 'current_text_display'):
+                self.current_streaming_display.zoom_factor = self.current_text_display.zoom_factor
+                self.current_streaming_display._apply_zoom()
+        else:
+            self.current_streaming_text += token
+            # Update HTML content with markdown
+            html = markdown2.markdown(self.current_streaming_text, extras=['tables', 'strike'])
+            self.current_streaming_display.setHtml(html)
+            self.current_streaming_display.markdown_text = self.current_streaming_text
+            self.current_streaming_display._update_size()
+            
+        # Smoothly scroll as content grows
+        self.chat_area.scroll_to_bottom()
 
     @Slot(str)
     def set_text(self, text):
         """Set initial response text with enhanced handling"""
         if not text.strip():
+            return
+
+        # If we were streaming, save full response to history then return
+        if self.current_streaming_display:
+            self.chat_history = [
+                {"role": "user", "content": f"{self.option}: {self.selected_text}"},
+                {"role": "assistant", "content": text}
+            ]
+            self.current_streaming_display = None
+            self.current_streaming_text = ""
             return
                 
         # Always ensure chat history is initialized properly
@@ -640,21 +838,34 @@ class ResponseWindow(QtWidgets.QWidget):
     @Slot(str)
     def handle_followup_response(self, response_text):
         """Handle the follow-up response from the AI with improved layout handling"""
+        self._streaming_active = False # Immediately stop accepting tokens
+        self._ignore_tokens = True
+        
+        streaming_display = self.current_streaming_display
+        was_streaming = streaming_display is not None
+        
+        self.current_streaming_display = None
+        self.current_streaming_text = ""
+
         if response_text:
             self.loading_label.setVisible(False)
-            text_display = self.chat_area.add_message(response_text)
-            
-            # Maintain consistent zoom level
-            if hasattr(self, 'current_text_display'):
-                text_display.zoom_factor = self.current_text_display.zoom_factor
-                text_display._apply_zoom()
-            
-            if len(self.chat_history) > 0 and self.chat_history[-1]["role"] != "assistant":
+
+            # Update streaming bubble with the complete final text
+            if was_streaming and streaming_display:
+                html = markdown2.markdown(response_text, extras=['tables', 'strike'])
+                streaming_display.setHtml(html)
+                streaming_display.markdown_text = response_text
+                streaming_display._update_size()
+
+            last_msg = self.chat_history[-1] if self.chat_history else None
+            if last_msg and last_msg["role"] == "user":
+                if not was_streaming:
+                    self.chat_area.add_message(response_text)
                 self.chat_history.append({
                     "role": "assistant",
                     "content": response_text
                 })
-        
+
         self.stop_thinking_animation()
         self.input_field.setEnabled(True)
         
@@ -663,22 +874,32 @@ class ResponseWindow(QtWidgets.QWidget):
         
     def send_message(self):
         """Send a new message/question"""
-        message = self.input_field.text().strip()
-        if not message:
+        message = self.input_field.toPlainText().strip()
+        attachments = self.attachment_bar.get_attachments()
+        if not message and not attachments:
             return
-            
+
         self.input_field.setEnabled(False)
         self.input_field.clear()
-        
-        # Add user message and maintain zoom level
-        text_display = self.chat_area.add_message(message, is_user=True)
+        self.attachment_bar.clear()
+        self._ignore_tokens = False
+        self._streaming_active = True # Allow tokens
+
+        # Build display text cho user bubble
+        if attachments:
+            names = ", ".join(a.label for a in attachments)
+            display_text = f"[{names}]\n{message}" if message else f"[{names}]"
+        else:
+            display_text = message
+
+        text_display = self.chat_area.add_message(display_text, is_user=True, attachments=attachments)
         if hasattr(self, 'current_text_display'):
             text_display.zoom_factor = self.current_text_display.zoom_factor
             text_display._apply_zoom()
-        
-        self.chat_history.append({"role": "user", "content": message})
+
+        self.chat_history.append({"role": "user", "content": message or "(see attachments)"})
         self.start_thinking_animation()
-        self.app.process_followup_question(self, message)
+        self.app.process_followup_question(self, message, attachments=attachments)
         
     def copy_as_markdown(self):
         """Copy conversation as Markdown"""

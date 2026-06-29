@@ -38,7 +38,7 @@ python pyinstaller-build-script.py
 2. **Clone the Repository**
    - Open Terminal and navigate to the directory where you want to store the project:
    ```bash
-   git clone https://github.com/theJayTea/WritingTools.git
+   git clone https://github.com/gemkids275/WritingToolsV2.git
    ```
 
 3. **Open in Xcode**
@@ -57,4 +57,4 @@ python pyinstaller-build-script.py
    - In Xcode, select "My Mac" as the run destination
    - Click the Play button or press ⌘R to build and run
 
-### [**◀️ Back to main page**](https://github.com/theJayTea/WritingTools)
+### [**◀️ Back to main page**](https://github.com/gemkids275/WritingToolsV2)

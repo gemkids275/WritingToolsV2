@@ -1,3 +1,4 @@
+import base64
 import gettext
 import json
 import logging
@@ -9,12 +10,21 @@ import time
 
 import darkdetect
 import pyperclip
-import ui.AboutWindow
+import aiprovider as _aiprovider_module
+import ui.CommandEditorDialog
 import ui.CustomPopupWindow
 import ui.OnboardingWindow
 import ui.ResponseWindow
 import ui.SettingsWindow
-from aiprovider import GeminiProvider, OllamaProvider, OpenAICompatibleProvider, obfuscate_api_key
+import ui.UIUtils
+from aiprovider import (AnthropicProvider, GeminiProvider, MistralProvider,
+                        OllamaProvider, OpenAICompatibleProvider,
+                        OpenRouterProvider, obfuscate_api_key)
+from models.attachment import Attachment, AttachmentType
+from models.command_manager import CommandManager
+from models.secure_storage import get_command_api_key
+from models.shortcut_manager import ShortcutManager
+import copy
 from pynput import keyboard as pykeyboard
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import QLocale, Signal, Slot
@@ -27,16 +37,40 @@ _ = gettext.gettext
 
 class WritingToolApp(QtWidgets.QApplication):
     """
-    The main application class for Writing Tools.
+    The main application class for AI Shortcuts.
     """
     output_ready_signal = Signal(str)
     show_message_signal = Signal(str, str)  # a signal for showing message boxes
     hotkey_triggered_signal = Signal()
     followup_response_signal = Signal(str)
+    streaming_token_signal = Signal(str)
+    
+    # Map attribute names to correspond with aiprovider.py classes
+    _PROVIDER_ATTR_MAP = {
+        "Gemini (Recommended)": {"model": "model_name", "api_key": "api_key"},
+        "Anthropic":            {"model": "model_name", "api_key": "api_key"},
+        "Mistral":              {"model": "model_name", "api_key": "api_key"},
+        "OpenRouter":           {"model": "model_name", "api_key": "api_key"},
+        "OpenAI Compatible (For Experts)": {"model": "api_model", "api_key": "api_key", "base_url": "api_base"},
+        "Ollama (For Experts)":            {"model": "api_model", "api_key": None, "base_url": "api_base"},
+    }
 
 
     def __init__(self, argv):
         super().__init__(argv)
+
+        # Single instance check — must happen before any UI is created
+        self._lock_file = QtCore.QLockFile(
+            os.path.join(QtCore.QDir.tempPath(), "ais_shortcuts_v2.lock")
+        )
+        if not self._lock_file.tryLock(100):
+            QtWidgets.QMessageBox.warning(
+                None,
+                "AI Shortcuts",
+                "AI Shortcuts is already running.\nCheck your system tray."
+            )
+            sys.exit(0)
+
         self.current_response_window = None
         logging.debug('Initializing WritingToolApp')
         self.output_ready_signal.connect(self.replace_text)
@@ -44,14 +78,21 @@ class WritingToolApp(QtWidgets.QApplication):
         self.hotkey_triggered_signal.connect(self.on_hotkey_pressed)
         self.config = None
         self.config_path = None
+        # Determine persistent config directory based on OS
+        if sys.platform == 'win32':
+            app_data = os.environ.get('APPDATA') or os.path.expanduser('~\\AppData\\Roaming')
+            self.config_dir = os.path.join(app_data, 'AIShortcuts')
+        else:
+            config_home = os.environ.get('XDG_CONFIG_HOME') or os.path.join(os.path.expanduser('~'), '.config')
+            self.config_dir = os.path.join(config_home, 'aishortcuts')
+        os.makedirs(self.config_dir, exist_ok=True)
         self.load_config()
 
-        # Check if config migration is needed for v8 (Gemini model update)
-        self._migrate_config_for_v8()
 
-        self.options = None
-        self.options_path = None
-        self.load_options()
+        # Initialize Command Manager (replaces load_options)
+        self.command_manager = CommandManager(self.config_dir)
+        self.command_manager.load()
+        
         self.onboarding_window = None
         self.popup_window = None
         self.tray_icon = None
@@ -62,8 +103,12 @@ class WritingToolApp(QtWidgets.QApplication):
         self.output_queue = ""
         self.last_replace = 0
         self.hotkey_listener = None
+        self.shortcut_manager = ShortcutManager()
         self.paused = False
         self.toggle_action = None
+
+        # Initialize update checker early so it's always available
+        self.update_checker = UpdateChecker(self)
 
         self._ = gettext.gettext
 
@@ -72,7 +117,14 @@ class WritingToolApp(QtWidgets.QApplication):
         self.setup_ctrl_c_listener()
 
         # Setup available AI providers
-        self.providers = [GeminiProvider(self), OpenAICompatibleProvider(self), OllamaProvider(self)]
+        self.providers = [
+            GeminiProvider(self),
+            AnthropicProvider(self),
+            MistralProvider(self),
+            OpenRouterProvider(self),
+            OpenAICompatibleProvider(self),
+            OllamaProvider(self)
+        ]
 
         if not self.config:
             logging.debug('No config found, showing onboarding')
@@ -99,10 +151,9 @@ class WritingToolApp(QtWidgets.QApplication):
                 lang = None
             self.change_language(lang)
 
-            # Initialize update checker
-            self.update_checker = UpdateChecker(self)
             self.update_checker.check_updates_async()
 
+        self._active_provider = None  # Track the provider currently handling a request
         self.recent_triggers = []  # Track recent hotkey triggers
         self.TRIGGER_WINDOW = 1.5  # Time window in seconds
         self.MAX_TRIGGERS = 3  # Max allowed triggers in window
@@ -114,16 +165,17 @@ class WritingToolApp(QtWidgets.QApplication):
         try:
             translation = gettext.translation(
                 'messages',
-                localedir=os.path.join(os.path.dirname(__file__), 'locales'),
+                localedir=ui.UIUtils.UIUtils.get_resource_path('locales'),
                 languages=[lang]
             )
-        except FileNotFoundError:
+        except (FileNotFoundError, Exception):
             translation = gettext.NullTranslations()
 
         translation.install()
         # Update the translation function for all UI components.
         self._ = translation.gettext
-        ui.AboutWindow._ = self._
+        _aiprovider_module._ = self._
+        ui.CommandEditorDialog._ = self._
         ui.SettingsWindow._ = self._
         ui.ResponseWindow._ = self._
         ui.OnboardingWindow._ = self._
@@ -162,76 +214,46 @@ class WritingToolApp(QtWidgets.QApplication):
         """
         Load the configuration file.
         """
-        self.config_path = os.path.join(os.path.dirname(sys.argv[0]), 'config.json')
+        self.config_path = os.path.join(self.config_dir, 'config.json')
+        
+        # Migration logic for config.json
+        old_config_path = os.path.join(os.path.dirname(sys.argv[0]), 'config.json')
+        if not os.path.exists(self.config_path) and os.path.exists(old_config_path):
+            try:
+                logging.info(f"Migrating config.json from {old_config_path} to {self.config_path}")
+                import shutil
+                shutil.copy2(old_config_path, self.config_path)
+            except Exception as e:
+                logging.error(f"Failed to migrate config.json: {e}")
+
+        # Migration logic for commands.json
+        new_commands_path = os.path.join(self.config_dir, 'commands.json')
+        old_commands_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'commands.json')
+        old_commands_path_alt = os.path.join(os.path.dirname(sys.argv[0]), 'commands.json')
+        
+        if not os.path.exists(new_commands_path):
+            src_commands = None
+            if os.path.exists(old_commands_path):
+                src_commands = old_commands_path
+            elif os.path.exists(old_commands_path_alt):
+                src_commands = old_commands_path_alt
+                
+            if src_commands:
+                try:
+                    logging.info(f"Migrating commands.json from {src_commands} to {new_commands_path}")
+                    import shutil
+                    shutil.copy2(src_commands, new_commands_path)
+                except Exception as e:
+                    logging.error(f"Failed to migrate commands.json: {e}")
+
         logging.debug(f'Loading config from {self.config_path}')
         if os.path.exists(self.config_path):
-            with open(self.config_path, 'r') as f:
+            with open(self.config_path, 'r', encoding='utf-8') as f:
                 self.config = json.load(f)
                 logging.debug('Config loaded successfully')
         else:
             logging.debug('Config file not found')
             self.config = None
-
-    def _migrate_config_for_v8(self):
-        """
-        Migrate config for v8 update:
-        1. Google removed Gemini 2.0 models from free API, so update to Gemma 3 27B
-        2. Obfuscate plaintext Gemini API keys for security (defeats Ctrl+F scanning)
-
-        This migration:
-        1. Checks if 'is_config_file_updated_for_v8' flag exists and is True
-        2. If not, updates the Gemini model and obfuscates the API key
-        3. Shows a popup telling the user to restart Writing Tools
-        """
-        # Skip if no config exists (new user going through onboarding)
-        if not self.config:
-            logging.debug('No config to migrate (new user)')
-            return
-
-        # Check if already migrated
-        if self.config.get('is_config_file_updated_for_v8', False):
-            logging.debug('Config already migrated for v8, skipping')
-            return
-
-        logging.info('Migrating config for v8 (Gemini model + API key obfuscation)...')
-
-        # Update the Gemini provider's model name and obfuscate API key
-        config_changed = False
-        if 'providers' in self.config and 'Gemini (Recommended)' in self.config['providers']:
-            gemini_config = self.config['providers']['Gemini (Recommended)']
-
-            # Update to the new Gemma model (works with unlimited usage on free API)
-            old_model = gemini_config.get('model_name', '')
-            gemini_config['model_name'] = 'gemma-3-27b-it'
-            logging.info(f'Updated Gemini model from "{old_model}" to "gemma-3-27b-it"')
-
-            # Obfuscate the API key if it exists and isn't already obfuscated
-            if 'api_key' in gemini_config and gemini_config['api_key']:
-                old_key = gemini_config['api_key']
-                gemini_config['api_key'] = obfuscate_api_key(old_key)
-                if old_key != gemini_config['api_key']:
-                    logging.info('Obfuscated Gemini API key')
-
-            config_changed = True
-
-        # Set the migration flag
-        self.config['is_config_file_updated_for_v8'] = True
-
-        # Save the updated config
-        self.save_config(self.config)
-        logging.info('Config migration for v8 complete')
-
-        # Only show restart message if we actually changed something
-        if config_changed:
-            # Show popup telling user to restart (use QMessageBox directly since signals aren't connected yet)
-            QMessageBox.information(
-                None,
-                'Writing Tools Updated',
-                'Writing Tools has just completed an internal update (your config.json has been updated).\n\n'
-                'Please restart Writing Tools.'
-            )
-            # Exit the app so user can restart
-            sys.exit(0)
 
     def load_options(self):
         """
@@ -251,8 +273,8 @@ class WritingToolApp(QtWidgets.QApplication):
         """
         Save the configuration file.
         """
-        with open(self.config_path, 'w') as f:
-            json.dump(config, f, indent=4)
+        with open(self.config_path, 'w', encoding='utf-8') as f:
+            json.dump(config, f, indent=4, ensure_ascii=False)
             logging.debug('Config saved successfully')
         self.config = config
 
@@ -265,53 +287,53 @@ class WritingToolApp(QtWidgets.QApplication):
         self.onboarding_window.close_signal.connect(self.exit_app)
         self.onboarding_window.show()
 
-    def start_hotkey_listener(self):
-        """
-        Create listener for hotkeys on Linux/Mac.
-        """
-        orig_shortcut = self.config.get('shortcut', 'ctrl+space')
-        # Parse the shortcut string, for example ctrl+alt+h -> <ctrl>+<alt>+h
-        shortcut = '+'.join([f'{t}' if len(t) <= 1 else f'<{t}>' for t in orig_shortcut.split('+')])
-        logging.debug(f'Registering global hotkey for shortcut: {shortcut}')
-        try:
-            if self.hotkey_listener is not None:
-                self.hotkey_listener.stop()
-
-            def on_activate():
-                if self.paused:
-                    return
-                logging.debug('triggered hotkey')
-                self.hotkey_triggered_signal.emit()  # Emit the signal when hotkey is pressed
-
-            # Define the hotkey combination
-            hotkey = pykeyboard.HotKey(
-                pykeyboard.HotKey.parse(shortcut),
-                on_activate
-            )
-            self.registered_hotkey = orig_shortcut
-
-            # Helper function to standardize key event
-            def for_canonical(f):
-                return lambda k: f(self.hotkey_listener.canonical(k))
-
-            # Create a listener and store it as an attribute to stop it later
-            self.hotkey_listener = pykeyboard.Listener(
-                on_press=for_canonical(hotkey.press),
-                on_release=for_canonical(hotkey.release)
-            )
-
-            # Start the listener
-            self.hotkey_listener.start()
-        except Exception as e:
-            logging.error(f'Failed to register hotkey: {e}')
-
     def register_hotkey(self):
-        """
-        Register the global hotkey for activating Writing Tools.
-        """
-        logging.debug('Registering hotkey')
-        self.start_hotkey_listener()
+        """Register app hotkey + all per-command shortcuts via ShortcutManager."""
+        app_shortcut = self.config.get('shortcut', 'ctrl+space')
+        self.registered_hotkey = app_shortcut
+
+        def on_app_hotkey():
+            if self.paused:
+                return
+            logging.debug('triggered app hotkey')
+            self.hotkey_triggered_signal.emit()
+
+        self.shortcut_manager.set_app_shortcut(app_shortcut, on_app_hotkey)
+        self._register_command_shortcuts()
+        self.shortcut_manager.restart()
         logging.debug('Hotkey registered')
+
+    def _register_command_shortcuts(self):
+        self.shortcut_manager.unregister_all_commands()
+        for cmd in self.command_manager.commands:
+            if cmd.keyboard_shortcut:
+                def _make_cb(c):
+                    def cb():
+                        if self.paused:
+                            return
+                        QtCore.QMetaObject.invokeMethod(
+                            self, '_trigger_command_shortcut',
+                            QtCore.Qt.ConnectionType.QueuedConnection,
+                            QtCore.Q_ARG(str, c.id)
+                        )
+                    return cb
+                self.shortcut_manager.register(cmd.keyboard_shortcut, _make_cb(cmd))
+
+    def refresh_command_shortcuts(self):
+        """Gọi sau khi user thay đổi commands để re-register shortcuts."""
+        self._register_command_shortcuts()
+        self.shortcut_manager.restart()
+
+    @Slot(str)
+    def _trigger_command_shortcut(self, command_id: str):
+        """Execute command từ keyboard shortcut — chạy trên main thread."""
+        cmd = self.command_manager.get_command(command_id)
+        if not cmd:
+            return
+        selected_text = self.get_selected_text()
+        if not selected_text:
+            selected_text = self.get_selected_text(sleep_duration=0.5)
+        self.process_option(command_id, selected_text)
 
     def on_hotkey_pressed(self):
         """
@@ -326,10 +348,13 @@ class WritingToolApp(QtWidgets.QApplication):
             return
             
         # Original hotkey handling continues...
-        if self.current_provider:
+        if self._active_provider:
+            logging.debug("Cancelling active provider's request")
+            self._active_provider.cancel()
+        elif self.current_provider:
             logging.debug("Cancelling current provider's request")
             self.current_provider.cancel()
-            self.output_queue = ""
+        self.output_queue = ""
 
         # noinspection PyTypeChecker
         QtCore.QMetaObject.invokeMethod(self, "_show_popup", QtCore.Qt.ConnectionType.QueuedConnection)
@@ -360,7 +385,7 @@ class WritingToolApp(QtWidgets.QApplication):
             self.popup_window = ui.CustomPopupWindow.CustomPopupWindow(self, selected_text)
 
             # Set the window icon
-            icon_path = os.path.join(os.path.dirname(sys.argv[0]), 'icons', 'app_icon.png')
+            icon_path = ui.UIUtils.UIUtils.get_resource_path(os.path.join('icons', 'app_icon.png'))
             if os.path.exists(icon_path): self.setWindowIcon(QtGui.QIcon(icon_path))
             # Get the screen containing the cursor
             cursor_pos = QCursor.pos()
@@ -430,6 +455,64 @@ class WritingToolApp(QtWidgets.QApplication):
 
         return selected_text
 
+    def _resolve_provider(self, command=None):
+        """
+        Returns the appropriate provider instance for a command.
+        Never mutates self.current_provider.
+        """
+        if not command or not command.provider_override:
+            return self.current_provider
+
+        # Custom Mode: User-configured OpenAI-compatible endpoint
+        if command.provider_override == "custom":
+            base_url = (command.custom_provider_base_url or "").strip()
+            model    = (command.custom_provider_model or "").strip()
+            api_key  = get_command_api_key(command.id)
+            
+            if not base_url or not model:
+                raise ValueError(
+                    f"Command '{command.name}': custom provider is missing Base URL or Model."
+                )
+            
+            from aiprovider import OpenAICompatibleProvider
+            tmp = OpenAICompatibleProvider(self)
+            tmp.load_config({"api_base": base_url, "api_model": model, "api_key": api_key})
+            return tmp
+
+        # Standard Mode: Use an existing configured provider
+        provider = next(
+            (p for p in self.providers if p.provider_name == command.provider_override),
+            None,
+        )
+        if not provider:
+            logging.warning(f"Provider '{command.provider_override}' not found, using default provider")
+            return self.current_provider
+
+        model_override    = command.model_override
+        api_key_override  = get_command_api_key(command.id)
+        base_url_override = command.custom_provider_base_url
+
+        # No overrides needed -> use the original instance
+        if not model_override and not api_key_override and not base_url_override:
+            return provider
+
+        # Overrides exist -> create a shallow copy and re-initialize
+        attrs         = self._PROVIDER_ATTR_MAP.get(command.provider_override, {})
+        model_attr    = attrs.get("model")
+        key_attr      = attrs.get("api_key")
+        base_url_attr = attrs.get("base_url")
+
+        tmp = copy.copy(provider)
+        if model_override and model_attr:
+            setattr(tmp, model_attr, model_override)
+        if api_key_override and key_attr:
+            setattr(tmp, key_attr, api_key_override)
+        if base_url_override and base_url_attr:
+            setattr(tmp, base_url_attr, base_url_override)
+
+        tmp.after_load()  # Re-initialize API client with new config
+        return tmp
+
     @staticmethod
     def clear_clipboard():
         """
@@ -440,19 +523,34 @@ class WritingToolApp(QtWidgets.QApplication):
         except Exception as e:
             logging.error(f'Error clearing clipboard: {e}')
 
-    def process_option(self, option, selected_text, custom_change=None):
+    def process_option(self, option_id_or_name, selected_text, custom_change=None, attachments=None):
         """
         Process the selected writing option in a separate thread.
         """
-        logging.debug(f'Processing option: {option}')
+        logging.debug(f'Processing option: {option_id_or_name}')
 
-        # For Summary, Key Points, Table, and empty text custom prompts, create response window
-        if (option == 'Custom' and not selected_text.strip()) or self.options[option]['open_in_window']:
-            window_title = "Chat" if (option == 'Custom' and not selected_text.strip()) else option
-            self.current_response_window = self.show_response_window(window_title, selected_text)
+        # Get command details from manager (try ID first, then name for backward compatibility)
+        command = self.command_manager.get_command(option_id_or_name)
+        if not command:
+            command = self.command_manager.get_by_name(option_id_or_name)
+        
+        if not command and option_id_or_name != 'Custom':
+            logging.error(f"Command not found: {option_id_or_name}")
+            return
+
+        # Check if we should open in window
+        use_window = False
+        if option_id_or_name == 'Custom' and not selected_text.strip():
+            use_window = True
+        elif command:
+            use_window = command.use_response_window
+
+        if use_window:
+            window_title = "Chat" if (option_id_or_name == 'Custom' and not selected_text.strip()) else (command.name if command else option_id_or_name)
+            self.current_response_window = self.show_response_window(window_title, selected_text, command.id if command else None)
             
             # Initialize chat history with text/prompt
-            if option == 'Custom' and not selected_text.strip():
+            if option_id_or_name == 'Custom' and not selected_text.strip():
                 # For direct AI queries, don't include empty text
                 self.current_response_window.chat_history = []
             else:
@@ -460,7 +558,7 @@ class WritingToolApp(QtWidgets.QApplication):
                 self.current_response_window.chat_history = [
                     {
                         "role": "user",
-                        "content": f"Original text to {option.lower()}:\n\n{selected_text}"
+                        "content": f"Original text to {(command.name if command else option_id_or_name).lower()}:\n\n{selected_text}"
                     }
                 ]
         else:
@@ -468,42 +566,128 @@ class WritingToolApp(QtWidgets.QApplication):
             if hasattr(self, 'current_response_window'):
                 delattr(self, 'current_response_window')
                 
-        threading.Thread(target=self.process_option_thread, args=(option, selected_text, custom_change), daemon=True).start()
+        threading.Thread(target=self.process_option_thread, args=(option_id_or_name, selected_text, custom_change, attachments or []), daemon=True).start()
 
-    def process_option_thread(self, option, selected_text, custom_change=None):
+    def process_option_thread(self, option_id_or_name, selected_text, custom_change=None, attachments=None):
             """
             Thread function to process the selected writing option using the AI model.
             """
-            logging.debug(f'Starting processing thread for option: {option}')
+            logging.debug(f'Starting processing thread for option: {option_id_or_name}')
             try:
+                attachments = attachments or []
+                images = [(a.mime_type, base64.b64encode(a.data).decode()) for a in attachments if a.type == AttachmentType.IMAGE and a.data]
+                text_context = "\n\n".join(
+                    f"[{a.label}]:\n{a.text}"
+                    for a in attachments
+                    if a.type == AttachmentType.TEXT and a.text
+                )
+
+                command = None  # khởi tạo sớm để _resolve_provider không UnboundLocalError
+                # Default custom instruction prompt if no text is selected
+                DEFAULT_PROMPT = "You are a friendly, helpful, compassionate, and endearing AI conversational assistant. Avoid making assumptions or generating harmful, biased, or inappropriate content. When in doubt, do not make up information. Ask the user for clarification if needed. Try not be unnecessarily repetitive in your response. You can, and should as appropriate, use Markdown formatting to make your response nicely readable."
+
                 if selected_text.strip() == '':
                     # No selected text
-                    if option == 'Custom':
-                        prompt = custom_change
-                        system_instruction = "You are a friendly, helpful, compassionate, and endearing AI conversational assistant. Avoid making assumptions or generating harmful, biased, or inappropriate content. When in doubt, do not make up information. Ask the user for clarification if needed. Try not be unnecessarily repetitive in your response. You can, and should as appropriate, use Markdown formatting to make your response nicely readable."
+                    if option_id_or_name == 'Custom':
+                        prompt = custom_change or ""
+                        if text_context:
+                            prompt = f"{prompt}\n\nAdditional Context:\n{text_context}" if prompt else text_context
+                        chat_cmd = self.command_manager.get_command('ChatNoSelection')
+                        if chat_cmd:
+                            system_instruction = chat_cmd.prompt
+                        else:
+                            system_instruction = self.config.get("custom_instruction_prompt", DEFAULT_PROMPT)
                     else:
                         self.show_message_signal.emit('Error', 'Please select text to use this option.')
                         return
                 else:
-                    selected_prompt = self.options.get(option, ('', ''))
-                    prompt_prefix = selected_prompt['prefix']
-                    system_instruction = selected_prompt['instruction']
-                    if option == 'Custom':
+                    command = self.command_manager.get_command(option_id_or_name)
+                    if not command:
+                        command = self.command_manager.get_by_name(option_id_or_name)
+
+                    if not command:
+                        prompt_prefix = "Make this change to the following text:\n\n"
+                        system_instruction = "You are a writing assistant."
+                    else:
+                        prompt_prefix = command.prefix
+                        system_instruction = command.prompt
+
+                    if option_id_or_name == 'Custom':
                         prompt = f"{prompt_prefix}Described change: {custom_change}\n\nText: {selected_text}"
                     else:
                         prompt = f"{prompt_prefix}{selected_text}"
 
+                    if text_context:
+                        prompt += f"\n\nAdditional Context:\n{text_context}"
+
                 self.output_queue = ""
 
-                logging.debug(f'Getting response from provider for option: {option}')
+                # Resolve provider for this specific command
+                try:
+                    active_provider = self._resolve_provider(command)
+                    self._active_provider = active_provider
+                except ValueError as e:
+                    self.show_message_signal.emit("Provider Error", str(e))
+                    return
 
-                if (option == 'Custom' and not selected_text.strip()) or self.options[option]['open_in_window']:
+                logging.debug(f'Getting response from provider for option: {option_id_or_name}')
+
+                # Check if we should open in window
+                use_window = False
+                if option_id_or_name == 'Custom' and not selected_text.strip():
+                    use_window = True
+                elif command and command.use_response_window:
+                    use_window = True
+
+                if use_window:
                     logging.debug('Getting response for window display')
-                    response = self.current_provider.get_response(system_instruction, prompt, return_response=True)
+                    
+                    img_arg = images or None
+                    if self.config.get('streaming', True):  # Default to True for better UX
+                        logging.debug('Using streaming response')
+                        full_response = ""
+                        watchdog = None
+                        def on_timeout():
+                            logging.error("Streaming watchdog timed out")
+                            active_provider.cancel()
+                        
+                        def reset_watchdog():
+                            nonlocal watchdog
+                            if watchdog: watchdog.cancel()
+                            watchdog = threading.Timer(30, on_timeout)
+                            watchdog.start()
+
+                        try:
+                            reset_watchdog()
+                            for chunk in active_provider.get_response_stream(system_instruction, prompt, images=img_arg):
+                                if chunk:
+                                    reset_watchdog()
+                                    full_response += chunk
+                                    # noinspection PyTypeChecker
+                                    QtCore.QMetaObject.invokeMethod(
+                                        self, 'emit_streaming_token',
+                                        QtCore.Qt.ConnectionType.QueuedConnection,
+                                        QtCore.Q_ARG(str, chunk)
+                                    )
+                            response = full_response
+                        except Exception as e:
+                            logging.error(f"Streaming error: {e}")
+                            try:
+                                response = active_provider.get_response(system_instruction, prompt, images=img_arg, return_response=True)
+                            except Exception as e2:
+                                response = str(e2)
+                        finally:
+                            if watchdog: watchdog.cancel()
+                    else:
+                        try:
+                            response = active_provider.get_response(system_instruction, prompt, images=img_arg, return_response=True)
+                        except Exception as e:
+                            response = str(e)
+                    
                     logging.debug(f'Got response of length: {len(response) if response else 0}')
                     
                     # For custom prompts with no text, add question to chat history
-                    if option == 'Custom' and not selected_text.strip():
+                    if option_id_or_name == 'Custom' and not selected_text.strip():
                         self.current_response_window.chat_history.append({
                             "role": "user",
                             "content": custom_change
@@ -521,7 +705,7 @@ class WritingToolApp(QtWidgets.QApplication):
                         logging.debug('Invoked set_text on response window')
                 else:
                     logging.debug('Getting response for direct replacement')
-                    self.current_provider.get_response(system_instruction, prompt)
+                    active_provider.get_response(system_instruction, prompt, images=images or None)
                     logging.debug('Response processed')
 
             except Exception as e:
@@ -539,11 +723,11 @@ class WritingToolApp(QtWidgets.QApplication):
         """
         QMessageBox.warning(None, title, message)
 
-    def show_response_window(self, option, text):
+    def show_response_window(self, window_title, text, command_id=None):
         """
         Show the response in a new window instead of pasting it.
         """
-        response_window = ui.ResponseWindow.ResponseWindow(self, f"{option} Result")
+        response_window = ui.ResponseWindow.ResponseWindow(self, f"{window_title} Result", command_id)
         response_window.selected_text = text  # Store the text for regeneration
         response_window.show()
         return response_window
@@ -608,6 +792,20 @@ class WritingToolApp(QtWidgets.QApplication):
         else:
             logging.debug('No new text to process')
 
+    @Slot(str)
+    def emit_streaming_token(self, token):
+        """
+        Slot to emit a streaming token to the current response window.
+        """
+        if hasattr(self, 'current_response_window') and self.current_response_window:
+            # noinspection PyTypeChecker
+            QtCore.QMetaObject.invokeMethod(
+                self.current_response_window,
+                'append_token',
+                QtCore.Qt.ConnectionType.QueuedConnection,
+                QtCore.Q_ARG(str, token)
+            )
+
     def create_tray_icon(self):
         """
         Create the system tray icon for the application.
@@ -617,17 +815,23 @@ class WritingToolApp(QtWidgets.QApplication):
             return
 
         logging.debug('Creating system tray icon')
-        icon_path = os.path.join(os.path.dirname(sys.argv[0]), 'icons', 'app_icon.png')
+        icon_path = ui.UIUtils.UIUtils.get_resource_path(os.path.join('icons', 'app_icon.png'))
         if not os.path.exists(icon_path):
             logging.warning(f'Tray icon not found at {icon_path}')
-            # Use a default icon if not found
-            self.tray_icon = QtWidgets.QSystemTrayIcon(self)
+            app_icon = QtGui.QIcon()
         else:
-            self.tray_icon = QtWidgets.QSystemTrayIcon(QtGui.QIcon(icon_path), self)
+            app_icon = QtGui.QIcon(icon_path)
+
+        # Set icon ở cấp QApplication — áp dụng cho taskbar và tất cả windows
+        self.setWindowIcon(app_icon)
+        self.tray_icon = QtWidgets.QSystemTrayIcon(app_icon, self)
         # Set the tooltip (hover name) for the tray icon
-        self.tray_icon.setToolTip("WritingTools")
+        self.tray_icon.setToolTip("AI Shortcuts")
         self.tray_menu = QtWidgets.QMenu()
-        self.tray_icon.setContextMenu(self.tray_menu)
+
+        # Không dùng setContextMenu vì có bug trên Windows (menu không nhận focus).
+        # Thay vào đó xử lý thủ công qua activated signal.
+        self.tray_icon.activated.connect(self._on_tray_activated)
 
         self.update_tray_menu()
         self.tray_icon.show()
@@ -659,6 +863,12 @@ class WritingToolApp(QtWidgets.QApplication):
         exit_action = self.tray_menu.addAction(self._('Exit'))
         exit_action.triggered.connect(self.exit_app)
         
+    def _on_tray_activated(self, reason):
+        if reason == QtWidgets.QSystemTrayIcon.ActivationReason.Context:
+            # Dùng popup() thay exec() — exec() yêu cầu app có foreground window,
+            # gây ra menu flash/đóng ngay khi không có window nào đang mở.
+            self.tray_menu.popup(QtGui.QCursor.pos())
+
     def toggle_paused(self):
         """Toggle the paused state of the application."""
         logging.debug('Toggle paused state')
@@ -729,87 +939,91 @@ class WritingToolApp(QtWidgets.QApplication):
     This implementation is a bit convoluted, but it allows us to manage chat history & model roles across both providers! :3
     """
 
-    def process_followup_question(self, response_window, question):
+    def process_followup_question(self, response_window, question, attachments: list[Attachment] | None = None):
         """
         Process a follow-up question in the chat window.
         """
         logging.debug(f'Processing follow-up question: {question}')
-        
+        attachments = attachments or []
+
         def process_thread():
             logging.debug('Starting follow-up processing thread')
             try:
                 if not response_window.chat_history:
                     logging.error("No chat history found")
                     self.show_message_signal.emit('Error', 'Chat history not found')
+                    self.followup_response_signal.emit("Error: Chat history not found")
                     return
 
-                # Add current question to chat history
+                # Extract images và text context từ attachments
+                images = [(a.mime_type, base64.b64encode(a.data).decode()) for a in attachments if a.type == AttachmentType.IMAGE and a.data]
+                text_context = "\n\n".join(
+                    f"[{a.label}]:\n{a.text}"
+                    for a in attachments
+                    if a.type == AttachmentType.TEXT and a.text
+                )
+                full_question = question
+                if text_context:
+                    full_question = f"{question}\n\nAdditional Context:\n{text_context}" if question else text_context
+
+                # Add current question to chat history (với full context)
                 response_window.chat_history.append({
                     "role": "user",
-                    "content": question
+                    "content": full_question or "(see attachments)"
                 })
-                
-                # Get chat history
-                history = response_window.chat_history.copy()
-                
+
                 # System instruction based on original option
                 system_instruction = "You are a helpful AI assistant. Provide clear and direct responses, maintaining the same format and style as your previous responses. If appropriate, use Markdown formatting to make your response more readable."
-                
+
+                # Resolve provider for this specific window/command
+                command = None
+                if response_window.command_id:
+                    command = self.command_manager.get_command(response_window.command_id)
+
+                try:
+                    active_provider = self._resolve_provider(command)
+                except ValueError as e:
+                    self.show_message_signal.emit("Provider Error", str(e))
+                    self.followup_response_signal.emit(f"Provider Error: {e}")
+                    return
+
                 logging.debug('Sending request to AI provider')
-                
-                # Format conversation differently based on provider
-                if isinstance(self.current_provider, GeminiProvider):
-                    # For Gemini, use the proper history format with roles
-                    chat_messages = []
+
+                # Decide whether to stream
+                if self.config.get('streaming', True):
+                    logging.debug('Using streaming for follow-up')
+                    full_response = ""
+                    watchdog = None
+                    def on_timeout():
+                        logging.error("Follow-up watchdog timed out")
+                        active_provider.cancel()
                     
-                    # Convert our roles to Gemini's expected roles
-                    for msg in history:
-                        gemini_role = "model" if msg["role"] == "assistant" else "user"
-                        chat_messages.append({
-                            "role": gemini_role,
-                            "parts": msg["content"]
-                        })
-                    
-                    # Start chat with history
-                    chat = self.current_provider.model.start_chat(history=chat_messages)
-                    
-                    # Get response using the chat
-                    response = chat.send_message(question)
-                    response_text = response.text
+                    def reset_watchdog():
+                        nonlocal watchdog
+                        if watchdog: watchdog.cancel()
+                        watchdog = threading.Timer(30, on_timeout)
+                        watchdog.start()
 
-                elif isinstance(self.current_provider, OllamaProvider):  #
-                    # For Ollama, prepare messages with system instruction and history
-                    messages = [{"role": "system", "content": system_instruction}]
-
-                    for msg in history:
-                        messages.append({
-                            "role": msg["role"],
-                            "content": msg["content"]
-                        })
-
-                    # Get response from Ollama
-                    response_text = self.current_provider.get_response(
-                        system_instruction,
-                        messages,
-                        return_response=True
-                    )
-
+                    try:
+                        reset_watchdog()
+                        for chunk in active_provider.get_response_stream(system_instruction, full_question, images=images or None):
+                            if chunk:
+                                reset_watchdog()
+                                full_response += chunk
+                                # noinspection PyTypeChecker
+                                QtCore.QMetaObject.invokeMethod(
+                                    self, 'emit_streaming_token',
+                                    QtCore.Qt.ConnectionType.QueuedConnection,
+                                    QtCore.Q_ARG(str, chunk)
+                                )
+                        response_text = full_response
+                    except Exception as e:
+                        logging.error(f"Streaming follow-up error: {e}")
+                        response_text = active_provider.get_response(system_instruction, full_question, images=images or None, return_response=True)
+                    finally:
+                        if watchdog: watchdog.cancel()
                 else:
-                    # For OpenAI/compatible providers, prepare messages array, add system message
-                    messages = [{"role": "system", "content": system_instruction}]
-
-                    # Add history messages (including latest question)
-                    for msg in history:
-                        # Convert 'assistant' role to 'assistant' for OpenAI
-                        role = "assistant" if msg["role"] == "assistant" else "user"
-                        messages.append({"role": role, "content": msg["content"]})
-                    
-                    # Get response by passing the full messages array
-                    response_text = self.current_provider.get_response(
-                        system_instruction,
-                        messages,  # Pass messages array directly
-                        return_response=True
-                    )
+                    response_text = active_provider.get_response(system_instruction, full_question, images=images or None, return_response=True)
 
                 logging.debug(f'Got response of length: {len(response_text)}')
                 
@@ -835,27 +1049,23 @@ class WritingToolApp(QtWidgets.QApplication):
         # Start the thread
         threading.Thread(target=process_thread, daemon=True).start()
 
-    def show_settings(self, providers_only=False):
-
+    def show_settings(self, providers_only=False, initial_tab=None):
         """
         Show the settings window.
         """
         logging.debug('Showing settings window')
-        # Always create a new settings window to handle providers_only correctly
-        self.settings_window = ui.SettingsWindow.SettingsWindow(self, providers_only=providers_only)
+        # Always create a new settings window to handle providers_only and initial_tab correctly
+        self.settings_window = ui.SettingsWindow.SettingsWindow(self, providers_only=providers_only, initial_tab=initial_tab)
         self.settings_window.close_signal.connect(self.exit_app)
         self.settings_window.retranslate_ui()
         self.settings_window.show()
 
-
     def show_about(self):
         """
-        Show the about window.
+        Show the about section within settings window.
         """
-        logging.debug('Showing about window')
-        if not self.about_window:
-            self.about_window = ui.AboutWindow.AboutWindow()
-        self.about_window.show()
+        logging.debug('Showing about via settings')
+        self.show_settings(initial_tab="about")
 
     def setup_ctrl_c_listener(self):
         """

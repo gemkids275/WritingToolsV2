@@ -9,10 +9,10 @@ enum AppTheme: String, CaseIterable {
     
     var displayName: String {
         switch self {
-        case .standard: return "Standard"
-        case .gradient: return "Gradient"
-        case .glass: return "Glass"
-        case .oled: return "OLED"
+        case .standard: return String(localized: "Standard")
+        case .gradient: return String(localized: "Gradient")
+        case .glass: return String(localized: "Glass")
+        case .oled: return String(localized: "OLED")
         }
     }
 }

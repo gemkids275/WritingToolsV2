@@ -8,66 +8,31 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-01-28 19:47+0100\n"
+"POT-Creation-Date: 2026-04-20 23:45+0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Type: text/plain; charset=CHARSET\n"
 "Content-Transfer-Encoding: 8bit\n"
 
 #: ui/OnboardingWindow.py:26 ui/OnboardingWindow.py:42
-msgid "Welcome to Writing Tools"
+msgid "Welcome to AI Shortcuts"
 msgstr ""
 
-#: ui/OnboardingWindow.py:47
-msgid ""
-"Instantly optimize your writing with AI by selecting your text and invoking "
-"Writing Tools with \"ctrl+space\", anywhere."
-msgstr ""
-
-#: ui/OnboardingWindow.py:49
-msgid ""
-"Get a summary you can chat with of articles, YouTube videos, or documents by "
-"select all text with \"ctrl+a\""
-msgstr ""
-
-#: ui/OnboardingWindow.py:50
-msgid ""
-"(or select the YouTube transcript from its description), invoking Writing "
-"Tools, and choosing Summary."
-msgstr ""
-
-#: ui/OnboardingWindow.py:52
-msgid ""
-"Chat with AI anytime by invoking Writing Tools without selecting any text."
-msgstr ""
-
-#: ui/OnboardingWindow.py:54
-msgid "Supports an extensive range of AI models:"
-msgstr ""
-
-#: ui/OnboardingWindow.py:55
-msgid "Gemini 2.0"
-msgstr ""
-
-#: ui/OnboardingWindow.py:56
-msgid "ANY OpenAI Compatible API — including local LLMs!"
-msgstr ""
-
-#: ui/OnboardingWindow.py:77
+#: ui/OnboardingWindow.py:76
 msgid "Choose your theme:"
 msgstr ""
 
-#: ui/OnboardingWindow.py:82
+#: ui/OnboardingWindow.py:81
 msgid "Gradient"
 msgstr ""
 
-#: ui/OnboardingWindow.py:83
+#: ui/OnboardingWindow.py:82
 msgid "Plain"
 msgstr ""
 
-#: ui/OnboardingWindow.py:92
+#: ui/OnboardingWindow.py:91
 msgid "Next"
 msgstr ""

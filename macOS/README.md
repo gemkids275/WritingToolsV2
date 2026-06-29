@@ -36,7 +36,7 @@
 ## Quick Start (Download & Install)
 
 1) **Download** the latest `.dmg` from **Releases**:  
-   https://github.com/theJayTea/AI Shortcuts/releases
+   https://github.com/gemkids275/WritingToolsV2/releases
 
 2) **Install**  
    - Open the `.dmg`, drag **AI Shortcuts.app** into **Applications**.
@@ -108,22 +108,43 @@ Bring your own API keys, switch providers anytime, and mix local + cloud based o
 
 ## Build From Source (Xcode)
 
-You can build the macOS app either by opening the project or the package:
+**Requirements**: Xcode 15+, macOS 14.0+
 
-**Option A — Open project (if present)**  
-1. `git clone https://github.com/theJayTea/AI Shortcuts.git`  
-2. Open **AI Shortcuts/macOS/** and double-click the **.xcodeproj**.  
-3. Select target **AI Shortcuts** → **Signing & Capabilities** → choose your Development Team.  
-4. Set **Deployment Target** to **macOS 14.0** (or higher).  
-5. Run on **My Mac** (⌘R).
+1. Clone the repo and open the project:
+   ```bash
+   git clone https://github.com/gemkids275/WritingToolsV2.git
+   cd WritingTools/macOS
+   open WritingTools.xcodeproj
+   ```
+2. In Xcode: select target **WritingTools** → **Signing & Capabilities** → choose your **Development Team** (a free Apple ID works).
+3. Let Xcode resolve Swift Package dependencies automatically.
+4. Press **⌘R** to build and run on **My Mac**.
 
-**Option B — Open the folder / Package.swift**  
-1. `git clone https://github.com/theJayTea/AI Shortcuts.git`  
-2. In Xcode: **File → Open…** → choose **AI Shortcuts/macOS** (or the repo root).  
-3. Let Xcode resolve Swift Packages, then configure **Signing** and **Deployment Target** as above.  
-4. Run on **My Mac** (⌘R).
+### Granting Permissions for the Development Build
 
-> First debug run will trigger macOS permission prompts (Accessibility / Screen Recording). Accept them and relaunch if prompted. :contentReference[oaicite:2]{index=2}
+The app needs **Accessibility** permission to read and replace selected text. The development build is a separate binary from any installed release, so it must be granted permission independently.
+
+**First run (recommended flow)**:
+1. Run the app from Xcode (⌘R).
+2. When the **"Accessibility Permission Required"** dialog appears, click **"Request Permission"** — macOS will open System Settings automatically.
+3. In **System Settings → Privacy & Security → Accessibility**, find the newly added entry for the dev build and **enable its toggle**.
+4. Return to the app — it should now work.
+
+**If the dialog doesn't appear or permission still fails — add manually**:
+1. In Xcode, find the path of your build product:
+   - Menu **Product → Show Build Folder in Finder** → navigate to `Products/Debug/` → locate **WritingTools.app** (or **AI Shortcuts.app**).
+   - Or run this in Terminal to find it automatically:
+     ```bash
+     find ~/Library/Developer/Xcode/DerivedData -name "*.app" -path "*/Debug/*" | grep -i "WritingTools\|AIShortcuts"
+     ```
+2. Open **System Settings → Privacy & Security → Accessibility**.
+3. Click `+`, navigate to the `.app` found in step 1, and add it.
+4. Enable its toggle.
+5. If there are old entries for the same app, remove them with `–` first to avoid conflicts.
+
+> **Note**: macOS may reset the toggle after a clean rebuild. If the shortcut stops working after a new build, go back to Accessibility settings and re-enable the toggle for the dev build.
+
+**Screen Recording** (optional): Only needed if text selection fails in certain apps (e.g. browsers). Grant it the same way under **Privacy & Security → Screen Recording**.
 
 ---
 

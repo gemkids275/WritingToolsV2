@@ -28,20 +28,20 @@ struct AnthropicSettingsView: View {
         VStack(alignment: .leading, spacing: 16) {
             Group {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("API Configuration")
+                    Text(String(localized: "API Configuration"))
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                     
-                    SecureAPIKeyField("API Key", text: $settings.anthropicApiKey)
+                    SecureAPIKeyField(String(localized: "API Key"), text: $settings.anthropicApiKey)
                         .onChange(of: settings.anthropicApiKey) { _, _ in needsSaving = true }
                 }
                 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Model Selection")
+                    Text(String(localized: "Model Selection"))
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                     
-                    Picker("Model", selection: $modelSelection) {
+                    Picker(String(localized: "Model"), selection: $modelSelection) {
                         ForEach(AnthropicModel.allCases, id: \.self) { model in
                             Text(model.displayName).tag(model)
                         }
@@ -56,7 +56,7 @@ struct AnthropicSettingsView: View {
                     }
                     
                     if modelSelection == .custom {
-                        TextField("Custom Model Name", text: $settings.anthropicModel)
+                        TextField(String(localized: "Custom Model Name"), text: $settings.anthropicModel)
                             .textFieldStyle(.roundedBorder)
                             .font(.caption)
                             .onChange(of: settings.anthropicModel) { _, _ in needsSaving = true }
@@ -68,13 +68,13 @@ struct AnthropicSettingsView: View {
             }
             .padding(.bottom, 4)
             
-            Button("Get Anthropic API Key") {
+            Button(String(localized: "Get Anthropic API Key")) {
                 if let url = URL(string: "https://console.anthropic.com/settings/keys") {
                     NSWorkspace.shared.open(url)
                 }
             }
             .buttonStyle(.link)
-            .help("Open Anthropic console to create or view your API key.")
+            .help(String(localized: "Open Anthropic console to create or view your API key."))
         }
         .onAppear {
             syncModelSelection(settings.anthropicModel)

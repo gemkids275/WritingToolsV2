@@ -9,4 +9,4 @@ pyinstaller
 ollama
 anthropic
 mistralai
-
+keyring

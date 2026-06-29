@@ -15,22 +15,22 @@ struct MistralSettingsView: View {
         VStack(alignment: .leading, spacing: 16) {
             Group {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("API Configuration")
+                    Text(String(localized: "API Configuration"))
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                     
-                    SecureAPIKeyField("API Key", text: $settings.mistralApiKey)
+                    SecureAPIKeyField(String(localized: "API Key"), text: $settings.mistralApiKey)
                         .onChange(of: settings.mistralApiKey) { _, _ in
                             needsSaving = true
                         }
                 }
                 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Model Selection")
+                    Text(String(localized: "Model Selection"))
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                     
-                    Picker("Model", selection: $settings.mistralModel) {
+                    Picker(String(localized: "Model"), selection: $settings.mistralModel) {
                         ForEach(MistralModel.allCases, id: \.self) { model in
                             Text(model.displayName).tag(model.rawValue)
                         }
@@ -44,13 +44,13 @@ struct MistralSettingsView: View {
             }
             .padding(.bottom, 4)
             
-            Button("Get Mistral API Key") {
+            Button(String(localized: "Get Mistral API Key")) {
                 if let url = URL(string: "https://console.mistral.ai/api-keys/") {
                     NSWorkspace.shared.open(url)
                 }
             }
             .buttonStyle(.link)
-            .help("Open Mistral console to create an API key.")
+            .help(String(localized: "Open Mistral console to create an API key."))
         }
     }
 }

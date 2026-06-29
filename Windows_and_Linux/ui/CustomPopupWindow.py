@@ -1,13 +1,14 @@
-import json
 import logging
 import os
-import sys
 from functools import partial
 
 from PySide6 import QtCore, QtGui, QtWidgets
 from PySide6.QtCore import Qt
+from PySide6.QtGui import QKeySequence
 from PySide6.QtWidgets import (
+    QApplication,
     QDialog,
+    QFileDialog,
     QHBoxLayout,
     QLabel,
     QLineEdit,
@@ -18,69 +19,28 @@ from PySide6.QtWidgets import (
     QWidget,
 )
 
-from ui.UIUtils import ThemeBackground, colorMode
+from ui.AttachmentBar import AttachmentBar, attachment_from_file, attachment_from_qimage
+from ui.UIUtils import UIUtils, colorMode, ThemeBackground
+from ui.BaseTextEditor import BaseAITextEdit
+from update_checker import UPDATE_DOWNLOAD_URL
 
-_ = lambda x: x
+_ = lambda x: x  # Will be overridden by WritingToolApp
 
-################################################################################
-# Default `options.json` content to restore when the user presses "Reset"
-################################################################################
-DEFAULT_OPTIONS_JSON = r"""{
-  "Proofread": {
-    "prefix": "Proofread this:\n\n",
-    "instruction": "You are a grammar proofreading assistant.\nOutput ONLY the corrected text without any additional comments.\nMaintain the original text structure and writing style.\nRespond in the same language as the input (e.g., English US, French).\nDo not answer or respond to the user's text content.\nIf the text is absolutely incompatible with this (e.g., totally random gibberish), output \"ERROR_TEXT_INCOMPATIBLE_WITH_REQUEST\".",
-    "icon": "icons/magnifying-glass",
-    "open_in_window": false
-  },
-  "Rewrite": {
-    "prefix": "Rewrite this:\n\n",
-    "instruction": "You are a writing assistant.\nRewrite the text provided by the user to improve phrasing.\nOutput ONLY the rewritten text without additional comments.\nRespond in the same language as the input (e.g., English US, French).\nDo not answer or respond to the user's text content.\nIf the text is absolutely incompatible with proofreading (e.g., totally random gibberish), output \"ERROR_TEXT_INCOMPATIBLE_WITH_REQUEST\".",
-    "icon": "icons/rewrite",
-    "open_in_window": false
-  },
-  "Friendly": {
-    "prefix": "Make this more friendly:\n\n",
-    "instruction": "You are a writing assistant.\nRewrite the text provided by the user to be more friendly.\nOutput ONLY the friendly text without additional comments.\nRespond in the same language as the input (e.g., English US, French).\nDo not answer or respond to the user's text content.\nIf the text is absolutely incompatible with rewriting (e.g., totally random gibberish), output \"ERROR_TEXT_INCOMPATIBLE_WITH_REQUEST\".",
-    "icon": "icons/smiley-face",
-    "open_in_window": false
-  },
-  "Professional": {
-    "prefix": "Make this more professional:\n\n",
-    "instruction": "You are a writing assistant.\nRewrite the text provided by the user to be more professional. Output ONLY the professional text without additional comments.\nRespond in the same language as the input (e.g., English US, French).\nDo not answer or respond to the user's text content.\nIf the text is absolutely incompatible with rewriting (e.g., totally random gibberish), output \"ERROR_TEXT_INCOMPATIBLE_WITH_REQUEST\".",
-    "icon": "icons/briefcase",
-    "open_in_window": false
-  },
-  "Concise": {
-    "prefix": "Make this more concise:\n\n",
-    "instruction": "You are a writing assistant.\nRewrite the text provided by the user to be more concise.\nOutput ONLY the concise text without additional comments.\nRespond in the same language as the input (e.g., English US, French).\nDo not answer or respond to the user's text content.\nIf the text is absolutely incompatible with rewriting (e.g., totally random gibberish), output \"ERROR_TEXT_INCOMPATIBLE_WITH_REQUEST\".",
-    "icon": "icons/concise",
-    "open_in_window": false
-  },
-  "Table": {
-    "prefix": "Convert this into a table:\n\n",
-    "instruction": "You are an assistant that converts text provided by the user into a Markdown table.\nOutput ONLY the table without additional comments.\nRespond in the same language as the input (e.g., English US, French).\nDo not answer or respond to the user's text content.\nIf the text is completely incompatible with this with conversion, output \"ERROR_TEXT_INCOMPATIBLE_WITH_REQUEST\".",
-    "icon": "icons/table",
-    "open_in_window": true
-  },
-  "Key Points": {
-    "prefix": "Extract key points from this:\n\n",
-    "instruction": "You are an assistant that extracts key points from text provided by the user. Output ONLY the key points without additional comments.\n\nYou should use Markdown formatting (lists, bold, italics, codeblocks, etc.) as appropriate to make it quite legible and readable.\n\nDon't be repetitive or too verbose.\nRespond in the same language as the input (e.g., English US, French).\nDo not answer or respond to the user's text content.\nIf the text is absolutely incompatible with extracting key points (e.g., totally random gibberish), output \"ERROR_TEXT_INCOMPATIBLE_WITH_REQUEST\".",
-    "icon": "icons/keypoints",
-    "open_in_window": true
-  },
-  "Summary": {
-    "prefix": "Summarize this:\n\n",
-    "instruction": "You are a summarization assistant.\nProvide a succinct summary of the text provided by the user.\nThe summary should be succinct yet encompass all the key insightful points.\n\nTo make it quite legible and readable, you should use Markdown formatting (bold, italics, codeblocks...) as appropriate.\nYou should also add a little line spacing between your paragraphs as appropriate.\nAnd only if appropriate, you could also use headings (only the very small ones), lists, tables, etc.\n\nDon't be repetitive or too verbose.\nOutput ONLY the summary without additional comments.\nRespond in the same language as the input (e.g., English US, French).\nDo not answer or respond to the user's text content.\nIf the text is absolutely incompatible with summarisation (e.g., totally random gibberish), output \"ERROR_TEXT_INCOMPATIBLE_WITH_REQUEST\".",
-    "icon": "icons/summary",
-    "open_in_window": true
-  },
-  "Custom": {
-    "prefix": "Make this change to the following text:\n\n",
-    "instruction": "You are a writing and coding assistant. You MUST make the user\\'s described change to the text or code provided by the user. Output ONLY the appropriately modified text or code without additional comments. Respond in the same language as the input (e.g., English US, French). Do not answer or respond to the user\\'s text content. If the text or code is absolutely incompatible with the requested change, output \"ERROR_TEXT_INCOMPATIBLE_WITH_REQUEST\".",
-    "icon": "icons/summary",
-    "open_in_window": false
-  }
-}"""
+
+class PopupTextEdit(BaseAITextEdit):
+    """Auto-resize text input cho custom instructions, hỗ trợ paste ảnh và drop file."""
+    def __init__(self, attachment_bar: 'AttachmentBar', parent=None):
+        super().__init__(attachment_bar, parent)
+        self.setFixedHeight(72)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAsNeeded)
+
+    def keyPressEvent(self, event):
+        # Trigger submit on Enter (unless Shift/Alt is held)
+        if event.key() in (Qt.Key.Key_Return, Qt.Key.Key_Enter) and not (event.modifiers() & (Qt.KeyboardModifier.ShiftModifier | Qt.KeyboardModifier.AltModifier)):
+            self.submit_requested.emit()
+            return
+        super().keyPressEvent(event)
+
 
 class ButtonEditDialog(QDialog):
     """
@@ -345,6 +305,8 @@ class CustomPopupWindow(QtWidgets.QWidget):
         self.input_area = None
         
         self.button_widgets = []
+        self._drag_pos = None
+        self._suppress_deactivate = False
 
         logging.debug('Initializing CustomPopupWindow')
         self.init_ui()
@@ -353,7 +315,7 @@ class CustomPopupWindow(QtWidgets.QWidget):
         logging.debug('Setting up CustomPopupWindow UI')
         self.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint | QtCore.Qt.FramelessWindowHint)
         self.setAttribute(QtCore.Qt.WA_TranslucentBackground)
-        self.setWindowTitle("Writing Tools")
+        self.setWindowTitle("AI Shortcuts")
         
         main_layout = QtWidgets.QVBoxLayout(self)
         main_layout.setContentsMargins(0,0,0,0)
@@ -378,9 +340,7 @@ class CustomPopupWindow(QtWidgets.QWidget):
 
         # The "Edit"/"Done" button (left), same exact size as close button
         self.edit_button = QPushButton()
-        pencil_icon = os.path.join(os.path.dirname(sys.argv[0]),
-                                'icons',
-                                'pencil' + ('_dark' if colorMode=='dark' else '_light') + '.png')
+        pencil_icon = UIUtils.get_resource_path(os.path.join('icons', 'pencil' + ('_dark' if colorMode == 'dark' else '_light') + '.png'))
         if os.path.exists(pencil_icon):
             self.edit_button.setIcon(QtGui.QIcon(pencil_icon))
         # Reduced size to 24x24 to shrink top bar
@@ -397,11 +357,11 @@ class CustomPopupWindow(QtWidgets.QWidget):
                 background-color: {'#333' if colorMode=='dark' else '#ebebeb'};
             }}
         """)
-        self.edit_button.clicked.connect(self.toggle_edit_mode)
+        self.edit_button.clicked.connect(self._open_commands_manager)
         top_bar.addWidget(self.edit_button, 0, Qt.AlignLeft)
 
         # The label "Drag to rearrange" (BOLD as requested)
-        self.drag_label = QLabel("Drag to rearrange")
+        self.drag_label = QLabel(_("Drag to rearrange"))
         self.drag_label.setStyleSheet(f"""
             color: {'#fff' if colorMode=='dark' else '#333'};
             font-size: 14px;
@@ -413,8 +373,7 @@ class CustomPopupWindow(QtWidgets.QWidget):
 
         # The "Reset" button (edit-mode only) - also 24x24
         self.reset_button = QPushButton()
-        reset_icon_path = os.path.join(os.path.dirname(sys.argv[0]), 'icons',
-                                    'restore' + ('_dark' if colorMode=='dark' else '_light') + '.png')
+        reset_icon_path = UIUtils.get_resource_path(os.path.join('icons', 'restore' + ('_dark' if colorMode == 'dark' else '_light') + '.png'))
         if os.path.exists(reset_icon_path):
             self.reset_button.setIcon(QtGui.QIcon(reset_icon_path))
         self.reset_button.setText("")
@@ -458,13 +417,19 @@ class CustomPopupWindow(QtWidgets.QWidget):
         
         # Input area (hidden in edit mode)
         self.input_area = QWidget()
-        input_layout = QHBoxLayout(self.input_area)
-        input_layout.setContentsMargins(0,0,0,0)
-        
-        self.custom_input = QLineEdit()
+        input_area_layout = QVBoxLayout(self.input_area)
+        input_area_layout.setContentsMargins(0, 0, 0, 0)
+        input_area_layout.setSpacing(4)
+
+        # Attachment bar (ẩn khi trống)
+        self.attachment_bar = AttachmentBar()
+        input_area_layout.addWidget(self.attachment_bar)
+
+        # Textarea full-width
+        self.custom_input = PopupTextEdit(self.attachment_bar)
         self.custom_input.setPlaceholderText(_("Describe your change...") if self.has_text else _("Ask your AI..."))
         self.custom_input.setStyleSheet(f"""
-            QLineEdit {{
+            QTextEdit {{
                 padding: 8px;
                 border: 1px solid {'#777' if colorMode=='dark' else '#ccc'};
                 border-radius: 8px;
@@ -472,31 +437,54 @@ class CustomPopupWindow(QtWidgets.QWidget):
                 color: {'#fff' if colorMode=='dark' else '#000'};
             }}
         """)
-        self.custom_input.returnPressed.connect(self.on_custom_change)
-        input_layout.addWidget(self.custom_input)
-        
+        self.custom_input.submit_requested.connect(self.on_custom_change)
+        input_area_layout.addWidget(self.custom_input)
+
+        # Buttons căn phải phía dưới textarea
+        btn_row = QHBoxLayout()
+        btn_row.setContentsMargins(0, 0, 0, 0)
+        btn_row.setSpacing(6)
+        btn_row.addStretch()
+
+        btn_size = 28
+        attach_btn = QPushButton("📎")
+        attach_btn.setFixedSize(btn_size, btn_size)
+        attach_btn.setStyleSheet(f"""
+            QPushButton {{
+                background-color: transparent;
+                border: none;
+                font-size: 16px;
+                padding: 0px;
+                color: {'#aaa' if colorMode=='dark' else '#666'};
+            }}
+            QPushButton:hover {{
+                color: {'#fff' if colorMode=='dark' else '#000'};
+            }}
+        """)
+        attach_btn.setToolTip(_("Attach file"))
+        attach_btn.clicked.connect(self._open_file_dialog)
+        btn_row.addWidget(attach_btn)
+
         send_btn = QPushButton()
-        send_icon = os.path.join(os.path.dirname(sys.argv[0]),
-                                'icons',
-                                'send' + ('_dark' if colorMode=='dark' else '_light') + '.png')
+        send_icon = UIUtils.get_resource_path(os.path.join('icons', 'send' + ('_dark' if colorMode == 'dark' else '_light') + '.png'))
         if os.path.exists(send_icon):
             send_btn.setIcon(QtGui.QIcon(send_icon))
+        send_btn.setFixedSize(btn_size, btn_size)
         send_btn.setStyleSheet(f"""
             QPushButton {{
                 background-color: {'#2e7d32' if colorMode=='dark' else '#4CAF50'};
                 border: none;
-                border-radius: 8px;
-                padding: 5px;
+                border-radius: 6px;
+                padding: 4px;
             }}
             QPushButton:hover {{
                 background-color: {'#1b5e20' if colorMode=='dark' else '#45a049'};
             }}
         """)
-        send_btn.setFixedSize(self.custom_input.sizeHint().height(),
-                            self.custom_input.sizeHint().height())
         send_btn.clicked.connect(self.on_custom_change)
-        input_layout.addWidget(send_btn)
-        
+        btn_row.addWidget(send_btn)
+
+        input_area_layout.addLayout(btn_row)
         content_layout.addWidget(self.input_area)
         
         if self.has_text:
@@ -505,57 +493,54 @@ class CustomPopupWindow(QtWidgets.QWidget):
         else:
             # If no text, hide the edit button; user can only do custom instructions
             self.edit_button.hide()
-            self.custom_input.setMinimumWidth(300)
+            self.custom_input.setMinimumWidth(260)
 
         # show update notice if applicable
         if self.app.config.get("update_available", False):
             update_label = QLabel()
             update_label.setOpenExternalLinks(True)
-            update_label.setText('<a href="https://github.com/theJayTea/WritingTools/releases" style="color:rgb(255, 0, 0); text-decoration: underline; font-weight: bold;">There\'s an update! :D Download now.</a>')
-            update_label.setStyleSheet("margin-top: 10px;")
+            # Modern update notification banner
+            update_text = f'<a href="{UPDATE_DOWNLOAD_URL}" style="color: white; text-decoration: none; font-weight: bold;">✨ {_("There\'s an update! :D Download now.")}</a>'
+            update_label.setText(update_text)
+            update_label.setStyleSheet(f"""
+                QLabel {{
+                    background-color: {'#1d4ed8' if colorMode == 'dark' else '#2563eb'};
+                    color: white;
+                    padding: 8px 20px;
+                    border-radius: 20px;
+                    margin-top: 12px;
+                    border: 1px solid rgba(255, 255, 255, 0.2);
+                }}
+            """)
             content_layout.addWidget(update_label, alignment=QtCore.Qt.AlignCenter)
         
         logging.debug('CustomPopupWindow UI setup complete')
         self.installEventFilter(self)
         QtCore.QTimer.singleShot(250, lambda: self.custom_input.setFocus())
 
-    @staticmethod
-    def load_options():
-        options_path = os.path.join(os.path.dirname(sys.argv[0]), 'options.json')
-        if os.path.exists(options_path):
-            with open(options_path, 'r') as f:
-                data = json.load(f)
-                logging.debug('Options loaded successfully')
-        else:
-            logging.debug('Options file not found')
-
-        return data
-
-    @staticmethod
-    def save_options(options):
-        options_path = os.path.join(os.path.dirname(sys.argv[0]), 'options.json')
-        with open(options_path, 'w') as f:
-            json.dump(options, f, indent=2)
-
     def build_buttons_list(self):
         """
-        Reads options.json, creates DraggableButton for each (except "Custom"),
-        storing them in self.button_widgets in the same order as the JSON file.
+        Creates DraggableButton for each command from CommandManager (except "Custom"),
+        storing them in self.button_widgets in the same order as in CommandManager.
         """
         self.button_widgets.clear()
-        data = self.load_options()
+        commands = self.app.command_manager.commands
 
-        for k,v in data.items():
-            if k=="Custom":
+        has_text = bool(self.selected_text and self.selected_text.strip())
+        for cmd in commands:
+            if cmd.name == "Custom":
                 continue
-            b = DraggableButton(self, k, k)
-            icon_path = os.path.join(os.path.dirname(sys.argv[0]),
-                                    v["icon"] + ('_dark' if colorMode=='dark' else '_light') + '.png')
+            if cmd.id == "ChatNoSelection" and has_text:
+                continue
+            
+            # Sử dụng cmd.id làm key thay vì cmd.name, và dịch tên hiển thị
+            b = DraggableButton(self, cmd.id, _(cmd.name))
+            icon_path = UIUtils.get_resource_path(cmd.icon + ('_dark' if colorMode == 'dark' else '_light') + '.png')
             if os.path.exists(icon_path):
                 b.setIcon(QtGui.QIcon(icon_path))
                 
             if not self.edit_mode:
-                b.clicked.connect(partial(self.on_generic_instruction, k))
+                b.clicked.connect(partial(self.on_generic_instruction, cmd.id))
             self.button_widgets.append(b)
 
     def rebuild_grid_layout(self, parent_layout=None):
@@ -597,7 +582,7 @@ class CustomPopupWindow(QtWidgets.QWidget):
         
         # Add New button (only in edit mode & only if we have text)
         if self.edit_mode and self.has_text:
-            add_btn = QPushButton("+ Add New")
+            add_btn = QPushButton(_("+ Add New"))
             add_btn.setStyleSheet(f"""
                 QPushButton {{
                     background-color: {'#333' if colorMode=='dark' else '#e0e0e0'};
@@ -645,8 +630,7 @@ class CustomPopupWindow(QtWidgets.QWidget):
         # Create edit icon (top-left)
         edit_btn = QPushButton(btn.icon_container)
         edit_btn.setGeometry(3, 3, 16, 16)
-        pencil_icon = os.path.join(os.path.dirname(sys.argv[0]),
-                        'icons', 'pencil' + ('_dark' if colorMode=='dark' else '_light') + '.png')
+        pencil_icon = UIUtils.get_resource_path(os.path.join('icons', 'pencil' + ('_dark' if colorMode == 'dark' else '_light') + '.png'))
         if os.path.exists(pencil_icon):
             edit_btn.setIcon(QtGui.QIcon(pencil_icon))
         edit_btn.setStyleSheet(circle_style)
@@ -656,8 +640,7 @@ class CustomPopupWindow(QtWidgets.QWidget):
         # Create delete icon (top-right)
         delete_btn = QPushButton(btn.icon_container)
         delete_btn.setGeometry(btn.width() - 23, 3, 16, 16)
-        del_icon = os.path.join(os.path.dirname(sys.argv[0]),
-                                'icons', 'cross' + ('_dark' if colorMode=='dark' else '_light') + '.png')
+        del_icon = UIUtils.get_resource_path(os.path.join('icons', 'cross' + ('_dark' if colorMode == 'dark' else '_light') + '.png'))
         if os.path.exists(del_icon):
             delete_btn.setIcon(QtGui.QIcon(del_icon))
         delete_btn.setStyleSheet(circle_style)
@@ -666,6 +649,17 @@ class CustomPopupWindow(QtWidgets.QWidget):
         
         btn.icon_container.raise_()
         btn.icon_container.show()
+
+    def _open_commands_manager(self):
+        """Mở Settings → Commands tab; refresh button list khi cửa sổ đóng."""
+        self.app.show_settings(initial_tab="commands")
+        settings_win = self.app.settings_window
+        if settings_win:
+            settings_win.destroyed.connect(self._on_settings_closed)
+
+    def _on_settings_closed(self):
+        self.build_buttons_list()
+        self.rebuild_grid_layout()
 
     def toggle_edit_mode(self):
         """Toggle edit mode with improved button labels and state handling."""
@@ -704,26 +698,13 @@ class CustomPopupWindow(QtWidgets.QWidget):
             self.reset_button.hide()
             self.drag_label.hide()
 
-            # Inform the user that the app will close to apply changes
-            msg = QtWidgets.QMessageBox()
-            msg.setWindowTitle("Quitting to apply changes...")
-            msg.setText("Writing Tools needs to relaunch to apply your changes & will now quit.\nPlease relaunch Writing Tools.exe to see your changes.")
-            msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
-            msg.exec_()
-
-            self.app.load_options()
-            self.close()
-            # Instead of restarting, simply exit the app:
-            QtCore.QTimer.singleShot(100, self.app.exit_app)
-            return
+            self.build_buttons_list()
+            self.rebuild_grid_layout()
 
 
         # Update the edit button icon now that icon_name is defined
-        icon_path = os.path.join(
-            os.path.dirname(sys.argv[0]),
-            'icons',
-            f"{icon_name}_{'dark' if colorMode=='dark' else 'light'}.png"
-        )
+        icon_file = f"{icon_name}_{'dark' if colorMode=='dark' else 'light'}.png"
+        icon_path = UIUtils.get_resource_path(os.path.join('icons', icon_file))
         if os.path.exists(icon_path):
             self.edit_button.setIcon(QtGui.QIcon(icon_path))
 
@@ -752,162 +733,108 @@ class CustomPopupWindow(QtWidgets.QWidget):
 
 
     def on_reset_clicked(self):
-        """
-        Reset `options.json` to the DEFAULT_OPTIONS_JSON, then show message & restart.
-        """
-        confirm_box = QtWidgets.QMessageBox()
-        confirm_box.setWindowTitle("Confirm Reset to Defaults & Quit?")
-        confirm_box.setText("To reset the buttons to their original configuration, Writing Tools would need to quit, so you'd need to relaunch Writing Tools.exe.\nAre you sure you want to continue?")
-        confirm_box.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
-        confirm_box.setDefaultButton(QtWidgets.QMessageBox.No)
-        
-        if confirm_box.exec_() == QtWidgets.QMessageBox.Yes:
-            try:
-                logging.debug('Resetting to default options.json')
-                default_data = json.loads(DEFAULT_OPTIONS_JSON)
-                self.save_options(default_data)
-
-                # Save and quit
-                self.app.load_options()
-                self.close()
-                QtCore.QTimer.singleShot(100, self.app.exit_app)
-            
-            except Exception as e:
-                logging.error(f"Error resetting options.json: {e}")
-                error_msg = QtWidgets.QMessageBox()
-                error_msg.setWindowTitle("Error")
-                error_msg.setText(f"An error occurred while resetting: {str(e)}")
-                error_msg.exec_()
+        """Restore all built-in commands."""
+        reply = QtWidgets.QMessageBox.question(
+            self, 
+            "Reset Commands", 
+            "Are you sure you want to restore all built-in commands? This will bring back any deleted system commands.",
+            QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No
+        )
+        if reply == QtWidgets.QMessageBox.Yes:
+            self.app.command_manager.restore_built_ins()
+            self.build_buttons_list()
+            self.rebuild_grid_layout()
+            logging.info("Built-in commands restored")
 
     def add_new_button_clicked(self):
         dialog = ButtonEditDialog(self, title="Add New Button")
         if dialog.exec_():
             bd = dialog.get_button_data()
-            data = self.load_options()
-            data[bd["name"]] = {
-                "prefix": bd["prefix"],
-                "instruction": bd["instruction"],
-                "icon": bd["icon"],  # uses 'icons/custom'
-                "open_in_window": bd["open_in_window"]
-            }
-            self.save_options(data)
-
+            self.app.command_manager.add_command(bd)
             self.build_buttons_list()
             self.rebuild_grid_layout()
-
-            self.hide()
-            
-            QtWidgets.QMessageBox.information(
-                self, 
-                "Quitting to apply button...",
-                "Writing Tools needs to relaunch to apply your fancy button & will now quit.\nPlease relaunch Writing Tools.exe to see your new button."
-            )
-
-            self.app.load_options()
-            self.close()
-            QtCore.QTimer.singleShot(100, self.app.exit_app)
-
 
     def edit_button_clicked(self, btn):
         """User clicked the small pencil icon over a button."""
         key = btn.key
-        data = self.load_options()
-        bd = data[key]
+        bd = self.app.command_manager.get_command(key)
         bd["name"] = key
         
         dialog = ButtonEditDialog(self, bd)
         if dialog.exec_():
             new_data = dialog.get_button_data()
-            data = self.load_options()
-            if new_data["name"] != key:
-                del data[key]
-            data[new_data["name"]] = {
-                "prefix": new_data["prefix"],
-                "instruction": new_data["instruction"],
-                "icon": new_data["icon"],
-                "open_in_window": new_data["open_in_window"]
-            }
-            self.save_options(data)
-
+            self.app.command_manager.update_command(key, new_data)
             self.build_buttons_list()
             self.rebuild_grid_layout()
-
-            self.hide()
-
-            # Show message about relaunch requirement
-            QtWidgets.QMessageBox.information(
-                self, 
-                "Quitting to apply changes to this button...",
-                "Writing Tools needs to relaunch to apply your changes & will now quit.\nPlease relaunch Writing Tools.exe to see your changes."
-            )
-
-            # Save and quit
-            self.app.load_options()
-            self.close()
-            QtCore.QTimer.singleShot(100, self.app.exit_app)
 
     def delete_button_clicked(self, btn):
         """Handle deletion of a button."""
         key = btn.key
         confirm = QtWidgets.QMessageBox()
-        confirm.setWindowTitle("Confirm Delete & Quit?")
-        confirm.setText(f"To delete the '{key}' button, Writing Tools would need to quit, so you'd need to relaunch Writing Tools.exe.\nAre you sure you want to continue?")
+        confirm.setWindowTitle(_("Confirm Delete?"))
+        confirm.setText(_("Are you sure you want to delete the '{0}' button?").format(key))
         confirm.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
-        confirm.setDefaultButton(QtWidgets.QMessageBox.No)
         
         if confirm.exec_() == QtWidgets.QMessageBox.Yes:
-            try:
-                data = self.load_options()
-                del data[key]
-                self.save_options(data)
-
-                # Clean up UI elements
-                for btn_ in self.button_widgets[:]:
-                    if btn_.key == key:
-                        if hasattr(btn_, 'icon_container') and btn_.icon_container:
-                            btn_.icon_container.deleteLater()
-                        btn_.deleteLater()
-                        self.button_widgets.remove(btn_)
-                
-                self.app.load_options()
-                self.close()
-                QtCore.QTimer.singleShot(100, self.app.exit_app)
-                
-            except Exception as e:
-                logging.error(f"Error deleting button: {e}")
-                error_msg = QtWidgets.QMessageBox()
-                error_msg.setWindowTitle("Error")
-                error_msg.setText(f"An error occurred while deleting the button: {str(e)}")
-                error_msg.exec_()
+            self.app.command_manager.delete_command(key)
+            self.build_buttons_list()
+            self.rebuild_grid_layout()
 
     def update_json_from_grid(self):
         """
-        Called after a drop reorder. Reflect the new order in options.json,
-        so that user's custom arrangement persists.
+        Ghi chú: Trong hệ thống mới, thứ tự các lệnh được quản lý bởi danh sách 
+        trong CommandManager. Ở giai đoạn này, chúng ta sẽ tạm thời bỏ qua 
+        việc lưu lại thứ tự kéo thả cho đến khi CommandsManagerDialog được hoàn thiện.
         """
-        data = self.load_options()
-        new_data = {"Custom": data["Custom"]} if "Custom" in data else {}
-        for b in self.button_widgets:
-            new_data[b.key] = data[b.key]
-        self.save_options(new_data)
+        pass
+
+    def _open_file_dialog(self):
+        self._suppress_deactivate = True
+        files, unused_filter = QFileDialog.getOpenFileNames(
+            self,
+            _("Attach File"),
+            "",
+            "Images (*.png *.jpg *.jpeg *.gif *.webp *.bmp *.tiff);;"
+            "Text Files (*.txt *.md *.csv *.json *.xml *.py *.js *.ts *.html *.css *.yaml *.yml *.toml *.ini *.log);;"
+            "All Files (*)"
+        )
+        self._suppress_deactivate = False
+        for path in files:
+            att = attachment_from_file(path)
+            if att:
+                self.attachment_bar.add_attachment(att)
 
     def on_custom_change(self):
-        txt = self.custom_input.text().strip()
-        if txt:
-            self.app.process_option('Custom', self.selected_text, txt)
+        txt = self.custom_input.toPlainText().strip()
+        attachments = self.attachment_bar.get_attachments()
+        if txt or attachments:
+            self.app.process_option('Custom', self.selected_text, txt, attachments=attachments)
             self.close()
 
-    def on_generic_instruction(self, instruction):
+    def on_generic_instruction(self, command_id):
         if not self.edit_mode:
-            self.app.process_option(instruction, self.selected_text)
+            self.app.process_option(command_id, self.selected_text)
             self.close()
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.MouseButton.LeftButton:
+            self._drag_pos = event.globalPosition().toPoint() - self.frameGeometry().topLeft()
+            event.accept()
+        else:
+            super().mousePressEvent(event)
+
+    def mouseMoveEvent(self, event):
+        if event.buttons() & Qt.MouseButton.LeftButton and self._drag_pos is not None:
+            self.move(event.globalPosition().toPoint() - self._drag_pos)
+            event.accept()
+        else:
+            super().mouseMoveEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        self._drag_pos = None
+        super().mouseReleaseEvent(event)
 
     def eventFilter(self, obj, event):
-        # Hide on deactivate only if NOT in edit mode
-        if event.type()==QtCore.QEvent.WindowDeactivate:
-            if not self.edit_mode:
-                self.hide()
-                return True
         return super().eventFilter(obj, event)
 
     def keyPressEvent(self, event):

@@ -10,11 +10,19 @@ struct LocalLLMSettingsView: View {
     @State private var selectedModelCategory: ModelCategory = .all
 
     enum ModelCategory: String, CaseIterable, Identifiable {
-        case all = "All Models"
-        case text = "Text Models"
-        case vision = "Vision Models"
+        case all = "all"
+        case text = "text"
+        case vision = "vision"
 
         var id: String { self.rawValue }
+
+        var displayName: String {
+            switch self {
+            case .all: return String(localized: "All Models")
+            case .text: return String(localized: "Text Models")
+            case .vision: return String(localized: "Vision Models")
+            }
+        }
     }
 
     init(provider: LocalModelProvider) {
@@ -34,25 +42,25 @@ struct LocalLLMSettingsView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         // --- Delete Alert ---
-        .alert("Delete Model", isPresented: $showingDeleteAlert, presenting: llmProvider.selectedModelType) { modelType in
-            Button("Cancel", role: .cancel) { }
-            Button("Delete \(modelType.displayName)") {
+        .alert(String(localized: "Delete Model"), isPresented: $showingDeleteAlert, presenting: llmProvider.selectedModelType) { modelType in
+            Button(String(localized: "Cancel"), role: .cancel) { }
+            Button(String(localized: "Delete \(modelType.displayName)")) {
                 Task {
                     do {
                         try await llmProvider.deleteModel()
                     } catch {
-                        llmProvider.lastError = "Failed to delete \(modelType.displayName): \(error.localizedDescription)"
+                        llmProvider.lastError = String(localized: "Failed to delete \(modelType.displayName): \(error.localizedDescription)")
                     }
                 }
             }
         } message: { modelType in
-            Text("Are you sure you want to delete the downloaded model \(modelType.displayName)? You'll need to download it again to use it.")
+            Text(String(localized: "Are you sure you want to delete the downloaded model \(modelType.displayName)? You'll need to download it again to use it."))
         }
         // --- General Error Alert ---
-        .alert("Local LLM Error", isPresented: $showingErrorAlert) {
-            Button("OK", role: .cancel) { llmProvider.lastError = nil }
+        .alert(String(localized: "Local LLM Error"), isPresented: $showingErrorAlert) {
+            Button(String(localized: "OK"), role: .cancel) { llmProvider.lastError = nil }
         } message: {
-            Text(llmProvider.lastError ?? "An unknown error occurred.")
+            Text(llmProvider.lastError ?? String(localized: "An unknown error occurred."))
         }
         .onChange(of: llmProvider.lastError) { _, newValue in
             // Show the alert if a new error is set by the provider
@@ -70,11 +78,11 @@ struct LocalLLMSettingsView: View {
                     .foregroundStyle(.red)
                     .accessibilityHidden(true)
                 
-                Text("Apple Silicon Required")
+                Text(String(localized: "Apple Silicon Required"))
                     .font(.headline)
                     .accessibilityAddTraits(.isHeader)
                 
-                Text("Local LLM processing is only available on Apple Silicon (M-series) devices. Please select a different AI Provider.")
+                Text(String(localized: "Local LLM processing is only available on Apple Silicon (M-series) devices. Please select a different AI Provider."))
                     .font(.callout)
                     .multilineTextAlignment(.center)
                     .foregroundStyle(.secondary)
@@ -98,32 +106,32 @@ struct LocalLLMSettingsView: View {
     
     private var supportedPlatformView: some View {
         VStack(alignment: .leading, spacing: 10) {
-            GroupBox("Model Configuration") {
+            GroupBox(String(localized: "Model Configuration")) {
                 VStack(alignment: .leading, spacing: 8) {
                     // Filter picker - inline
                     HStack {
-                        Text("Filter:")
+                        Text(String(localized: "Filter:"))
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
-                        Picker("Filter", selection: $selectedModelCategory) {
+                        Picker(String(localized: "Filter"), selection: $selectedModelCategory) {
                             ForEach(ModelCategory.allCases) { category in
-                                Text(category.rawValue).tag(category)
+                                Text(category.displayName).tag(category)
                             }
                         }
                         .pickerStyle(.segmented)
                         .labelsHidden()
-                        .help("Filter between all, text-only, and vision-capable models.")
+                        .help(String(localized: "Filter between all, text-only, and vision-capable models."))
                     }
                     
                     Divider()
                     
                     // Model selection
                     HStack {
-                        Text("Model:")
+                        Text(String(localized: "Model:"))
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
-                        Picker("Model", selection: $settings.selectedLocalLLMId) {
-                            Text("None Selected").tag(String?.none)
+                        Picker(String(localized: "Model"), selection: $settings.selectedLocalLLMId) {
+                            Text(String(localized: "None Selected")).tag(String?.none)
                             ForEach(filteredModels) { modelType in
                                 HStack {
                                     Text(modelType.displayName)
@@ -137,17 +145,17 @@ struct LocalLLMSettingsView: View {
                         }
                         .pickerStyle(.menu)
                         .labelsHidden()
-                        .help("Select a local model. Vision-capable models can process images.")
+                        .help(String(localized: "Select a local model. Vision-capable models can process images."))
                     }
 
                     if let selectedModel = llmProvider.selectedModelType {
                         HStack(spacing: 6) {
                             if selectedModel.isVisionModel {
-                                Label("Vision-capable", systemImage: "camera.fill")
+                                Label(String(localized: "Vision-capable"), systemImage: "camera.fill")
                                     .foregroundStyle(.blue)
                                     .font(.caption)
                             } else {
-                                Label("Text-only", systemImage: "text.justifyleft")
+                                Label(String(localized: "Text-only"), systemImage: "text.justifyleft")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
                             }
@@ -157,7 +165,7 @@ struct LocalLLMSettingsView: View {
             }
 
             if let selectedModelType = llmProvider.selectedModelType {
-                GroupBox("Status") {
+                GroupBox(String(localized: "Status")) {
                     VStack(alignment: .leading, spacing: 8) {
                         if !llmProvider.modelInfo.isEmpty {
                             Text(llmProvider.modelInfo)
@@ -178,13 +186,13 @@ struct LocalLLMSettingsView: View {
                                     .lineLimit(2)
                             }
                             .accessibilityElement(children: .combine)
-                            .accessibilityLabel("Error: \(error)")
+                            .accessibilityLabel(String(localized: "Error: \(error)"))
                         }
                     }
                     .padding(.vertical, 4)
                 }
             } else {
-                Text("Select a model above to see its status.")
+                Text(String(localized: "Select a model above to see its status."))
                     .font(.callout)
                     .foregroundStyle(.secondary)
                     .frame(maxWidth: .infinity, alignment: .center)
@@ -194,12 +202,12 @@ struct LocalLLMSettingsView: View {
             Button {
                 llmProvider.revealModelsFolder()
             } label: {
-                Label("Show Models in Finder", systemImage: "folder")
+                Label(String(localized: "Show Models in Finder"), systemImage: "folder")
                     .font(.caption)
             }
             .buttonStyle(.borderless)
             .foregroundStyle(.secondary)
-            .help("Open the folder where local models are stored.")
+            .help(String(localized: "Open the folder where local models are stored."))
         }
     }
     
@@ -209,27 +217,27 @@ struct LocalLLMSettingsView: View {
         case .idle, .checking:
             HStack(spacing: 8) {
                 ProgressView().controlSize(.small)
-                Text("Checking status...")
+                Text(String(localized: "Checking status..."))
                     .foregroundStyle(.secondary)
             }
-            .accessibilityLabel("Checking model status")
+            .accessibilityLabel(String(localized: "Checking model status"))
 
         case .needsDownload:
             HStack(spacing: 8) {
-                Button("Download \(modelType.displayName)") {
+                Button(String(localized: "Download \(modelType.displayName)")) {
                     llmProvider.startDownload()
                 }
                 .buttonStyle(.borderedProminent)
                 .disabled(llmProvider.isDownloading)
-                .help("Download the selected model for offline use.")
+                .help(String(localized: "Download the selected model for offline use."))
 
                 if llmProvider.lastError != nil && llmProvider.retryCount < 3 {
-                    Button("Retry Download") {
+                    Button(String(localized: "Retry Download")) {
                         llmProvider.retryDownload()
                     }
                     .disabled(llmProvider.isDownloading)
                     .buttonStyle(.bordered)
-                    .help("Try downloading again if the previous attempt failed.")
+                    .help(String(localized: "Try downloading again if the previous attempt failed."))
                 }
             }
 
@@ -238,15 +246,15 @@ struct LocalLLMSettingsView: View {
                 HStack {
                     Image(systemName: "checkmark.circle.fill")
                         .foregroundStyle(.green)
-                    Text("\(modelType.displayName) Ready")
+                    Text(String(localized: "\(modelType.displayName) Ready"))
                         .foregroundStyle(.secondary)
                     Spacer()
-                    Button("Delete Model") {
+                    Button(String(localized: "Delete Model")) {
                         showingDeleteAlert = true
                     }
                     .buttonStyle(.borderedProminent)
                     .tint(.red)
-                    .help("Remove the downloaded model from disk.")
+                    .help(String(localized: "Remove the downloaded model from disk."))
                     .disabled(llmProvider.isDownloading || llmProvider.running)
                 }
             }
@@ -254,21 +262,21 @@ struct LocalLLMSettingsView: View {
         case .loading:
             HStack(spacing: 8) {
                 ProgressView().controlSize(.small)
-                Text("Loading \(modelType.displayName)...")
+                Text(String(localized: "Loading \(modelType.displayName)..."))
                     .foregroundStyle(.secondary)
             }
             .accessibilityLabel("Loading model")
 
         case .error:
             if llmProvider.lastError?.contains("download") == true && llmProvider.retryCount < 3 {
-                Button("Retry Download") {
+                Button(String(localized: "Retry Download")) {
                     llmProvider.retryDownload()
                 }
                 .disabled(llmProvider.isDownloading)
                 .buttonStyle(.bordered)
-                .help("Try downloading again if the previous attempt failed.")
+                .help(String(localized: "Try downloading again if the previous attempt failed."))
             } else {
-                Text("Cannot proceed due to error.")
+                Text(String(localized: "Cannot proceed due to error."))
                     .foregroundStyle(.red)
             }
         }
@@ -277,16 +285,16 @@ struct LocalLLMSettingsView: View {
             VStack(alignment: .leading, spacing: 6) {
                 HStack(spacing: 8) {
                     ProgressView().controlSize(.small)
-                    Text("Downloading \(modelType.displayName)...")
+                    Text(String(localized: "Downloading \(modelType.displayName)..."))
                         .foregroundStyle(.secondary)
                     Spacer()
                     Button(action: { llmProvider.cancelDownload() }) {
                         Image(systemName: "xmark.circle.fill")
                             .foregroundStyle(.gray)
-                            .accessibilityLabel("Cancel download")
+                            .accessibilityLabel(String(localized: "Cancel download"))
                     }
                     .buttonStyle(.plain)
-                    .help("Cancel the current download.")
+                    .help(String(localized: "Cancel the current download."))
                 }
                 ProgressView(value: llmProvider.downloadProgress) {
                     Text("\(Int(llmProvider.downloadProgress * 100))%")
@@ -294,7 +302,7 @@ struct LocalLLMSettingsView: View {
                         .foregroundStyle(.secondary)
                 }
                 .animation(.linear, value: llmProvider.downloadProgress)
-                .accessibilityLabel("Download progress")
+                .accessibilityLabel(String(localized: "Download progress"))
             }
         }
     }
