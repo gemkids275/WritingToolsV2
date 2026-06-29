@@ -78,7 +78,14 @@ class WritingToolApp(QtWidgets.QApplication):
         self.hotkey_triggered_signal.connect(self.on_hotkey_pressed)
         self.config = None
         self.config_path = None
-        self.config_dir = os.path.dirname(os.path.abspath(__file__))
+        # Determine persistent config directory based on OS
+        if sys.platform == 'win32':
+            app_data = os.environ.get('APPDATA') or os.path.expanduser('~\\AppData\\Roaming')
+            self.config_dir = os.path.join(app_data, 'AIShortcuts')
+        else:
+            config_home = os.environ.get('XDG_CONFIG_HOME') or os.path.join(os.path.expanduser('~'), '.config')
+            self.config_dir = os.path.join(config_home, 'aishortcuts')
+        os.makedirs(self.config_dir, exist_ok=True)
         self.load_config()
 
 
@@ -207,10 +214,41 @@ class WritingToolApp(QtWidgets.QApplication):
         """
         Load the configuration file.
         """
-        self.config_path = os.path.join(os.path.dirname(sys.argv[0]), 'config.json')
+        self.config_path = os.path.join(self.config_dir, 'config.json')
+        
+        # Migration logic for config.json
+        old_config_path = os.path.join(os.path.dirname(sys.argv[0]), 'config.json')
+        if not os.path.exists(self.config_path) and os.path.exists(old_config_path):
+            try:
+                logging.info(f"Migrating config.json from {old_config_path} to {self.config_path}")
+                import shutil
+                shutil.copy2(old_config_path, self.config_path)
+            except Exception as e:
+                logging.error(f"Failed to migrate config.json: {e}")
+
+        # Migration logic for commands.json
+        new_commands_path = os.path.join(self.config_dir, 'commands.json')
+        old_commands_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'commands.json')
+        old_commands_path_alt = os.path.join(os.path.dirname(sys.argv[0]), 'commands.json')
+        
+        if not os.path.exists(new_commands_path):
+            src_commands = None
+            if os.path.exists(old_commands_path):
+                src_commands = old_commands_path
+            elif os.path.exists(old_commands_path_alt):
+                src_commands = old_commands_path_alt
+                
+            if src_commands:
+                try:
+                    logging.info(f"Migrating commands.json from {src_commands} to {new_commands_path}")
+                    import shutil
+                    shutil.copy2(src_commands, new_commands_path)
+                except Exception as e:
+                    logging.error(f"Failed to migrate commands.json: {e}")
+
         logging.debug(f'Loading config from {self.config_path}')
         if os.path.exists(self.config_path):
-            with open(self.config_path, 'r') as f:
+            with open(self.config_path, 'r', encoding='utf-8') as f:
                 self.config = json.load(f)
                 logging.debug('Config loaded successfully')
         else:
@@ -235,8 +273,8 @@ class WritingToolApp(QtWidgets.QApplication):
         """
         Save the configuration file.
         """
-        with open(self.config_path, 'w') as f:
-            json.dump(config, f, indent=4)
+        with open(self.config_path, 'w', encoding='utf-8') as f:
+            json.dump(config, f, indent=4, ensure_ascii=False)
             logging.debug('Config saved successfully')
         self.config = config
 
